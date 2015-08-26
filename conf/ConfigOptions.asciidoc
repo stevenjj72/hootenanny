@@ -1012,14 +1012,14 @@ See also:
 * Data Type: double
 * Default Value: `0.8`
 
-If the name similarity score is greater than this then the names are considered a match. Scores are 0 to 1 for similarity and -1 if there are no names present (null).
+This option applies to POI to polygon matching. If the name similarity score is greater than this then the names are considered a match. Scores are 0 to 1 for similarity and -1 if there are no names present (null).
 
 === poi.polygon.match.review.distance
 
 * Data Type: double
 * Default Value: `0`
 
-How far away from a polygon should name matches be considered reviews. This is a fixed value in meters that is added to the CE calculation.
+This option applies to POI to polygon matching. How far away from a polygon should name matches be considered reviews. This is a fixed value in meters that is added to the CE calculation.
 
 === reader.add.source.datetime
 
