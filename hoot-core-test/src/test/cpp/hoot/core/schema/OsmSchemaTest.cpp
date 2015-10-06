@@ -59,10 +59,12 @@ class OsmSchemaTest : public CppUnit::TestFixture
   CPPUNIT_TEST(commonAncestorTest);
   CPPUNIT_TEST(distanceTest);
   CPPUNIT_TEST(getChildTagsTest);
+  CPPUNIT_TEST(getSimilarTagsTest);
   CPPUNIT_TEST(getTagTest);
   CPPUNIT_TEST(isAncestorTest);
   CPPUNIT_TEST(isAreaTest);
   CPPUNIT_TEST(isMetaDataTest);
+  CPPUNIT_TEST(religionTest);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -214,6 +216,30 @@ public:
     CPPUNIT_ASSERT_EQUAL(2, (int)gravel.size());
   }
 
+  QStringList tagsToNames(const vector<TagVertex>& v)
+  {
+    QStringList l;
+    for (size_t i = 0; i < v.size(); i++)
+    {
+      l << v[i].name;
+    }
+
+    return l;
+  }
+
+  void getSimilarTagsTest()
+  {
+    OsmSchema uut;
+    uut.createTestingGraph();
+
+    HOOT_STR_EQUALS("[3]{highway=road, highway=primary, highway=secondary}",
+      tagsToNames(uut.getSimilarTags("highway=primary", 0.8)));
+    HOOT_STR_EQUALS("[4]{highway=road, highway=primary, highway=secondary, highway=residential}",
+      tagsToNames(uut.getSimilarTags("highway=primary", 0.5)));
+    HOOT_STR_EQUALS("[1]{highway=road}",
+      tagsToNames(uut.getSimilarTags("highway=road", 0.1)));
+  }
+
   /**
    * Test rudimentary loading of the schema file.
    */
@@ -258,7 +284,23 @@ public:
     CPPUNIT_ASSERT_EQUAL(avg.toStdString(), std::string("surface=unknown"));
     CPPUNIT_ASSERT_DOUBLES_EQUAL(.1, score, 0.001);
 
-    Log::getInstance().setLevel(Log::Warn);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, uut.score("parking=surface", "amenity=parking"), 0.001);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0, uut.score("parking=surface", "parking=covered"), 0.001);
+
+    // check wildcard mismatchScore for seamark:type.
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.1, uut.score("seamark:type=foo", "seamark:type=bar"), 0.001);
+    // Check to see if mismatchScore works within amenity types. This doesn't work now, but it'd
+    // be good to implement this in the near future.
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, uut.score("amenity=auditorium", "amenity=embassy"), 0.001);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, uut.score("amenity=restaurant", "amenity=restaurant"), 0.001);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.8,
+      uut.score("amenity=exhibition_hall", "amenity=convention_centre"), 0.001);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0,
+      uut.score("amenity=conference_centre", "amenity=convention_centre"), 0.001);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0,
+      uut.scoreOneWay("poi=yes", "amenity=restaurant"), 0.001);
   }
 
   /**
@@ -369,6 +411,24 @@ public:
     CPPUNIT_ASSERT_EQUAL(true, OsmSchema::getInstance().isAncestor("highway=secondary",
       "highway=road"));
   }
+
+  void religionTest()
+  {
+    OsmSchema uut;
+    uut.loadDefault();
+
+    double d;
+    // These should have a high score. The exact value isn't important.
+    d = uut.score("building=mosque", "amenity=place_of_worship");
+    CPPUNIT_ASSERT(d >= 0.8);
+    // These shouldn't have a high score. The exact score isn't important.
+    d = uut.score("building=mosque", "amenity=church");
+    CPPUNIT_ASSERT(d <= 0.3);
+    // These should have a high score. The exact value isn't important.
+    d = uut.score("building=abbey", "amenity=church");
+    CPPUNIT_ASSERT(d >= 0.8);
+  }
+
 
 
 };

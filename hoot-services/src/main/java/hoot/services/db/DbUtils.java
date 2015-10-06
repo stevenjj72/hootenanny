@@ -26,7 +26,6 @@
  */
 package hoot.services.db;
 
-import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,7 +59,6 @@ import hoot.services.db2.QReviewItems;
 import hoot.services.db2.QReviewMap;
 import hoot.services.db2.QUsers;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -88,9 +86,9 @@ public class DbUtils
 
   public static final String TIMESTAMP_DATE_FORMAT = "YYYY-MM-dd HH:mm:ss";
 
-  protected static SQLTemplates templates = null;
+  private static SQLTemplates templates = null;
 
-  protected static org.apache.commons.dbcp.BasicDataSource dbcp_datasource = null;
+  private static org.apache.commons.dbcp.BasicDataSource dbcp_datasource = null;
   private static ClassPathXmlApplicationContext appContext = null;
 
   /**
@@ -156,24 +154,20 @@ public class DbUtils
     }
   }
 
-
   public static Configuration getConfiguration()
   {
   	return getConfiguration("");
   }
-
 
   public static Configuration getConfiguration(final long mapId)
   {
   	return getConfiguration("" + mapId);
   }
 
-
   public static Configuration getConfiguration(String mapId)
   {
   	if(templates ==  null)
   	{
-  		//templates = new PostgresTemplates();
   		templates = PostgresTemplates.builder()
   				.quote()
   		    .build();
@@ -187,9 +181,6 @@ public class DbUtils
   	{
   		overrideTable(mapId, configuration);
   	}
-
-
-
   	return configuration;
   }
 
@@ -206,16 +197,6 @@ public class DbUtils
   	}
   }
 
-  public static BasicDataSource getdbcpdatasource ()
-  {
-  	if(dbcp_datasource == null)
-		{
-			appContext = new ClassPathXmlApplicationContext(new String[] { "db/spring-database.xml" });
-			dbcp_datasource = appContext.getBean("dataSource", org.apache.commons.dbcp.BasicDataSource.class);
-		}
-
-  	return dbcp_datasource;
-  }
   public static Connection createConnection()
   {
   	try
@@ -237,67 +218,23 @@ public class DbUtils
 
   public static boolean closeConnection(Connection conn) throws Exception
   {
-  	if (conn.isClosed())
+  	if (conn != null)
   	{
-  		return true;
-  	}
-  	try
-  	{
-	  	if (conn != null)
-	  	{
-	  		conn.close();
-	  		return true;
-	  	}
-  	}
-  	catch (Exception e)
-  	{
-  		throw e;
+  		if (conn.isClosed())
+    	{
+    		return true;
+    	}
+    	try
+    	{
+  	  	conn.close();
+  	  	return true;
+    	}
+    	catch (Exception e)
+    	{
+    		throw e;
+    	}
   	}
   	return false;
-  }
-
-
-
-
-  public static void clearTable(com.mysema.query.sql.RelationalPathBase<?> t, Connection conn) throws Exception
-  {
-
-  	try
-  	{
-			Configuration configuration = getConfiguration();
-
-			new SQLDeleteClause(conn, configuration, t)
-	    	.execute() ;
-  	}
-  	catch(Exception e)
-  	{
-  		log.error(e.getCause().getMessage());
-  	}
-
-  }
-
-  /**
-   * Determines whether records exist in the services database
-   *
-   * @param conn JDBC Connection
-   * @return true if any records exist in the services database; false otherwise
-   * @throws Exception
-   */
-  public static boolean recordsExistInServicesDb(Connection conn) throws Exception
-  {
-    long recordCount = 0;
-
-    QChangesets changesets = QChangesets.changesets;
-    QMaps maps = QMaps.maps;
-    QUsers user = QUsers.users;
-
-  	SQLQuery query = new SQLQuery(conn, DbUtils.getConfiguration());
-
-  	recordCount += query.from(changesets).count();
-  	recordCount += query.from(maps).count();
-  	recordCount += query.from(user).count();
-
-    return elementDataExistsInServicesDb(conn) || recordCount > 0;
   }
 
   /**
@@ -463,45 +400,6 @@ public class DbUtils
   }
 
   /**
-   * Determines whether any review records exist in the services database
-   *
-   * @param conn JDBC Connection
-   * @return
-   * @throws Exception
-   */
-  public static boolean reviewDataExistsInServicesDb(Connection conn) throws Exception
-  {
-    long recordCount = 0;
-
-    QReviewMap reviewMap = QReviewMap.reviewMap;
-    QReviewItems reviewItems = QReviewItems.reviewItems;
-    QElementIdMappings elementIdMappings = QElementIdMappings.elementIdMappings;
-
-
-    SQLQuery query = new SQLQuery(conn, DbUtils.getConfiguration());
-
-  	recordCount += query.from(reviewMap).count();
-  	recordCount += query.from(reviewItems).count();
-  	recordCount += query.from(elementIdMappings).count();
-
-    return recordCount > 0;
-  }
-
-  /**
-   * Determines whether any job records exist in the services database
-   *
-   * @param conn JDBC Connection
-   * @return
-   * @throws Exception
-   */
-  public static boolean jobDataExistsInServicesDb(Connection conn) throws Exception
-  {
-  	QJobStatus jobStatus = QJobStatus.jobStatus;
-  	SQLQuery query = new SQLQuery(conn, DbUtils.getConfiguration());
-    return query.from(jobStatus).count() > 0;
-  }
-
-  /**
    * Clears all data in all resource related tables in the database
    *
    * @param conn JDBC Connection
@@ -509,8 +407,6 @@ public class DbUtils
    *           if any records still exist in the table after the attempted
    *           deletion
    */
-
-
   public static void clearServicesDb(Connection conn) throws Exception
   {
     try
@@ -646,59 +542,45 @@ public class DbUtils
   }
 
 
-//remove this. replace by calling hoot core layer delete native command
+  //remove this. replace by calling hoot core layer delete native command
   public static void deleteOSMRecordByName(Connection conn, String  mapName) throws Exception
   {
-    try
-    {
-			Configuration configuration = getConfiguration();
+		Configuration configuration = getConfiguration();
 
-			QMaps maps = QMaps.maps;
-    	List<Long> mapIds = new SQLQuery(conn, configuration).from(maps)
+		QMaps maps = QMaps.maps;
+  	List<Long> mapIds = new SQLQuery(conn, configuration).from(maps)
+		.where(maps.displayName.equalsIgnoreCase(mapName)).list(maps.id);
+
+  	if(mapIds.size() > 0)
+  	{
+    	Long mapId = mapIds.get(0);
+			deleteMapRelatedTablesByMapId(mapId);
+
+    	conn.setAutoCommit(false);
+
+			ListSubQuery<Long> res = new SQLSubQuery().from(maps)
 			.where(maps.displayName.equalsIgnoreCase(mapName)).list(maps.id);
 
-    	if(mapIds.size() > 0)
-    	{
-	    	Long mapId = mapIds.get(0);
-				deleteMapRelatedTablesByMapId(mapId);
+  	  new SQLDeleteClause(conn, configuration, maps)
+  	  .where(maps.displayName.eq(mapName))
+  	  .execute();
 
-	    	conn.setAutoCommit(false);
+  	  QReviewItems reviewItems = QReviewItems.reviewItems;
+  	  new SQLDeleteClause(conn, configuration, reviewItems)
+  	  .where(reviewItems.mapId.in(res))
+  	  .execute();
 
-				ListSubQuery<Long> res = new SQLSubQuery().from(maps)
-				.where(maps.displayName.equalsIgnoreCase(mapName)).list(maps.id);
+  	  QElementIdMappings elementIdMappings = QElementIdMappings.elementIdMappings;
+  	  new SQLDeleteClause(conn, configuration, elementIdMappings)
+  	  .where(elementIdMappings.mapId.in(res))
+  	  .execute();
 
+  	  QReviewMap reviewMap = QReviewMap.reviewMap;
+  	  new SQLDeleteClause(conn, configuration, reviewMap)
+  	  .where(reviewMap.mapId.in(res))
+  	  .execute();
 
-    	new SQLDeleteClause(conn, configuration, maps)
-    	.where(maps.displayName.eq(mapName))
-    	.execute();
-
-    	QReviewItems reviewItems = QReviewItems.reviewItems;
-    	new SQLDeleteClause(conn, configuration, reviewItems)
-    	.where(reviewItems.mapId.in(res))
-    	.execute();
-
-    	QElementIdMappings elementIdMappings = QElementIdMappings.elementIdMappings;
-    	new SQLDeleteClause(conn, configuration, elementIdMappings)
-    	.where(elementIdMappings.mapId.in(res))
-    	.execute();
-
-    	QReviewMap reviewMap = QReviewMap.reviewMap;
-    	new SQLDeleteClause(conn, configuration, reviewMap)
-    	.where(reviewMap.mapId.in(res))
-    	.execute();
-
-    	conn.commit();
-    }
-    }
-    catch (Exception e)
-    {
-      String msg = "Error deleting OSM record.  ";
-      if (e.getCause() instanceof BatchUpdateException)
-      {
-        BatchUpdateException batchException = (BatchUpdateException) e.getCause();
-        msg += "  " + batchException.getNextException().getMessage();
-      }
-      throw new Exception(msg);
+  	  conn.commit();
     }
   }
 
@@ -731,7 +613,6 @@ public class DbUtils
     return query.from(users).singleResult(users.id);
   }
 
-
   public static long insertUser(Connection conn) throws Exception
   {
   	Long newId = (long) -1;
@@ -759,7 +640,7 @@ public class DbUtils
 
   //TODO: this code needs to be changed to dynamically read in the data types from querydsl.  If
   //I make a change to the schema in liquibase, it will never be picked up unless this static code
-  //is also changed.  See #
+  //is also changed.  See #6777
   public static void createMap(final long mapId) throws Exception
   {
   	try {
@@ -974,7 +855,6 @@ public class DbUtils
       {
         stat.setEnd(ts);
       }
-      //statusDao.insert(stat);
       new SQLInsertClause(conn, configuration, jobStatusTbl)
       .populate(stat).execute();
 
@@ -998,46 +878,20 @@ public class DbUtils
 
     return stat.getStatus();
   }
-
-  /**
-   * Retrieves a job status as an object
-   *
-   * @param jobId ID of the job
-   * @param conn JDBC Connection
-   * @return a job status object
-   * @throws Exception
-   */
-  public static JobStatus getJobStatusObj(final String jobId, Connection conn)
-    throws Exception
-  {
-  	QJobStatus jobStatusTbl = QJobStatus.jobStatus;
-  	SQLQuery query = new SQLQuery(conn, DbUtils.getConfiguration());
-  	JobStatus dbJobStatus = query.from(jobStatusTbl).where(jobStatusTbl.jobId.eq(jobId)).singleResult(jobStatusTbl);
-
-    JobStatus jobStatus = new JobStatus();
-    jobStatus.setJobId(dbJobStatus.getJobId());
-    jobStatus.setEnd(dbJobStatus.getEnd());
-    jobStatus.setStart(dbJobStatus.getEnd());
-    jobStatus.setPercentComplete(dbJobStatus.getPercentComplete());
-    jobStatus.setStatusDetail(dbJobStatus.getStatusDetail());
-    jobStatus.setStatus(dbJobStatus.getStatus());
-    return jobStatus;
-  }
-
-
-
-  public static void batchRecords(final long mapId, final List<?> records, com.mysema.query.sql.RelationalPathBase<?> t,
-  		List<List<BooleanExpression>> predicateslist,
-      final RecordBatchType recordBatchType, Connection conn, int maxRecordBatchSize) throws Exception
+  
+  public static long batchRecords(final long mapId, final List<?> records, 
+    com.mysema.query.sql.RelationalPathBase<?> t,
+    List<List<BooleanExpression>> predicateslist, final RecordBatchType recordBatchType, 
+  	Connection conn, int maxRecordBatchSize) throws Exception
     {
       try
       {
         Configuration configuration = getConfiguration(mapId);
-        //conn.setAutoCommit(false);
 
         switch (recordBatchType)
         {
           case INSERT:
+          	
           	SQLInsertClause insert = new SQLInsertClause(conn, configuration, t);
           	long nBatch = 0;
           	for(int i=0; i<records.size(); i++)
@@ -1046,25 +900,21 @@ public class DbUtils
           		insert.populate(oRec).addBatch();
           		nBatch++;
 
-
           		if(maxRecordBatchSize > -1 && i > 0)
           		{
 	          		if(i % maxRecordBatchSize == 0) {
 	          			insert.execute();
-		              //conn.commit();
 		              insert = new SQLInsertClause(conn, configuration, t);
 		              nBatch = 0;
 		      			}
           		}
-
           	}
 
-          	if(nBatch > 0)
+          	if (nBatch > 0)
           	{
-          		insert.execute();
+          		return insert.execute();
           	}
-
-            break;
+          	return 0;
 
           case UPDATE:
 
@@ -1087,30 +937,27 @@ public class DbUtils
           		update.populate(oRec).where(params).addBatch();
           		nBatchUpdate++;
 
-          		if(maxRecordBatchSize > -1 && i > 0)
+          		if (maxRecordBatchSize > -1 && i > 0)
           		{
 	          		if(i % maxRecordBatchSize == 0) {
 	          			update.execute();
-		              //conn.commit();
 		              update = new SQLUpdateClause(conn, configuration, t);
 		              nBatchUpdate = 0;
 		      			}
           		}
-
           	}
 
-          	if(nBatchUpdate > 0)
+          	if (nBatchUpdate > 0)
           	{
-          		update.execute();
+          		return update.execute();
           	}
-
-            break;
+          	return 0;
 
           case DELETE:
 
           	SQLDeleteClause delete = new SQLDeleteClause(conn, configuration, t);
           	long nBatchDel = 0;
-          	for(int i=0; i<records.size(); i++)
+          	for (int i=0; i<records.size(); i++)
           	{
           		records.get(i);
 
@@ -1130,7 +977,6 @@ public class DbUtils
         			{
 	        			if(i % maxRecordBatchSize == 0) {
 	          			delete.execute();
-		              //conn.commit();
 		              delete = new SQLDeleteClause(conn, configuration, t);
 		              nBatchDel = 0;
 		      			}
@@ -1140,28 +986,17 @@ public class DbUtils
 
           	if(nBatchDel > 0)
           	{
-          		delete.execute();
+          		return delete.execute();
           	}
-
-            break;
+          	return 0;
 
           default:
             throw new Exception("");
         }
 
-
-     /*   if (execResult != records.size())
-        {
-        	String msg = "The number of batch records updates execute: " + execResult + " does not " +
-              "match the number of records sent to be updated: " + records.size();
-          log.warn(msg);
-          throw new Exception(msg);
-        }*/
-        //conn.commit();
       }
       catch (Exception e)
       {
-      	//conn.rollback();
         String msg = "Error executing batch query.";
         msg += "  " + e.getMessage();
         msg += " Cause:" + e.getCause().toString();
@@ -1242,7 +1077,6 @@ public class DbUtils
       try
       {
       	String sql = null;
-        //conn.setAutoCommit(false);
         int count = 0;
 
         switch (recordBatchType)
@@ -1289,7 +1123,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 
 		      			}
 	      			}
@@ -1339,7 +1172,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		              ps.clearBatch();
 		      			}
 	      			}
@@ -1364,7 +1196,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		              ps.clearBatch();
 		      			}
 	      			}
@@ -1378,11 +1209,9 @@ public class DbUtils
         }
 
         ps.executeBatch();
-        //conn.commit();
       }
       catch (Exception e)
       {
-      	//conn.rollback();
         String msg = "Error executing batch query.";
         msg += "  " + e.getMessage();
         msg += " Cause:" + e.getCause().toString();
@@ -1394,7 +1223,6 @@ public class DbUtils
       	{
       		ps.close();
       	}
-      	//conn.setAutoCommit(true);
       }
     }
 
@@ -1406,7 +1234,6 @@ public class DbUtils
       try
       {
       	String sql = null;
-        //conn.setAutoCommit(false);
         int count = 0;
 
         switch (recordBatchType)
@@ -1449,7 +1276,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
 
@@ -1494,7 +1320,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
           	}
@@ -1519,7 +1344,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
 
@@ -1533,7 +1357,6 @@ public class DbUtils
         }
 
         ps.executeBatch();
-        //conn.commit();
       }
       catch (Exception e)
       {
@@ -1549,12 +1372,9 @@ public class DbUtils
       	{
       		ps.close();
       	}
-      	//conn.setAutoCommit(true);
       }
     }
-
-
-
+  
   public static void batchRecordsDirectRelations(final long mapId, final List<?> records,
       final RecordBatchType recordBatchType, Connection conn, int maxRecordBatchSize) throws Exception
     {
@@ -1562,7 +1382,6 @@ public class DbUtils
       try
       {
       	String sql = null;
-        //conn.setAutoCommit(false);
         int count = 0;
 
         switch (recordBatchType)
@@ -1605,7 +1424,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
 
@@ -1650,7 +1468,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
           	}
@@ -1675,7 +1492,6 @@ public class DbUtils
 	      			{
 		      			if(++count % maxRecordBatchSize == 0) {
 		              ps.executeBatch();
-		              //conn.commit();
 		      			}
 	      			}
 
@@ -1689,7 +1505,6 @@ public class DbUtils
         }
 
         ps.executeBatch();
-        //conn.commit();
       }
       catch (Exception e)
       {
@@ -1705,7 +1520,6 @@ public class DbUtils
       	{
       		ps.close();
       	}
-      	//conn.setAutoCommit(true);
       }
     }
 

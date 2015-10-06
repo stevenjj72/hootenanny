@@ -196,9 +196,7 @@ public class ChangesetResourceCreateTest extends OsmResourceTestAbstract
     final Timestamp now = new Timestamp(Calendar.getInstance().getTimeInMillis());
     map.setCreatedAt(now);
     map.setDisplayName("map-with-id-" + mapId);
-    //map.setPublic(true);
     map.setUserId(userId);
-    //mapDao.insert(map);
     new SQLInsertClause(conn, DbUtils.getConfiguration(mapId), maps)
     .populate(map).execute();
     String mapName = null;
@@ -206,7 +204,7 @@ public class ChangesetResourceCreateTest extends OsmResourceTestAbstract
     //no data in system should be modified.
     try
     {
-      //try to create a changeset from a map name that is linked to multiple map ID's
+      //try to create a changeset from a map name that is linked to multiple map IDs
       mapName = "map-with-id-" + String.valueOf(mapId);
       resource()
         .path("api/0.6/changeset/create")

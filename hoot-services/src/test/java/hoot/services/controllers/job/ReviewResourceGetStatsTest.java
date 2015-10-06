@@ -132,7 +132,7 @@ public class ReviewResourceGetStatsTest extends OsmResourceTestAbstract
 
     Assert.assertEquals(mapId, response.getMapId());
     Assert.assertEquals(54, response.getNumTotalItems());
-    //TODO: fix - this should be returning 7 instead; I believe its ignoring way -44, whose review
+    //TODO: fix - this should be returning 7 instead; I believe it's ignoring way -44, whose review
     //against item is a relation with a node inside the query bounds; oddly enough the review get
     //resource test performs this query correctly, and they use nearly the same query code
     Assert.assertEquals(6, response.getNumReviewableItems());
@@ -283,7 +283,6 @@ public class ReviewResourceGetStatsTest extends OsmResourceTestAbstract
   
   //This behavior differs between Jersey and WPS.  Jersey will  automatically insert the default
   //value for empty numeric and boolean params.  This would be a 400 with WPS.
-  //TODO: unify the behavior of the two tests??
   @Test
   @Category(UnitTest.class)
   public void testGetEmptyReviewScoreMinParam() throws Exception
@@ -339,8 +338,6 @@ public class ReviewResourceGetStatsTest extends OsmResourceTestAbstract
    * This is a little strange b/c we're catching this from the method that prepares the exec call.
      This should reflect reality, though, b/c the exec call simulates how the processlet is actually
      called in real operation.
-   *
-   * @todo probably need a better way to test this
    */
   @Test
   @Category(UnitTest.class)
@@ -360,9 +357,6 @@ public class ReviewResourceGetStatsTest extends OsmResourceTestAbstract
     }
   }
 
-  /*
-   * @todo need a better way to test this; see testGetEmptyBounds
-   */
   @Test
   @Category(UnitTest.class)
   public void testGetInvalidBoundsParam() throws Exception
