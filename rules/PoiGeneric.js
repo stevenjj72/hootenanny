@@ -39,6 +39,7 @@ var distances = [
     {k:'place',     v:'populated',      match:2000,     review:3000},
     {k:'place',     v:'suburb',         match:1000,     review:2000},
     {k:'place',     v:'village',        match:2000,     review:3000},
+    {k:'place',     v:'region',         match:2000,     review:3000},
     {k:'waterway',                      match:1000,     review:2000},
     {k:'amenity',                       match:100,      review:200},
     {k:'landuse',                       match:200,      review:600},
@@ -52,6 +53,8 @@ var distances = [
     {k:'railway',                       match:500,      review:1000},
     {k:'natural',                       match:1000,     review:1500},
     {k:'building',  v:'hospital',       match:300,      review:500},
+    // some buildings are very dense. This avoids way too many reviews.
+    {k:'building',  v:'yes',            match:50,       review:100},
     {k:'barrier', v:'toll_booth',       match:25,       review:50},
 ];
 

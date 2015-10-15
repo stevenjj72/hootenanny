@@ -11,20 +11,21 @@
         "name": "building=yes",
         "isA": "building",
         "similarTo": { "name": "building=no", "weight": 0.1 },
+        "#categories": ["poi", "hgispoi"],
         "aliases": ["building=true", "building=1", "building=on"]
     },
     "tag": { "name": "building=*", "isA": "building=yes", "mismatchScore": 0.5 },
 
     "tag": {
         "name": "building=guardhouse",
-        "isA": "building",
+        "isA": "building=yes",
         "categories": ["poi", "hgispoi"],
         "similarTo": { "name": "barrier=toll_booth", "weight": 0.7 }
     },
 
     "tag": {
         "name": "building=shrine",
-        "isA": "building",
+        "isA": "building=yes",
         "categories": ["poi", "hgispoi"],
         "similarTo": { "name": "historic=memorial", "weight": 0.7 }
     },
@@ -34,7 +35,7 @@
 
     "tag": {
         "name": "building=hotel",
-        "isA": "building",
+        "isA": "building=yes",
         "categories": ["poi", "hgispoi"],
         "similarTo": { "name": "tourism=hotel", "weight": 0.9 },
         "similarTo": { "name": "amenity=hotel", "weight": 0.9 }
@@ -42,7 +43,7 @@
 
     "tag": {
         "name": "abstract_building_place_of_worship",
-        "isA": "building",
+        "isA": "building=yes",
         "categories": ["poi", "hgispoi"],
         "similarTo": { "name": "amenity=place_of_worship", "weight": 0.9 }
     },
@@ -87,10 +88,10 @@
         "isA": "abstract_building_place_of_worship",
         "similarTo": { "name": "religion=christian", "weight": 1.0 } },
 
-    "tag": { "name": "building=garage", "isA": "building", "categories": ["poi", "hgispoi"] },
-    "tag": { "name": "building=transportation", "isA": "building", "categories": ["poi", "hgispoi"] },
+    "tag": { "name": "building=garage", "isA": "building=yes", "categories": ["poi", "hgispoi"] },
+    "tag": { "name": "building=transportation", "isA": "building=yes", "categories": ["poi", "hgispoi"] },
     "tag": { "name": "building=train_station", 
-        "isA": "building", 
+        "isA": "building=yes", 
         "categories": ["poi", "hgispoi"],
         "similarTo": { "name": "building=transportation", "weight": [0.9, 0.3] },
         "similarTo": { "name": "public_transport=station", "weight": [0.8, 0.3] },
@@ -99,7 +100,7 @@
     },
 
     "tag": {
-        "name": "building=no", "isA": "building",
+        "name": "building=no", "isA": "building=yes",
         "similarTo": { "name": "building=yes", "weight": 0.1 },
         "aliases": ["building=false", "building=0", "building=off"]
     },

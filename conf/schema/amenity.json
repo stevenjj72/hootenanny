@@ -90,6 +90,7 @@
 
     "tag": { "name": "amenity=hotel", "isA": "amenity",
         "similarTo": { "name": "amenity=hostel", "weight": 0.7 },
+        "similarTo": { "name": "amenity=love_hotel", "weight": 0.7 },
         "similarTo": { "name": "tourism=hotel", "weight": 0.9 }
     },
     "tag": { "name": "amenity=dormitory", "isA": "amenity",

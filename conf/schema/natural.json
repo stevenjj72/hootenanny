@@ -22,12 +22,23 @@
         "isA": "natural",
         "geometries": ["node"]
     },
-    "tag": { "name": "natural=peak", 
+    "tag": { "name": "natural=mountain",
+        "isA": "natural",
+        "geometries": ["node"],
+        "similarTo": { "name": "natural=peak", "weight": 0.7 }
+    },
+    "tag": { "name": "natural=peak",
         "isA": "natural",
         "geometries": ["node"],
         "similarTo": { "name": "natural=hill", "weight": 0.8 }
     },
     "tag": { "name": "natural=scrub", "isA": "natural", "geometries": ["node", "area"]},
+    "tag": {
+        "name": "natural=spring",
+        "isA": "natural",
+        "geometries": ["node", "area"],
+        "similarTo": { "name": "man_made=water_well", "weight": 0.6 }
+    },
     "tag": { "name": "natural=wood", "isA": "natural" },
 
     "tag": { "name": "natural=water", "isA": "natural", "geometries": ["node", "area"]},

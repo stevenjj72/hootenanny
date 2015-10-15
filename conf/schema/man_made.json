@@ -39,6 +39,11 @@
     "tag": { "name": "man_made=scoreboard", "isA": "man_made", "categories": [], "geometries": ["linestring"]},
     "tag": { "name": "man_made=ski_jump", "isA": "man_made", "categories": [], "geometries": ["node","linestring"]},
     "tag": { "name": "man_made=snow_fence", "isA": "man_made", "categories": [], "geometries": ["linestring"]},
+    "tag": {
+        "name": "man_made=water_well",
+        "isA": "man_made",
+        "similarTo": { "name": "amenity=fountain", "weight": 0.7 }
+    },
 
 
     "#" : "end"
