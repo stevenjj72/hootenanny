@@ -70,7 +70,7 @@ double EarthMoverDistanceExtractor::extract(const OsmMap& map, const ConstElemen
   Mat sig1 = _createMat(map, target);
   Mat sig2 = _createMat(map, candidate);
 
-  //compare similarity of 2images using emd. emd 0 is best matching.
+  //compare similarity of 2D using emd. emd 0 is best matching.
   return cv::EMD(sig1, sig2, CV_DIST_L2);
 }
 
