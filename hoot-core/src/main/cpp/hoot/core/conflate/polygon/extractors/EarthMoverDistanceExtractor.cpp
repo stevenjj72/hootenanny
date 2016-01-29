@@ -25,45 +25,53 @@
  * @copyright Copyright (C) 2005 VividSolutions (http://www.vividsolutions.com/)
  * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "AngleHistogramExtractor.h"
+#include "EarthMoverDistanceExtractor.h"
 
 // geos
 #include <geos/geom/Geometry.h>
+#include <geos/util/TopologyException.h>
 
 // hoot
 #include <hoot/core/Factory.h>
-#include <hoot/core/visitors/AngleHistogramVisitor.h>
+#include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/elements/ElementVisitor.h>
-#include <hoot/core/util/GeometryConverter.h>
+#include <hoot/core/visitors/AngleHistogramVisitor.h>
 
 namespace hoot
 {
 
-HOOT_FACTORY_REGISTER(FeatureExtractor, AngleHistogramExtractor)
+HOOT_FACTORY_REGISTER(FeatureExtractor, EarthMoverDistanceExtractor)
 
-AngleHistogramExtractor::AngleHistogramExtractor()
+EarthMoverDistanceExtractor::EarthMoverDistanceExtractor()
 {
 }
 
-Histogram* AngleHistogramExtractor::_createHistogram(const OsmMap& map, const ConstElementPtr& e)
-  const
+Mat EarthMoverDistanceExtractor::_createMat(const OsmMap& map, const ConstElementPtr& e) const
 {
-  Histogram* result = new Histogram(16);
-  AngleHistogramVisitor v(*result, map);
+  Histogram* his = new Histogram(16);
+  AngleHistogramVisitor v(*his, map);
   e->visitRo(map, v);
-  return result;
+
+  vector<double> bins = his->getBins();
+  Mat mat(bins.size(), 2, CV_32FC1);
+
+  for (unsigned int i = 0; i < bins.size(); i++)
+  {
+    mat.at< float>(i, 0) = bins[i];
+    mat.at< float>(i, 1) = i;
+  }
+  return mat;
 }
 
-double AngleHistogramExtractor::extract(const OsmMap& map, const ConstElementPtr& target,
+double EarthMoverDistanceExtractor::extract(const OsmMap& map, const ConstElementPtr& target,
   const ConstElementPtr& candidate) const
 {
-  auto_ptr<Histogram> h1(_createHistogram(map, target));
-  auto_ptr<Histogram> h2(_createHistogram(map, candidate));
-  h1->normalize();
-  h2->normalize();
+  //make signature
+  Mat sig1 = _createMat(map, target);
+  Mat sig2 = _createMat(map, candidate);
 
-  const double diff = max(0.0, h1->diff(*h2));
-  return 1.0 - diff;
+  //compare similarity of 2images using emd. emd 0 is best matching.
+  return cv::EMD(sig1, sig2, CV_DIST_L2);
 }
 
 }

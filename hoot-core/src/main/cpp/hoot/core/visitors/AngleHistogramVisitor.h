@@ -24,44 +24,32 @@
  *
  * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef HISTOGRAM_H
-#define HISTOGRAM_H
+#ifndef ANGLEHISTOGRAMVISITOR_H
+#define ANGLEHISTOGRAMVISITOR_H
 
-#include <vector>
-
-using namespace std;
+// hoot
+#include <hoot/core/OsmMap.h>
+#include <hoot/core/OsmMapConsumer.h>
+#include <hoot/core/elements/ElementVisitor.h>
+#include <hoot/core/conflate/extractors/Histogram.h>
 
 namespace hoot
 {
+using namespace std;
 
-class Histogram
+class AngleHistogramVisitor : public ElementVisitor
 {
 public:
+  static std::string className() { return "hoot::AngleHistogramVisitor"; }
 
-  Histogram(int bins);
+  AngleHistogramVisitor(Histogram& h, const OsmMap& map) : _h(h), _map(map) {}
 
-  void addAngle(double theta, double length);
-
-  int getBin(double theta);
-
-  vector<double> getBins() { return _bins; }
-
-  /**
-   * Normalize all the bins so the sum of the bins is 1.0.
-   */
-  void normalize();
-
-  /**
-   * Returns a value from 0.0 to 1.0 describing the diff. 1.0 is exactly the same.
-   */
-  double diff(Histogram& other);
+  virtual void visit(const ConstElementPtr& e);
 
 private:
-
-  vector<double> _bins;
-
+  Histogram& _h;
+  const OsmMap& _map;
 };
 
 }
-
-#endif // HISTOGRAM_H
+#endif // ANGLEHISTOGRAMVISITOR_H

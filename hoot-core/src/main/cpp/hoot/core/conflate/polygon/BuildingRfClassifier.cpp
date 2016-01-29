@@ -45,6 +45,7 @@
 #include <hoot/core/conflate/polygon/extractors/OverlapExtractor.h>
 #include <hoot/core/conflate/polygon/extractors/SmallerOverlapExtractor.h>
 #include <hoot/core/conflate/polygon/extractors/AngleHistogramExtractor.h>
+#include <hoot/core/conflate/polygon/extractors/EarthMoverDistanceExtractor.h>
 #include <hoot/core/schema/TranslateStringDistance.h>
 
 // Standard
@@ -166,6 +167,7 @@ void BuildingRfClassifier::_createBestExtractors() const
   _extractors.push_back(shared_ptr<FeatureExtractor>(new CompactnessExtractor()));
   //_extractors.push_back(shared_ptr<FeatureExtractor>(new OverlapExtractor()));
   _extractors.push_back(shared_ptr<FeatureExtractor>(new SmallerOverlapExtractor()));
+  _extractors.push_back(shared_ptr<FeatureExtractor>(new EarthMoverDistanceExtractor()));
   _extractors.push_back(shared_ptr<FeatureExtractor>(new NameExtractor(
     new TranslateStringDistance(new MeanWordSetDistance(new LevenshteinDistance(1.45))))));
 

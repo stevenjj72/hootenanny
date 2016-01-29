@@ -199,6 +199,7 @@ SOURCES += \
     src/main/cpp/hoot/core/cmd/ConvertCmd.cpp \
     src/main/cpp/hoot/core/ops/VisitorOp.cpp \
     src/main/cpp/hoot/core/ops/NamedOp.cpp \
+    src/main/cpp/hoot/core/visitors/AngleHistogramVisitor.cpp \
     src/main/cpp/hoot/core/visitors/ReportMissingElementsVisitor.cpp \
     src/main/cpp/hoot/core/visitors/KeepBuildingsVisitor.cpp \
     src/main/cpp/hoot/core/visitors/LengthOfWaysVisitor.cpp \
@@ -228,6 +229,7 @@ SOURCES += \
     src/main/cpp/hoot/core/conflate/polygon/extractors/BufferedOverlapExtractor.cpp \
     src/main/cpp/hoot/core/cmd/BuildModelCmd.cpp \
     src/main/cpp/hoot/core/conflate/polygon/extractors/SmallerOverlapExtractor.cpp \
+    src/main/cpp/hoot/core/conflate/polygon/extractors/EarthMoverDistanceExtractor.cpp \
     src/main/cpp/hoot/core/visitors/GetElementIdsVisitor.cpp \
     src/main/cpp/hoot/core/visitors/CountNodesVisitor.cpp \
     src/main/cpp/hoot/core/conflate/match-graph/MatchGraph.cpp \
@@ -639,6 +641,7 @@ HEADERS += \
     src/main/cpp/hoot/core/ops/VisitorOp.h \
     src/main/cpp/hoot/core/OsmMapConsumer.h \
     src/main/cpp/hoot/core/ops/NamedOp.h \
+    src/main/cpp/hoot/core/visitors/AngleHistogramVisitor.H \
     src/main/cpp/hoot/core/visitors/ReportMissingElementsVisitor.h \
     src/main/cpp/hoot/core/visitors/KeepBuildingsVisitor.h \
     src/main/cpp/hoot/core/visitors/LengthOfWaysVisitor.h \
@@ -670,6 +673,7 @@ HEADERS += \
     src/main/cpp/hoot/core/algorithms/ExactStringDistance.h \
     src/main/cpp/hoot/core/conflate/polygon/extractors/BufferedOverlapExtractor.h \
     src/main/cpp/hoot/core/conflate/polygon/extractors/SmallerOverlapExtractor.h \
+    src/main/cpp/hoot/core/conflate/polygon/extractors/EarthMoverDistanceExtractor.h \
     src/main/cpp/hoot/core/visitors/GetElementIdsVisitor.h \
     src/main/cpp/hoot/core/visitors/CountNodesVisitor.h \
     src/main/cpp/hoot/core/conflate/match-graph/MatchGraph.h \

@@ -24,44 +24,42 @@
  *
  * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef HISTOGRAM_H
-#define HISTOGRAM_H
+#include "AngleHistogramVisitor.h"
 
-#include <vector>
+// geos
+#include <geos/geom/LineString.h>
 
-using namespace std;
+// hoot
+#include <hoot/core/Factory.h>
+#include <hoot/core/OsmMap.h>
+#include <hoot/core/util/ElementConverter.h>
 
 namespace hoot
 {
 
-class Histogram
+void AngleHistogramVisitor::visit(const ConstElementPtr& e)
 {
-public:
+  if (e->getElementType() == ElementType::Way)
+  {
+    const ConstWayPtr& w = dynamic_pointer_cast<const Way>(e);
+    //const ConstWayPtr& w = _map.getWay(e->getId());
 
-  Histogram(int bins);
+    vector<long> nodes = w->getNodeIds();
+    if (nodes[0] != nodes[nodes.size() - 1])
+    {
+      nodes.push_back(nodes[0]);
+    }
 
-  void addAngle(double theta, double length);
-
-  int getBin(double theta);
-
-  vector<double> getBins() { return _bins; }
-
-  /**
-   * Normalize all the bins so the sum of the bins is 1.0.
-   */
-  void normalize();
-
-  /**
-   * Returns a value from 0.0 to 1.0 describing the diff. 1.0 is exactly the same.
-   */
-  double diff(Histogram& other);
-
-private:
-
-  vector<double> _bins;
-
-};
-
+    Coordinate last = _map.getNode(nodes[0])->toCoordinate();
+    for (size_t i = 1; i < nodes.size(); i++)
+    {
+      Coordinate c = _map.getNode(nodes[i])->toCoordinate();
+      double distance = c.distance(last);
+      double theta = atan2(c.x - last.x, c.y - last.y);
+      _h.addAngle(theta, distance);
+      last = c;
+    }
+  }
 }
 
-#endif // HISTOGRAM_H
+}

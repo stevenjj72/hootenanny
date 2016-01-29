@@ -25,45 +25,49 @@
  * @copyright Copyright (C) 2005 VividSolutions (http://www.vividsolutions.com/)
  * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "AngleHistogramExtractor.h"
+#ifndef EARTHMOVERDISTANCEEXTRACTOR_H
+#define EARTHMOVERDISTANCEEXTRACTOR_H
 
-// geos
-#include <geos/geom/Geometry.h>
+//opencv
+#include <opencv/cv.h>
 
 // hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/visitors/AngleHistogramVisitor.h>
-#include <hoot/core/elements/ElementVisitor.h>
-#include <hoot/core/util/GeometryConverter.h>
+#include <hoot/core/conflate/extractors/FeatureExtractor.h>
+#include <hoot/core/elements/Element.h>
+#include <hoot/core/util/ElementConverter.h>
 
 namespace hoot
 {
+using namespace cv;
 
-HOOT_FACTORY_REGISTER(FeatureExtractor, AngleHistogramExtractor)
-
-AngleHistogramExtractor::AngleHistogramExtractor()
+/**
+ * This extractor uses the Earth Movers Distance to calculate the distance
+ * between two distributions
+ *
+ */
+class EarthMoverDistanceExtractor : public FeatureExtractor
 {
-}
+public:
+  EarthMoverDistanceExtractor();
 
-Histogram* AngleHistogramExtractor::_createHistogram(const OsmMap& map, const ConstElementPtr& e)
-  const
-{
-  Histogram* result = new Histogram(16);
-  AngleHistogramVisitor v(*result, map);
-  e->visitRo(map, v);
-  return result;
-}
+  static string className() { return "hoot::EarthMoverDistanceExtractor"; }
 
-double AngleHistogramExtractor::extract(const OsmMap& map, const ConstElementPtr& target,
-  const ConstElementPtr& candidate) const
-{
-  auto_ptr<Histogram> h1(_createHistogram(map, target));
-  auto_ptr<Histogram> h2(_createHistogram(map, candidate));
-  h1->normalize();
-  h2->normalize();
+  virtual string getClassName() const { return EarthMoverDistanceExtractor::className(); }
 
-  const double diff = max(0.0, h1->diff(*h2));
-  return 1.0 - diff;
-}
+  virtual DataFrame::FactorType getFactorType() const { return DataFrame::Numerical; }
+
+  virtual DataFrame::NullTreatment getNullTreatment() const
+  {
+    return DataFrame::NullAsMissingValue;
+  }
+
+  virtual double extract(const OsmMap& map, const shared_ptr<const Element>& target,
+    const shared_ptr<const Element>& candidate) const;
+
+protected:
+  Mat _createMat(const OsmMap& map, const ConstElementPtr& e) const;
+};
 
 }
+
+#endif // EARTHMOVERDISTANCEEXTRACTOR_H
