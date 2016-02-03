@@ -48,6 +48,8 @@ using namespace cv;
 class EarthMoverDistanceExtractor : public FeatureExtractor
 {
 public:
+  //typedef double (CV_CDECL CvDistanceFunction)( const double a, const double b);
+
   EarthMoverDistanceExtractor();
 
   static string className() { return "hoot::EarthMoverDistanceExtractor"; }
@@ -63,6 +65,8 @@ public:
 
   virtual double extract(const OsmMap& map, const shared_ptr<const Element>& target,
     const shared_ptr<const Element>& candidate) const;
+
+  Mat dist(const Mat sig1, const Mat sig2) const;
 
 protected:
   Mat _createMat(const OsmMap& map, const ConstElementPtr& e) const;

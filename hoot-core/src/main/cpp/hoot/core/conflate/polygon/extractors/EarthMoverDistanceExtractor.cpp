@@ -36,6 +36,7 @@
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/elements/ElementVisitor.h>
 #include <hoot/core/visitors/AngleHistogramVisitor.h>
+#include <hoot/core/algorithms/WayHeading.h>
 
 namespace hoot
 {
@@ -46,6 +47,20 @@ EarthMoverDistanceExtractor::EarthMoverDistanceExtractor()
 {
 }
 
+Mat EarthMoverDistanceExtractor::dist(const Mat sig1, const Mat sig2) const
+{
+  Mat cost(sig1.rows, sig2.rows, CV_32FC1);
+  for (int i = 0; i < sig1.rows; i++)
+  {
+    for (int j = 0; j < sig2.rows; j++)
+    {
+      double delta = WayHeading::deltaMagnitude(sig1.at<float>(i,0), sig2.at<float>(i,0));
+      cost.at<float>(i,j) = delta;
+    }
+  }
+  return cost;
+}
+
 Mat EarthMoverDistanceExtractor::_createMat(const OsmMap& map, const ConstElementPtr& e) const
 {
   Histogram* his = new Histogram(16);
@@ -53,12 +68,13 @@ Mat EarthMoverDistanceExtractor::_createMat(const OsmMap& map, const ConstElemen
   e->visitRo(map, v);
 
   vector<double> bins = his->getBins();
-  Mat mat(bins.size(), 2, CV_32FC1);
-
+  //his->normalize();
+  //vector<double> norm = his->getBins();
+  Mat mat(bins.size(), 1, CV_32FC1);
   for (unsigned int i = 0; i < bins.size(); i++)
   {
-    mat.at< float>(i, 0) = bins[i];
-    mat.at< float>(i, 1) = i;
+    mat.at<float>(i, 0) = bins[i];
+    //mat.at<float>(i, 1) = norm[i];
   }
   return mat;
 }
@@ -71,7 +87,10 @@ double EarthMoverDistanceExtractor::extract(const OsmMap& map, const ConstElemen
   Mat sig2 = _createMat(map, candidate);
 
   //compare similarity of 2D using emd. emd 0 is best matching.
-  return cv::EMD(sig1, sig2, CV_DIST_L2);
+  Mat cost = dist(sig1, sig2);
+  double emd = cv::EMD(sig1, sig2, CV_DIST_USER, cost);
+  LOG_VAR(emd);
+  return emd;
 }
 
 }
