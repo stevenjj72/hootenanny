@@ -67,14 +67,12 @@ Mat EarthMoverDistanceExtractor::_createMat(const OsmMap& map, const ConstElemen
   AngleHistogramVisitor v(*his, map);
   e->visitRo(map, v);
 
+  his->normalize();
   vector<double> bins = his->getBins();
-  //his->normalize();
-  //vector<double> norm = his->getBins();
   Mat mat(bins.size(), 1, CV_32FC1);
   for (unsigned int i = 0; i < bins.size(); i++)
   {
     mat.at<float>(i, 0) = bins[i];
-    //mat.at<float>(i, 1) = norm[i];
   }
   return mat;
 }
@@ -89,7 +87,7 @@ double EarthMoverDistanceExtractor::extract(const OsmMap& map, const ConstElemen
   //compare similarity of 2D using emd. emd 0 is best matching.
   Mat cost = dist(sig1, sig2);
   double emd = cv::EMD(sig1, sig2, CV_DIST_USER, cost);
-  return emd;
+  return emd * 2;
 }
 
 }

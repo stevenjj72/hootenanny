@@ -92,7 +92,8 @@ public:
     shared_ptr<const Way> w2 = map->getWay(r2[0]);
 
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
-    double emd = earthMoverDistanceExtractor.extract(*map, w1, w1);
+    double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
+
     CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, emd, 0.01);
   }
 
@@ -105,7 +106,7 @@ public:
     reader.setDefaultStatus(Status::Unknown1);
     reader.read("test-files/conflate/polygon/extractors/TestA.osm", map);
 
-    //Two geometries are same
+    //Most of two geometries are overlap
     reader.setDefaultStatus(Status::Unknown2);
     reader.read("test-files/conflate/polygon/extractors/TestC.osm", map);
 
@@ -118,8 +119,9 @@ public:
     shared_ptr<const Way> w2 = map->getWay(r2[0]);
 
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
-    double emd = earthMoverDistanceExtractor.extract(*map, w1, w1);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, emd, 0.01);
+    double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.261854, emd, 0.01);
   }
 
   void runBuildingsSmallOverlapTest()
@@ -131,7 +133,7 @@ public:
     reader.setDefaultStatus(Status::Unknown1);
     reader.read("test-files/conflate/polygon/extractors/TestA.osm", map);
 
-    //Two geometries are same
+    //Two geometries have small parts overlap
     reader.setDefaultStatus(Status::Unknown2);
     reader.read("test-files/conflate/polygon/extractors/TestD.osm", map);
 
@@ -144,8 +146,9 @@ public:
     shared_ptr<const Way> w2 = map->getWay(r2[0]);
 
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
-    double emd = earthMoverDistanceExtractor.extract(*map, w1, w1);
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, emd, 0.01);
+    double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.503001, emd, 0.01);
   }
 
   void runBuildingsSeparateTest()
@@ -157,7 +160,7 @@ public:
     reader.setDefaultStatus(Status::Unknown1);
     reader.read("test-files/conflate/polygon/extractors/TestA.osm", map);
 
-    //Two geometries are same
+    //Two geometries are separate
     reader.setDefaultStatus(Status::Unknown2);
     reader.read("test-files/conflate/polygon/extractors/TestE.osm", map);
 
@@ -170,9 +173,9 @@ public:
     shared_ptr<const Way> w2 = map->getWay(r2[0]);
 
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
-    double emd = earthMoverDistanceExtractor.extract(*map, w1, w1);
+    double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
 
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, emd, 0.01);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.503001, emd, 0.01);
   }
 };
 
