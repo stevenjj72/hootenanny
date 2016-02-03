@@ -91,6 +91,7 @@ SOURCES += \
     src/test/cpp/hoot/core/scoring/MatchComparatorTest.cpp \
     src/test/cpp/hoot/core/visitors/RemoveDuplicateAreaVisitorTest.cpp \
     src/test/cpp/hoot/core/conflate/polygon/extractors/EdgeDistanceExtractorTest.cpp \
+    src/test/cpp/hoot/core/conflate/polygon/extractors/EarthMoverDistanceExtractorTest.cpp \
     src/test/cpp/hoot/core/algorithms/MaximalSublineTest.cpp \
     src/test/cpp/hoot/core/algorithms/ExpectationIntersectionTest.cpp \
     src/test/cpp/hoot/core/conflate/point/PlacesPoiMatchTest.cpp \

@@ -89,7 +89,6 @@ double EarthMoverDistanceExtractor::extract(const OsmMap& map, const ConstElemen
   //compare similarity of 2D using emd. emd 0 is best matching.
   Mat cost = dist(sig1, sig2);
   double emd = cv::EMD(sig1, sig2, CV_DIST_USER, cost);
-  LOG_VAR(emd);
   return emd;
 }
 
