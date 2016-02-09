@@ -4483,7 +4483,6 @@ tds61.rules = {
      [undefined,undefined,'historic','yes'], // Not a good translation, push to o2s
 
      // ### From OSM - This list could never end.....
-     ['FFN','464','shop','books'], // Specialized Store
      ['FFN','563','building','house'], // Residence
      ['FFN','558','building','dependents_housing'], // Dependents Housing
      ['FFN','610','office','telecommunication'], // telecommunication
@@ -4500,6 +4499,15 @@ tds61.rules = {
     // This list uses the new IsA, IsSimilar etc functions to map a number of input values to a single output
     fuzzyTable : [
 
+     ['FFN','860',"use=healthcare",
+        schemaTools.isSimilar('building=hospital',.8),
+        schemaTools.isSimilar('amenity=clinic',.6),
+        ], // Unimproved
+     ['FFN','465',"shop=non-specialized",
+        schemaTools.simple('shop=grocery', 1),
+        schemaTools.simple('shop=supermarket', 1),
+     ], // non-Specialized Store
+     ['FFN','464',"shop=specialized",schemaTools.isA('shop', .1)], // non-Specialized Store
      ['ZI016_ROC','1',schemaTools.simple('surface=ground',1)], // Unimproved
      ['ZI016_ROC','2',schemaTools.simple('surface=compacted',1)], // Stabilized earth
      ['ZI016_ROC','3',schemaTools.isA('surface=unpaved', 0.8)], // Flexible Pavement

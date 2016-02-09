@@ -1812,15 +1812,36 @@ tds61 = {
 
             // Make the fuzzy lookup table
             tds61.fuzzy = schemaTools.generateToOgrTable(tds61.rules.fuzzyTable);
+            tds61.fuzzyToOsm = schemaTools.generateToOsmTable(tds61.rules.fuzzyTable);
+
+var f = function(k1, v1, k2, v2) {
+    var r = hoot.OsmSchema.getTagVertex(k2 + "=" + v2);
+    if (r == undefined || r.value == "*") {
+        throw "Please use a valid schema key/value pair.";
+    }
+    return [k1, v2, k2, v2]
+}
+
+             print (JSON.stringify(f('FFN','760','amenity','office')));
+             print ("To OSM");
+             for (var k1 in tds61.fuzzyToOsm)
+             {
+                 for (var v1 in tds61.fuzzyToOsm[k1])
+                 {
+                     print(JSON.stringify([k1, v1, tds61.fuzzyToOsm[k1][v1][0], tds61.fuzzyToOsm[k1][v1][1]]));
+                 }
+             }
+             print ("To OGR");
+
 
             // Debug
-//             for (var k1 in tds61.fuzzy)
-//             {
-//                 for (var v1 in tds61.fuzzy[k1])
-//                 {
-//                     print(JSON.stringify([k1, v1, tds61.fuzzy[k1][v1][0], tds61.fuzzy[k1][v1][1], tds61.fuzy[k1][v1][2]]));
-//                 }
-//             }
+             for (var k1 in tds61.fuzzy)
+             {
+                 for (var v1 in tds61.fuzzy[k1])
+                 {
+                     print(JSON.stringify([k1, v1, tds61.fuzzy[k1][v1][0], tds61.fuzzy[k1][v1][1], tds61.fuzzy[k1][v1][2]]));
+                 }
+             }
         } // End tds61.lookup Undefined
 
         // pre processing
