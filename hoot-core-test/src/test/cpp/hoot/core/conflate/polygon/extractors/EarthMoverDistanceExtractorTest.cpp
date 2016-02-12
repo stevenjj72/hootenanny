@@ -121,7 +121,7 @@ public:
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
     double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
 
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.261854, emd, 0.01);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.000141854, emd, 0.000001);
   }
 
   void runBuildingsSmallOverlapTest()
@@ -148,7 +148,7 @@ public:
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
     double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
 
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.503001, emd, 0.01);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.001383, emd, 0.000001);
   }
 
   void runBuildingsSeparateTest()
@@ -175,7 +175,7 @@ public:
     EarthMoverDistanceExtractor earthMoverDistanceExtractor;
     double emd = earthMoverDistanceExtractor.extract(*map, w1, w2);
 
-    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.503001, emd, 0.01);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(0.00641683, emd, 0.000001);
   }
 };
 

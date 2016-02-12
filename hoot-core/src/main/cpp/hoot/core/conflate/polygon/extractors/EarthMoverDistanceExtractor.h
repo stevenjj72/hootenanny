@@ -66,10 +66,8 @@ public:
   virtual double extract(const OsmMap& map, const shared_ptr<const Element>& target,
     const shared_ptr<const Element>& candidate) const;
 
-  Mat dist(const Mat sig1, const Mat sig2) const;
-
 protected:
-  Mat _createMat(const OsmMap& map, const ConstElementPtr& e) const;
+  Mat _createMat(const Envelope* env, shared_ptr<geos::geom::Geometry> geom) const;
 };
 
 }
