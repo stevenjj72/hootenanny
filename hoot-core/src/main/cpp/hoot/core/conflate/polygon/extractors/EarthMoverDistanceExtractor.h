@@ -43,7 +43,7 @@ using namespace cv;
 /**
  * This extractor uses the Earth Movers Distance to calculate the distance
  * between two distributions
- *
+ * Ticket link: https://github.com/ngageoint/hootenanny/issues/174
  */
 class EarthMoverDistanceExtractor : public FeatureExtractor
 {
