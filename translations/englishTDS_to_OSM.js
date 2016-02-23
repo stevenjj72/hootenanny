@@ -67,8 +67,3 @@ function translateToOgr(tags, elementType, geometryType)
         return etds_osm.toOSM(tags, elementType, geometryType)
 } // End of translateToOgr
 
-
-
-
-
-

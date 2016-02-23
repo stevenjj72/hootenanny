@@ -152,21 +152,24 @@ conf/LocalHoot.json: conf/LocalHoot.json.in conf/DatabaseConfig.sh
 # The default is to use the LTDSv40 file so we can append to existing LTDS templates
 
 # The Macro's are for Jason :-)
+#
+plugins/mgcp_schema.js: scripts/ConvertMGCPSchema.py conf/gait/MGCP4_SchemaInfo_GAIT21.txt.gz
+	mkdir -p $(@D)
+	$^ > $@ || (rm -f $@ ; exit -1)
 
 plugins/tds40_schema.js: scripts/ConvertTDSv40Schema.py conf/nfdd/LTDSv40.csv.gz
 	mkdir -p $(@D)
 	$^ > $@ || (rm -f $@ ; exit -1)
 
-plugins/mgcp_schema.js: scripts/ConvertMGCPSchema.py conf/gait/MGCP4_SchemaInfo_GAIT21.txt.gz
+plugins/tds40_full_schema.js: scripts/ConvertTDSv40Schema.py conf/nfdd/TDSv40.csv.gz
 	mkdir -p $(@D)
-	$^ > $@ || (rm -f $@ ; exit -1)
+	$< --fullschema $(word 2,$^) > $@ || (rm -f $@ ; exit -1)
 
 # Build the TDS40 "english" rules
 # This need to be full TDS so we have access to the full range of attributes
-plugins/etds_rules.js: scripts/ConvertTDSv40English.py conf/nfdd/TDSv40.csv.gz
+plugins/etds_rules.js: scripts/ConvertTDSv40Schema.py conf/nfdd/TDSv40.csv.gz
 	mkdir -p $(@D)
-	$^ > $@ || (rm -f $@ ; exit -1)
-
+	$< --toenglish $(word 2,$^) > $@ || (rm -f $@ ; exit -1)
 
 # TDSv61 is built from the TDSv60 spec with NGA's extensions
 plugins/tds61_schema.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
