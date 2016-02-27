@@ -24,6 +24,7 @@ src/main/webapp/WEB-INF/workspace/jdbc/WFS_Connection.xml: src/main/webapp/WEB-I
 
 pom.xml: pom.xml.in ../conf/DatabaseConfig.sh
 	../scripts/ReplaceEnvironmentVariables.sh pom.xml.in pom.xml
+	../scripts/UpdateJUnitForkCount.sh pom.xml
 	
 src/main/resources/log4j.xml: src/main/resources/log4j.xml.in ../conf/DatabaseConfig.sh 
 	../scripts/ReplaceEnvironmentVariables.sh src/main/resources/log4j.xml.in src/main/resources/log4j.xml
@@ -45,11 +46,14 @@ build: build-info config
 	
 	cp target/hoot-services-*.war ../bin
 
+docs: config
+	../scripts/mvn-build $(MVN_QUIET) docs
 
 clean: pom.xml src/main/resources/log4j.xml config
 	../scripts/mvn-build $(MVN_QUIET) clean
 	rm -f pom.xml
 	rm -f src/main/resources/log4j.xml
+	rm -rf target/site/apidocs
 
 # Both commands now do the same thing.
 clean-db: clean-db-force
