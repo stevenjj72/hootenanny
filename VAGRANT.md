@@ -1,6 +1,14 @@
 # Installing Vagrant
 
-To download Vagrant for supported platforms, see [here](http://www.vagrantup.com/downloads)
+To download Vagrant for supported platforms, see [here](http://www.vagrantup.com/downloads.html)
+
+# Installing VirtualBox
+
+If choosing VirtualBox as your virtualization provider, see [here](https://www.virtualbox.org/wiki/Downloads).  
+
+You may have to enable hardware virtualization extensions in your BIOS before using it.
+
+If running on Ubuntu, you may have to install a newer version of VirtualBox than what is available in the public repositories in order for it to work correctly with Vagrant.
 
 # Setting up Hootennany with Vagrant & VirtualBox
 
@@ -11,6 +19,12 @@ Once Vagrant has been installed, you can start an environment by checking out th
     git submodule init
     git submodule update
     vagrant up
+
+Windows users should add the following options to the above clone command to handle line endings properly:
+
+```
+git clone https://github.com/ngageoint/hootenanny.git hoot --config core.autocrlf=input
+```
 
 # Other Virtualization Providers
 

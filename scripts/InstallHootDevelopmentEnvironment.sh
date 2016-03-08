@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
 # This script:  
-#   - is similar to the hoot vagrant ubuntu setup without the vagrant part; meant for better performance on bare metal 
-#   - has added developer tools
+#   - is similar to the hoot vagrant ubuntu 14.04 setup without the vagrant part; meant for installing to bare metal
+# for performance reasons (faster compiles, etc.)
+#   - has added developer tools and other goodies (hadoop, webex, etc.)
 #   - lets you run the regression tests 
 #   - is not actively supported and not guaranteed to be in sync with the latest hoot setup (see the vagrant install for the latest and greatest hoot setup) 
 # Use this as one possible way to set up a Hootenanny developer environment.  USE THE SCRIPT AT YOUR OWN RISK
+
+#TODO: replace /home with your home and HOOT_HOME with your HOOT_HOME (fix)
 
 cd ~
 mkdir -p hoot
@@ -15,7 +18,7 @@ sudo bash -c "cat >> $HOME/.profile" <<EOT
 
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export HADOOP_HOME=/usr/local/hadoop
-export HOOT_HOME=/home/bwitham/hoot
+export HOOT_HOME=/home/hoot
 export PATH=/usr/local/bin:/usr/local/lib:$PATH:/usr/lib/x86_64-linux-gnu:$HADOOP_HOME/bin:$HOOT_HOME/bin
 EOT
 fi
@@ -37,10 +40,12 @@ if [ ! -f /etc/apt/sources.list.d/pgdg.list ]; then
 fi
 
 # Install dependencies
-# use tomcat 7 here instead of tomcat 6 (what's tested with hoot), since eclipse installed from repos (installed in this script later) needs tomcat 7 (eclipse tomcat 6 install is a little cumbersome)
+# use tomcat 7 here instead of tomcat 6 (what's tested with hoot...I don't really like this...but), since eclipse 
+# installed from repos (installed in this script later) needs tomcat 7
 echo "Installing dependencies"
-sudo apt-get install -y texinfo g++ libicu-dev libqt4-dev git-core libboost-dev libcppunit-dev libcv-dev libopencv-dev libgdal-dev liblog4cxx10-dev libnewmat10-dev libproj-dev python-dev libjson-spirit-dev automake1.11 protobuf-compiler libprotobuf-dev gdb libqt4-sql-psql libgeos++-dev swig lcov tomcat7 openjdk-7-jdk openjdk-7-dbg maven libstxxl-dev nodejs-dev nodejs-legacy doxygen xsltproc asciidoc pgadmin3 curl npm libxerces-c28 libglpk-dev libboost-all-dev source-highlight texlive-lang-arabic texlive-lang-hebrew texlive-lang-cyrillic graphviz w3m python-setuptools python python-pip git ccache libogdi3.2-dev gnuplot python-matplotlib libqt4-sql-sqlite wamerican-insane
-
+sudo apt-get install -y texinfo g++ libicu-dev libqt4-dev git-core libboost-dev libcppunit-dev libcv-dev libopencv-dev libgdal-dev liblog4cxx10-dev libnewmat10-dev libproj-dev python-dev libjson-spirit-dev automake1.11 protobuf-compiler libprotobuf-dev gdb libqt4-sql-psql libgeos++-dev swig lcov tomcat7 openjdk-7-jdk openjdk-7-dbg maven libstxxl-dev nodejs-dev nodejs-legacy doxygen xsltproc asciidoc pgadmin3 curl npm libxerces-c28 libglpk-dev libboost-all-dev source-highlight texlive-lang-arabic texlive-lang-hebrew texlive-lang-cyrillic graphviz w3m python-setuptools python python-pip git ccache libogdi3.2-dev gnuplot python-matplotlib libqt4-sql-sqlite wamerican-insane ruby gcc make ruby-dev zlib1g-dev patch xvfb x11vnc unzip nodejs meld qtcreator distcc htop synergy gparted eclipse eclipse-jdt libpangoxft-1.0-0:i386 libxv1:i386 libpangox-1.0-0:i386 libgtk2.0-0 libxtst6 libxi-dev libasound2 libgtk2.0-0:i386 libxtst6:i386 libasound2:i386 libgcj14-awt:i386 eclipse-pde eclipse-platform* libtomcat7-java osmosis libpangoxft-1.0-0:i386 libxv1:i386 libpangox-1.0-0:i386 libgtk2.0-0 libxtst6 libxi-dev libasound2 libgtk2.0-0:i386 libxtst6:i386 libasound2:i386 libgcj14-awt:i386 icedtea-pluginsudo apt-get install -y meld qtcreator distcc htop synergy gparted eclipse eclipse-jdt libpangoxft-1.0-0:i386 libxv1:i386 libpangox-1.0-0:i386 libgtk2.0-0 libxtst6 libxi-dev libasound2 libgtk2.0-0:i386 libxtst6:i386 libasound2:i386 libgcj14-awt:i386 eclipse-pde eclipse-platform* libtomcat7-java osmosis libpangoxft-1.0-0:i386 libxv1:i386 libpangox-1.0-0:i386 libgtk2.0-0 libxtst6 libxi-dev libasound2 libgtk2.0-0:i386 libxtst6:i386 libasound2:i386 libgcj14-awt:i386 icedtea-plugin
+sudo apt-get remove qt5-default 
+sudo apt-get autoremove
 if ! dpkg -l | grep --quiet wamerican-insane; then
     # See /usr/share/doc/dictionaries-common/README.problems for details
     # http://www.linuxquestions.org/questions/debian-26/dpkg-error-processing-dictionaries-common-4175451951/
@@ -49,29 +54,30 @@ if ! dpkg -l | grep --quiet wamerican-insane; then
     sudo dpkg-reconfigure dictionaries-common
 fi
 
-# don't think ui unit tests are running with hoot outside of the nightly tests, so skipping this for now
-# Install deps for Cucumber tests
-#sudo apt-get install ruby ruby-dev xvfb
-#sudo gem install mime-types -v 2.6.2
-#sudo gem install capybara -v 2.5.0
-#sudo gem install cucumber capybara-webkit selenium-webdriver rspec capybara-screenshot
-
-#sudo apt-get autoremove -y
+# If you're fed up with unity, then uncomment this for xfce; use 'xfce4-display-settings -m' for display config
+# sudo apt-get install xfce4
 
 # Install Chrome browser for Cucumber
-#if [ ! -f google-chrome-stable_current_amd64.deb ]; then
-#    echo "Installing Chrome"
-#    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-#    sudo dpkg -i google-chrome-stable_current_amd64.deb
-#    sudo apt-get -f install -y
-#fi
+if [ ! -f google-chrome-stable_current_amd64.deb ]; then
+    echo "Installing Chrome"
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i google-chrome-stable_current_amd64.deb
+    sudo apt-get -f install -y
+fi
+
+gem install --user-install selenium-cucumber capybara capybara-webkit rspec
+if ! grep -i --quiet '.gem/ruby/' $HOME/.bashrc; then
+  echo "export PATH=\$PATH:\$HOME/.gem/ruby/1.9.1/bin" >> $HOME/.bashrc
+  echo "export PATH=\$PATH:\$HOME/bin" >> $HOME/.bashrc
+fi
+source $HOME/.bashrc
 
 # Install Chromedriver
 if [ ! -f bin/chromedriver ]; then
     echo "Installing Chromedriver"
-    mkdir -p /home/bwitham/bin
+    mkdir -p $HOME/bin
     wget http://chromedriver.storage.googleapis.com/2.20/chromedriver_linux64.zip
-    unzip -d /home/bwitham/bin chromedriver_linux64.zip
+    unzip -d $HOME/bin chromedriver_linux64.zip
 fi
 
 # Hoot Baseline is PostgreSQL 9.1 and PostGIS 1.5, so we need a deb file and
@@ -132,7 +138,7 @@ if ! grep --quiet NODE_PATH ~/.profile; then
 fi
 
 # Module needed for OSM API db test
-if [ ! -d /home/bwitham/.cpan ]; then
+if [ ! -d $HOME/.cpan ]; then
     (echo y;echo o conf prerequisites_policy follow;echo o conf commit)|sudo cpan
     sudo perl -MCPAN -e 'install XML::Simple'
 fi
@@ -187,8 +193,23 @@ if ! sysctl -e kernel.shmall | grep --quiet 2097152; then
     sudo sh -c "echo 'kernel.shmall=2097152' >> /etc/sysctl.conf"
     POSTGRES_CONFIG_CHANGED=true
 fi
-if [ "$POSTGRES_CONFIG_CHANGE" == "true" ]; then
+if [ "$POSTGRES_CONFIG_CHANGED" == "true" ]; then
   sudo service postgresql restart
+fi
+
+# In a bit of a backward fashion, install vagrant/vbox here so that you can quickly spin up a different 
+# configuration of hoot if needed, or troubleshoot the actual hoot vagrant install.
+if [ ! -f vagrant_1.8.1_x86_64.deb ]; then
+  wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
+  sudo dpkg -i vagrant_1.8.1_x86_64.deb
+  sudo apt-get -f install -y
+fi
+if [ ! -f virtualbox-5.0_5.0.14-105127~Ubuntu~trusty_amd64.deb ]; then
+  wget http://download.virtualbox.org/virtualbox/5.0.14/virtualbox-5.0_5.0.14-105127~Ubuntu~trusty_amd64.deb
+  sudo dpkg -i virtualbox-5.0_5.0.14-105127~Ubuntu~trusty_amd64.deb
+  # Need to understand why this needs to be done...probably not great
+  sudo rm -f /etc/apt/sources.list.d/virtualbox.list
+  sudo apt-get -f install -y
 fi
 
 # Configure Tomcat
@@ -199,7 +220,7 @@ sudo bash -c "cat >> /etc/default/tomcat7" <<EOT
 #--------------
 # Hoot Settings
 #--------------
-HOOT_HOME=/home/bwitham/hoot
+HOOT_HOME=/home/hoot
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:$HOOT_HOME/lib:$HOOT_HOME/pretty-pipes/lib
 GDAL_DATA=/usr/local/share/gdal
 GDAL_LIB_DIR=/usr/local/lib
@@ -207,15 +228,6 @@ HOOT_WORKING_NAME=hoot
 PATH=$HOOT_HOME/bin:$PATH
 EOT
 fi
-
-# Change Tomcat umask to group write
-#if ! grep -i --quiet 'umask 002' /etc/default/tomcat6; then
-#echo "Changing Tomcat umask to group write"
-#sudo bash -c "cat >> /etc/default/tomcat6" <<EOT
-## Set tomcat6 umask to group write because all files in shared folder are owned by vagrant
-#umask 002
-#EOT
-#fi
 
 # Change Tomcat java opts
 if grep -i --quiet '^JAVA_OPTS=.*\-Xmx128m' /etc/default/tomcat7; then
@@ -393,19 +405,11 @@ EOT
   hadoop jar ./hadoop-0.20.2-examples.jar pi 2 100
 fi
 
-# developer tools extra setup
+# Eclipse configuration - You will still need to configure eclipse after this (web server integration, extensions, etc.)
 
-# this service will conflict with running tomcat in eclipse
-sudo service tomcat7 stop
-# eclipse install here overwrites the existing standard tested tomcat 6 install; this environment assumes you'll be doing your tomcat debugging from eclipse...so not a big deal
-cd $HOME
-sudo apt-get install -y meld qtcreator distcc htop synergy gparted eclipse eclipse-jdt eclipse-pde eclipse-platform* libtomcat7-java osmosis
-sudo apt-get remove qt5-default 
-sudo apt-get autoremove
-
-if ! grep -i --quiet '-Xmx' /etc/default/eclipse.ini; then
+if ! grep -i --quiet '-Xmx' /etc/eclipse.ini; then
   echo "Configuring Eclipse..."
-sudo bash -c "cat >> /etc/default/eclipse.ini" <<EOT
+sudo bash -c "cat >> /etc/eclipse.ini" <<EOT
 
 -Dosgi.requiredJavaVersion=1.7
 -XX:MaxPermSize=2048m
@@ -413,9 +417,9 @@ sudo bash -c "cat >> /etc/default/eclipse.ini" <<EOT
 -Xmx2048m
 EOT
 fi
-if ! grep -i --quiet '--launcher.XXMaxPerSize' /etc/default/eclipse.ini; then
+if ! grep -i --quiet '--launcher.XXMaxPerSize' /etc/eclipse.ini; then
   echo "Configuring Eclipse..."
-sudo bash -c "cat >> /etc/default/eclipse.ini" <<EOT
+sudo bash -c "cat >> /etc/eclipse.ini" <<EOT
 
 --launcher.XXMaxPermSize
 2048m
@@ -465,4 +469,5 @@ echo "Building Hoot"
 make clean -sj$(nproc)
 make -sj$(nproc)
 make docs -sj$(nproc)
+make eclipse
 
