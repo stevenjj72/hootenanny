@@ -64,6 +64,7 @@ RubberSheet::RubberSheet()
   _emptyMatch.p = 0.0;
   _ref = ConfigOptions().getRubberSheetRef();
   _debug = ConfigOptions().getRubberSheetDebug();
+  _debugRelations = ConfigOptions().getRubberSheetDebugRelations();
   _minimumTies = ConfigOptions().getRubberSheetMinimumTies();
 }
 
@@ -300,11 +301,27 @@ void RubberSheet::_findTies()
     if (n->getStatus() == Status::Unknown1)
     {
       const list<Match>& l = it->second;
+
       for (list<Match>::const_iterator lt = l.begin(); lt != l.end(); ++lt)
       {
-        // set the new score for the pair to the product of the pair
         Match m1 = *lt;
         const Match& m2 = _findMatch(m1.nid2, m1.nid1);
+
+        if (_debugRelations)
+        {
+          RelationPtr r(new Relation(Status::Conflated, _map->createNextRelationId(),
+            -1, "tiecandidate"));
+          r->addElement("tiepoint1", ElementId::node(m1.nid1));
+          r->addElement("tiepoint2", ElementId::node(m1.nid2));
+          r->setTag("score", QString::number(m1.p * m2.p));
+          r->setTag("score1", QString::number(m1.p));
+          r->setTag("score2", QString::number(m2.p));
+          bool highConfidence = m1.p * m2.p > 0.5;
+          r->setTag("highConfidence", highConfidence ? "true" : "false");
+          _map->addElement(r);
+        }
+
+        // set the new score for the pair to the product of the pair
         m1.p = m1.p * m2.p;
         _finalPairs.push_back(m1);
       }

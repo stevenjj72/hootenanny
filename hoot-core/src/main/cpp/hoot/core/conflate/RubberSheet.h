@@ -127,6 +127,7 @@ private:
   typedef map<long, list<Match> > MatchList;
 
   bool _debug;
+  bool _debugRelations;
 
   Match _emptyMatch;
 

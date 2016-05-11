@@ -1566,6 +1566,14 @@ If set to true then debug symbols will be added to nodes and additional tags wil
 matched nodes. This is a destructive operation that is only useful when debugging and should not
 be used during serious conflation.
 
+=== rubber.sheet.debug.relations
+
+* Data Type: bool
+* Default Value: `false`
+
+If set to true then debug relations will be added to nodes. This is a destructive operation that is
+only useful when debugging and should not be used during serious conflation.
+
 === rubber.sheet.minimum.ties
 
 * Data Type: int
