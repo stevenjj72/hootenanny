@@ -15,7 +15,7 @@ sudo yum -y update
 #sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
 sudo yum -y install hootenanny-core-deps
 sudo yum -y install hootenanny-core-devel-deps
-sudo yum -y hootenanny-services-devel-deps
+sudo yum -y install hootenanny-services-devel-deps
 
 # Workaround for our GEOS package being skipped due to the Redhat one being "newer"
 #cd /home/vagrant/workspace/el6
