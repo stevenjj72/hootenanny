@@ -50,31 +50,31 @@ sudo service postgresql-9.2 start
 
 echo "### Configuring environment..."
 
-if ! grep --quiet "export HOOT_HOME" ~/.profile; then
+if ! grep --quiet "export HOOT_HOME" ~/.bash_profile; then
     echo "Adding hoot home to profile..."
-    echo "export HOOT_HOME=\$HOME/hoot" >> ~/.profile
-    echo "export PATH=\$PATH:\$HOOT_HOME/bin" >> ~/.profile
-    source ~/.profile
+    echo "export HOOT_HOME=\$HOME/hoot" >> ~/.bash_profile
+    echo "export PATH=\$PATH:\$HOOT_HOME/bin" >> ~/.bash_profile
+    source ~/.bash_profile
 fi
 
-if ! grep --quiet "export JAVA_HOME" ~/.profile; then
+if ! grep --quiet "export JAVA_HOME" ~/.bash_profile; then
     echo "Adding Java home to profile..."
-    echo "export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk.x86_64" >> ~/.profile
-    source ~/.profile
+    echo "export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk.x86_64" >> ~/.bash_profile
+    source ~/.bash_profile
 fi
 
-if ! grep --quiet "export HADOOP_HOME" ~/.profile; then
+if ! grep --quiet "export HADOOP_HOME" ~/.bash_profile; then
     echo "Adding Hadoop home to profile..."
-    #echo "export HADOOP_HOME=/usr/local/hadoop" >> ~/.profile
-    echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.profile
-    echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.profile
-    source ~/.profile
+    #echo "export HADOOP_HOME=/usr/local/hadoop" >> ~/.bash_profile
+    echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.bash_profile
+    echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.bash_profile
+    source ~/.bash_profile
 fi
 
-if ! grep --quiet "PATH=" ~/.profile; then
+if ! grep --quiet "PATH=" ~/.bash_profile; then
     echo "Adding path vars to profile..."
-    echo "export PATH=\$PATH:\$HOME/bin" >> ~/.profile
-    source ~/.profile
+    echo "export PATH=\$PATH:\$HOME/bin" >> ~/.bash_profile
+    source ~/.bash_profile
 fi
 
 # Make sure that we are in ~ before trying to wget & install stuff
@@ -103,7 +103,7 @@ if ! sudo -u postgres psql -lqt | grep -i --quiet hoot; then
     sudo -u postgres psql -d wfsstoredb -c 'create extension postgis;' > /dev/null
 fi
 
-if ! grep -i --quiet HOOT /var/lib/pgsql/9.2/data/postgresql.conf; then
+if ! sudo -u postgres grep -i --quiet HOOT /var/lib/pgsql/9.2/data/postgresql.conf; then
 echo "### Tuning PostgreSQL..."
 sudo -u postgres sed -i.bak s/^max_connections/\#max_connections/ /var/lib/pgsql/9.2/data/postgresql.conf
 sudo -u postgres sed -i.bak s/^shared_buffers/\#shared_buffers/ /var/lib/pgsql/9.2/data/postgresql.conf
@@ -145,20 +145,20 @@ if [ ! "$(ls -A hoot-ui)" ]; then
 fi
 
 # Configure Tomcat
-if ! grep --quiet TOMCAT6_HOME ~/.profile; then
+if ! grep --quiet TOMCAT6_HOME ~/.bash_profile; then
     echo "### Adding Tomcat to profile..."
-    echo "export TOMCAT6_HOME=/usr/share/tomcat6" >> ~/.profile
-    source ~/.profile
+    echo "export TOMCAT6_HOME=/usr/share/tomcat6" >> ~/.bash_profile
+    source ~/.bash_profile
 fi
 
 # Add tomcat6 and vagrant to each others groups so we can get the group write working with nfs
 if ! groups vagrant | grep --quiet '\btomcat6\b'; then
     echo "Adding vagrant user to tomcat6 user group..."
-    sudo usermod -a -G tomcat6 vagrant
+    sudo usermod -a -G tomcat vagrant
 fi
-if ! groups tomcat6 | grep --quiet "\bvagrant\b"; then
+if ! groups tomcat | grep --quiet "\bvagrant\b"; then
     echo "Adding tomcat6 user to vagrant user group..."
-    sudo usermod -a -G vagrant tomcat6
+    sudo usermod -a -G vagrant tomcat
 fi
 
 if ! grep -i --quiet HOOT /etc/default/tomcat6; then
@@ -190,8 +190,8 @@ fi
 # Trying this to try to get rid of errors
 sudo mkdir -p /usr/share/tomcat6/server/classes
 sudo mkdir -p /usr/share/tomcat6/shared/classes
-sudo chown -R tomcat6:tomcat6 /usr/share/tomcat6/server
-sudo chown -R tomcat6:tomcat6 /usr/share/tomcat6/shared
+sudo chown -R tomcat:tomcat /usr/share/tomcat6/server
+sudo chown -R tomcat:tomcat /usr/share/tomcat6/shared
 
 # Can change it to 000 to get rid of errors
 if ! grep -i --quiet 'umask 002' /etc/default/tomcat6; then
