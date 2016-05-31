@@ -3,7 +3,6 @@
 HOOT_HOME=$HOME/hoot
 echo HOOT_HOME: $HOOT_HOME
 cd ~
-source ~/.profile
 
 # Now setup Centos
 # Setup the Hoot repo so we get all of the things needed to build Hoot
