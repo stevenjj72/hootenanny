@@ -11,7 +11,7 @@ set -x
 
 cd $HOOT_HOME
 
-scripts/jenkins/VeryClean.sh
+#scripts/jenkins/VeryClean.sh
 
 # Maintain vagrant state in the parent directory so very clean will still work.
 mkdir -p ../vagrant-hootenanny
@@ -40,12 +40,13 @@ sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
 # Make sure we are not running
 vagrant halt
 
-# This causes grief....
-touch Vagrant.marker
-
 REBUILD_VAGRANT=false
 
-[ -f Vagrant.marker ] && [ Vagrant.marker -ot VagrantProvision.sh ] && REBUILD_VAGRANT=true
+# Grab the Centos provision script and stomp on the Ubuntu one.
+cp scripts/jenkins/VagrantProvisionCentos67.sh VagrantProvision.sh
+
+# Taking this out since we are copying the VagrantProvision.sh
+#[ -f Vagrant.marker ] && [ Vagrant.marker -ot VagrantProvision.sh ] && REBUILD_VAGRANT=true
 
 # On the first build of the day, rebuild everything
 if [ "`date +%F`" != "`test -e ../BuildDate.txt && cat ../BuildDate.txt`" ]; then
@@ -56,7 +57,8 @@ if [ $REBUILD_VAGRANT ]; then
     vagrant destroy -f
     time -p vagrant up --provider vsphere
 else
-    time -p vagrant up --provision-with nfs,build,EGD,tomcat,mapnik,hadoop --provider vsphere
+    # time -p vagrant up --provision-with nfs,build,EGD,tomcat,mapnik,hadoop --provider vsphere
+    time -p vagrant up --provision-with nfs,build,EGD,tomcat --provider vsphere
 fi
 
 date +%F > ../BuildDate.txt

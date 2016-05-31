@@ -4,7 +4,13 @@
 set -x
 set -e
 
-$HOOT_HOME/scripts/jenkins/TestAll.sh
+make -sj`nproc`
+
+hoot --version --debug
+
+export HOOT_TEST_DIFF=--diff
+
+make -sj`nproc` test-all
 
 cd $HOOT_HOME/docs
 make -sj`nproc`
