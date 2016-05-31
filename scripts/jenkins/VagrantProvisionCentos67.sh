@@ -16,6 +16,15 @@ sudo yum -y update
 sudo yum -y install hootenanny-core-deps
 sudo yum -y install hootenanny-core-devel-deps
 sudo yum -y install hootenanny-services-devel-deps
+sudo yum -y install tomcat6
+
+# Make sure these start
+sudo chkconfig tomcat6 on
+
+sudo chkconfig postgresql-9.2 on
+sudo service postgresql-9.2 start
+
+
 
 # Workaround for our GEOS package being skipped due to the Redhat one being "newer"
 #cd /home/vagrant/workspace/el6
@@ -23,40 +32,21 @@ sudo yum -y install hootenanny-services-devel-deps
 #     sudo rpm -U --oldpackage geos-3.4.2-1.el6.x86_64.rpm geos-devel-3.4.2-1.el6.x86_64.rpm
 # fi
 
-# Now remove the Hoot RPM
-#sudo rpm -e --nodeps hootenanny-core.x86_64
+# Add some stuff to get development going
 
-# Add in some stuff to get development going
-
-
-exit
-
-
-if [ ! -f /etc/apt/sources.list.d/pgdg.list ]; then
-    echo "### Adding PostgreSQL repository to apt..."
-    sudo bash -c "echo 'deb http://apt.postgresql.org/pub/repos/apt/ '$(lsb_release -cs)'-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    sudo apt-get -qq -y update >> Ubuntu_upgrade.txt 2>&1
-    sudo apt-get -q -y upgrade >> Ubuntu_upgrade.txt 2>&1
-fi
-
-echo "### Installing dependencies from repos..."
-sudo apt-get -q -y install texinfo g++ libicu-dev libqt4-dev git-core libboost-dev libcppunit-dev libcv-dev libopencv-dev libgdal-dev liblog4cxx10-dev libnewmat10-dev libproj-dev python-dev libjson-spirit-dev automake1.11 protobuf-compiler libprotobuf-dev gdb libqt4-sql-psql libgeos++-dev swig lcov tomcat6 openjdk-7-jdk openjdk-7-dbg maven libstxxl-dev nodejs-dev nodejs-legacy doxygen xsltproc asciidoc pgadmin3 curl npm libxerces-c28 libglpk-dev libboost-all-dev source-highlight texlive-lang-arabic texlive-lang-hebrew texlive-lang-cyrillic graphviz w3m python-setuptools python python-pip git ccache libogdi3.2-dev gnuplot python-matplotlib libqt4-sql-sqlite ruby ruby-dev xvfb zlib1g-dev patch x11vnc openssh-server htop unzip postgresql-9.5  postgresql-client-9.5 postgresql-9.5-postgis-scripts postgresql-9.5-postgis-2.2 >> Ubuntu_upgrade.txt 2>&1
-
-if ! dpkg -l | grep --quiet dictionaries-common; then
-    # See /usr/share/doc/dictionaries-common/README.problems for details
-    # http://www.linuxquestions.org/questions/debian-26/dpkg-error-processing-dictionaries-common-4175451951/
-    sudo apt-get -q -y install dictionaries-common >> Ubuntu_upgrade.txt 2>&1
-
-    sudo /usr/share/debconf/fix_db.pl
-
-    sudo apt-get -q -y install wamerican-insane >> Ubuntu_upgrade.txt 2>&1
-
-    sudo /usr/share/debconf/fix_db.pl
-    sudo dpkg-reconfigure -f noninteractive dictionaries-common
-fi
-
-sudo apt-get -y autoremove
+# if ! dpkg -l | grep --quiet dictionaries-common; then
+#     # See /usr/share/doc/dictionaries-common/README.problems for details
+#     # http://www.linuxquestions.org/questions/debian-26/dpkg-error-processing-dictionaries-common-4175451951/
+#     sudo apt-get -q -y install dictionaries-common >> Ubuntu_upgrade.txt 2>&1
+#
+#     sudo /usr/share/debconf/fix_db.pl
+#
+#     sudo apt-get -q -y install wamerican-insane >> Ubuntu_upgrade.txt 2>&1
+#
+#     sudo /usr/share/debconf/fix_db.pl
+#     sudo dpkg-reconfigure -f noninteractive dictionaries-common
+# fi
+#
 
 echo "### Configuring environment..."
 
@@ -69,7 +59,7 @@ fi
 
 if ! grep --quiet "export JAVA_HOME" ~/.profile; then
     echo "Adding Java home to profile..."
-    echo "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> ~/.profile
+    echo "export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk.x86_64" >> ~/.profile
     source ~/.profile
 fi
 
@@ -83,67 +73,12 @@ fi
 
 if ! grep --quiet "PATH=" ~/.profile; then
     echo "Adding path vars to profile..."
-    echo "export PATH=\$PATH:\$HOME/.gem/ruby/1.9.1/bin:\$HOME/bin:$HOOT_HOME/bin" >> ~/.profile
+    echo "export PATH=\$PATH:\$HOME/bin" >> ~/.profile
     source ~/.profile
-fi
-
-# gem installs are *very* slow, hence all the checks in place here to facilitate debugging
-echo "### Installing cucumber gems..."
-gem list --local | grep -q mime-types
-if [ $? -eq 1 ]; then
-   sudo gem install mime-types -v 2.6.2
-fi
-gem list --local | grep -q capybara
-if [ $? -eq 1 ]; then
-   sudo gem install capybara -v 2.5.0
-fi
-gem list --local | grep -q cucumber
-if [ $? -eq 1 ]; then
-   sudo gem install cucumber
-fi
-gem list --local | grep -q capybara-webkit
-if [ $? -eq 1 ]; then
-   sudo gem install capybara-webkit
-fi
-gem list --local | grep -q selenium-webdriver
-if [ $? -eq 1 ]; then
-   sudo gem install selenium-webdriver
-fi
-gem list --local | grep -q rspec
-if [ $? -eq 1 ]; then
-   sudo gem install rspec
-fi
-gem list --local | grep -q capybara-screenshot
-if [ $? -eq 1 ]; then
-   sudo gem install capybara-screenshot
-fi
-gem list --local | grep -q selenium-cucumber
-if [ $? -eq 1 ]; then
-   sudo gem install selenium-cucumber
 fi
 
 # Make sure that we are in ~ before trying to wget & install stuff
 cd ~
-
-if  ! dpkg -l | grep google-chrome-stable; then
-    echo "### Installing Chrome..."
-    if [ ! -f google-chrome-stable_current_amd64.deb ]; then
-      wget --quiet https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    fi
-    sudo dpkg -i google-chrome-stable_current_amd64.deb
-    sudo apt-get -f -y -q install
-fi
-
-if [ ! -f bin/chromedriver ]; then
-    echo "### Installing Chromedriver..."
-    mkdir -p $HOME/bin
-    if [ ! -f chromedriver_linux64.zip ]; then
-      wget --quiet http://chromedriver.storage.googleapis.com/2.14/chromedriver_linux64.zip
-    fi
-    unzip -d $HOME/bin chromedriver_linux64.zip
-fi
-
-sudo apt-get autoremove -y
 
 if [ ! -f bin/osmosis ]; then
     echo "### Installing Osmosis"
@@ -156,51 +91,7 @@ if [ ! -f bin/osmosis ]; then
     ln -s $HOME/bin/osmosis_src/bin/osmosis $HOME/bin/osmosis
 fi
 
-if ! ogrinfo --formats | grep --quiet FileGDB; then
-    if [ ! -f gdal-1.10.1.tar.gz ]; then
-        echo "### Downloading GDAL source..."
-        wget --quiet http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
-    fi
-    if [ ! -d gdal-1.10.1 ]; then
-        echo "### Extracting GDAL source..."
-        tar zxfp gdal-1.10.1.tar.gz
-    fi
-    if [ ! -f FileGDB_API_1_3-64.tar.gz ]; then
-        echo "### Downloading FileGDB API source..."
-        wget --quiet http://downloads2.esri.com/Software/FileGDB_API_1_3-64.tar.gz
-    fi
-    if [ ! -d /usr/local/FileGDB_API ]; then
-        echo "### Extracting FileGDB API source & installing lib..."
-        sudo tar xfp FileGDB_API_1_3-64.tar.gz --directory /usr/local
-        sudo sh -c "echo '/usr/local/FileGDB_API/lib' > /etc/ld.so.conf.d/filegdb.conf"
-    fi
-
-    echo "### Building GDAL w/ FileGDB..."
-    export PATH=/usr/local/lib:/usr/local/bin:$PATH
-    cd gdal-1.10.1
-    echo "GDAL: configure"
-    sudo ./configure --quiet --with-fgdb=/usr/local/FileGDB_API --with-pg=/usr/bin/pg_config --with-python
-    echo "GDAL: make"
-    sudo make -sj$(nproc) > GDAL_Build.txt 2>&1
-    echo "GDAL: install"
-    sudo make -s install >> GDAL_Build.txt 2>&1
-    cd swig/python
-    echo "GDAL: python build"
-    python setup.py build >> GDAL_Build.txt 2>&1
-    echo "GDAL: python install"
-    sudo python setup.py install >> GDAL_Build.txt 2>&1
-    sudo ldconfig
-    cd ~
-fi
-
-if ! mocha --version &>/dev/null; then
-    echo "### Installing mocha for plugins test..."
-    sudo npm install --silent -g mocha
-    # Clean up after the npm install
-    sudo rm -rf $HOME/tmp
-fi
-
-# NOTE: These have been changed to pg9.5
+# NOTE: These have been changed to pg9.2
 if ! sudo -u postgres psql -lqt | grep -i --quiet hoot; then
     echo "### Creating Services Database..."
     sudo -u postgres createuser --superuser hoot
@@ -212,11 +103,11 @@ if ! sudo -u postgres psql -lqt | grep -i --quiet hoot; then
     sudo -u postgres psql -d wfsstoredb -c 'create extension postgis;' > /dev/null
 fi
 
-if ! grep -i --quiet HOOT /etc/postgresql/9.5/main/postgresql.conf; then
+if ! grep -i --quiet HOOT /var/lib/pgsql/9.2/data/postgresql.conf; then
 echo "### Tuning PostgreSQL..."
-sudo -u postgres sed -i.bak s/^max_connections/\#max_connections/ /etc/postgresql/9.5/main/postgresql.conf
-sudo -u postgres sed -i.bak s/^shared_buffers/\#shared_buffers/ /etc/postgresql/9.5/main/postgresql.conf
-sudo -u postgres bash -c "cat >> /etc/postgresql/9.5/main/postgresql.conf" <<EOT
+sudo -u postgres sed -i.bak s/^max_connections/\#max_connections/ /var/lib/pgsql/9.2/data/postgresql.conf
+sudo -u postgres sed -i.bak s/^shared_buffers/\#shared_buffers/ /var/lib/pgsql/9.2/data/postgresql.conf
+sudo -u postgres bash -c "cat >> /var/lib/pgsql/9.2/data/postgresql.conf" <<EOT
 
 #--------------
 # Hoot Settings
@@ -242,7 +133,7 @@ if ! sysctl -e kernel.shmall | grep --quiet 2097152; then
     sudo sh -c "echo 'kernel.shmall=2097152' >> /etc/sysctl.conf"
 fi
 
-sudo service postgresql restart
+sudo service postgresql-9.2 restart
 
 cd $HOOT_HOME
 source ./SetupEnv.sh
@@ -256,7 +147,7 @@ fi
 # Configure Tomcat
 if ! grep --quiet TOMCAT6_HOME ~/.profile; then
     echo "### Adding Tomcat to profile..."
-    echo "export TOMCAT6_HOME=/var/lib/tomcat6" >> ~/.profile
+    echo "export TOMCAT6_HOME=/usr/share/tomcat6" >> ~/.profile
     source ~/.profile
 fi
 
@@ -319,13 +210,6 @@ fi
 if grep -i --quiet 'gdal/1.10' /etc/default/tomcat6; then
     echo "### Fixing Tomcat GDAL_DATA env var path..."
     sudo sed -i.bak s@^GDAL_DATA=.*@GDAL_DATA=\/usr\/local\/share\/gdal@ /etc/default/tomcat6
-fi
-
-# Remove gdal libs installed by libgdal-dev that interfere with
-# renderdb-export-server using gdal libs compiled from source (fgdb support)
-if [ -f "/usr/lib/libgdal.*" ]; then
-    echo "Removing GDAL libs installed by libgdal-dev..."
-    sudo rm /usr/lib/libgdal.*
 fi
 
 if ! grep -i --quiet 'ingest/processed' /etc/tomcat6/server.xml; then
@@ -490,7 +374,7 @@ sudo bash -c "cat >> /home/vagrant/hadoop/conf/hdfs-site.xml" <<EOT
 </configuration>
 EOT
 
-  sudo sed -i.bak 's/# export JAVA_HOME=\/usr\/lib\/j2sdk1.5-sun/export JAVA_HOME=\/usr\/lib\/jvm\/java-1.7.0-openjdk-amd64/g' $HADOOP_HOME/conf/hadoop-env.sh
+  sudo sed -i.bak 's/# export JAVA_HOME=\/usr\/lib\/j2sdk1.5-sun/export JAVA_HOME=\/usr\/lib\/jvm\/java-1.7.0-openjdk.x86_64/g' $HADOOP_HOME/conf/hadoop-env.sh
   sudo sed -i.bak 's/#include <pthread.h>/#include <pthread.h>\n#include <unistd.h>/g' $HADOOP_HOME/src/c++/pipes/impl/HadoopPipes.cc
 
   sudo mkdir -p $HOME/hadoop/dfs/name/current
@@ -504,7 +388,9 @@ EOT
   sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
   cd ~
 
-  echo '1' | sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.7.0-openjdk-amd64/bin/java 1
+
+
+  echo '1' | sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.7.0-openjdk.x86_64/bin/java 1
   echo '1' | sudo update-alternatives --config java
   echo '1' | sudo update-alternatives --install "/usr/bin/javac" "javac" "$JAVA_HOME/bin/javac" 1
   echo '1' | sudo update-alternatives --config javac
@@ -518,12 +404,7 @@ fi
 
 cd ~
 
-echo "### Installing node-mapnik-server..."
-sudo cp $HOOT_HOME/node-mapnik-server/init.d/node-mapnik-server /etc/init.d
-sudo chmod a+x /etc/init.d/node-mapnik-server
-# Make sure all npm modules are installed
-cd $HOOT_HOME/node-mapnik-server
-npm install --silent
+
 # Clean up after the npm install
 rm -rf $HOME/tmp
 
@@ -538,5 +419,5 @@ mkdir -p $HOOT_HOME/upload
 # Update marker file date now that dependency and config stuff has run
 # The make command will exit and provide a warning to run 'vagrant provision'
 # if the marker file is older than this file (VagrantProvision.sh)
-touch Vagrant.marker
+#touch Vagrant.marker
 # Now we are ready to build Hoot.  The VagrantBuild.sh script will build Hoot.
