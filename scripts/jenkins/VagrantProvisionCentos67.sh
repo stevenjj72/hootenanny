@@ -11,11 +11,11 @@ echo "name=hoot" | sudo tee -a /etc/yum.repos.d/hoot.repo
 echo "baseurl=https://s3.amazonaws.com/hoot-rpms/snapshot/el6/" | sudo tee -a /etc/yum.repos.d/hoot.repo
 echo "gpgcheck=0" | sudo tee -a /etc/yum.repos.d/hoot.repo
 
-sudo yum -y update >> Centos_Update.txt 2>&1
+sudo yum -y update
 #sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
-sudo yum -y install hootenanny-core-deps >> Centos_Hoot.txt 2>&1
-sudo yum -y install hootenanny-core-devel-deps >> Centos_Hoot.txt 2>&1
-sudo yum -y hootenanny-services-devel-deps >> Centos_Hoot.txt 2>&1
+sudo yum -y install hootenanny-core-deps
+sudo yum -y install hootenanny-core-devel-deps
+sudo yum -y hootenanny-services-devel-deps
 
 # Workaround for our GEOS package being skipped due to the Redhat one being "newer"
 #cd /home/vagrant/workspace/el6
