@@ -2,7 +2,6 @@
 
 set -e
 
-source ~/.profile
 #cd $HOOT_HOME
 cd hoot
 source ./SetupEnv.sh

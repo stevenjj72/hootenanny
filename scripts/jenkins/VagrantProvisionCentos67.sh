@@ -18,6 +18,7 @@ sudo ln -s $HOOT_HOME /var/lib/hootenanny
 
 
 sudo yum -y update
+
 #sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
 sudo yum -y install hootenanny-core-deps
 sudo yum -y install hootenanny-core-devel-deps

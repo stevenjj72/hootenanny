@@ -34,8 +34,8 @@ cp -R ../../software.centos67 software
 # See: https://github.com/ngageoint/hootenanny/issues/348
 cp LocalConfig.pri.orig LocalConfig.pri
 echo "QMAKE_CXXFLAGS += -Werror" >> LocalConfig.pri
-sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
-sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
+#sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
+#sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
 
 # Make sure we are not running
 vagrant halt
