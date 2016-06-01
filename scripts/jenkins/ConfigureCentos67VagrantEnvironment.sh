@@ -25,7 +25,7 @@ ln -s ../../vagrant/VSphereDummy.box VSphereDummy.box
 ln -s ../../vagrant/VagrantfileLocal.centos67 VagrantfileLocal
 
 # Copy words1.sqlite Db so we don't have to download it again
-( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
+#( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
 
 # Grab the latest version of the software that the VagrantProvision script will try to download
 cp -R ../../software.centos67 software
