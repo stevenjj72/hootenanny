@@ -78,6 +78,10 @@ PostgresqlDumpfileWriter::PostgresqlDumpfileWriter():
 
 PostgresqlDumpfileWriter::~PostgresqlDumpfileWriter()
 {
+  if (ConfigOptions().getPostgresqlDumpfileWriterAutoCalcIds())
+  {
+    _db.close();
+  }
   close();
 }
 
@@ -222,6 +226,13 @@ void PostgresqlDumpfileWriter::writePartial(const ConstNodePtr& n)
     t["error:circular"] = QString::number(n->getCircularError());
   }
 
+  //Since we're only creating elements, the changeset bounds is simply the combined bounds
+  //of all the nodes involved in the changeset.
+  //LOG_VARD(n->getX());
+  //LOG_VARD(n->getY());
+  _changesetData.changesetBounds.expandToInclude(n->getX(), n->getY());
+  //LOG_VARD(_changesetData.changesetBounds.toString());
+
   if ( _writeStats.nodesWritten == 0 )
   {
     _createNodeTables();
@@ -340,16 +351,28 @@ void PostgresqlDumpfileWriter::setConfiguration(const hoot::Settings &conf)
 
   _configData.addUserEmail        = confOptions.getPostgresqlDumpfileWriterUserEmail();
   _configData.addUserId           = confOptions.getPostgresqlDumpfileWriterUserId();
-  _configData.startingChangesetId = confOptions.getPostgresqlDumpfileWriterStartIdChangeset();
-  _configData.startingNodeId      = confOptions.getPostgresqlDumpfileWriterStartIdNode();
-  _configData.startingWayId       = confOptions.getPostgresqlDumpfileWriterStartIdWay();
-  _configData.startingRelationId  = confOptions.getPostgresqlDumpfileWriterStartIdRelation();
   _configData.changesetUserId     = confOptions.getPostgresqlDumpfileWriterChangesetUserId();
+  if (!confOptions.getPostgresqlDumpfileWriterAutoCalcIds())
+  {
+    _configData.startingChangesetId = confOptions.getPostgresqlDumpfileWriterStartIdChangeset();
+    _configData.startingNodeId      = confOptions.getPostgresqlDumpfileWriterStartIdNode();
+    _configData.startingWayId       = confOptions.getPostgresqlDumpfileWriterStartIdWay();
+    _configData.startingRelationId  = confOptions.getPostgresqlDumpfileWriterStartIdRelation();
+  }
+  else
+  {
+    _db.open(ConfigOptions().getPostgresqlDumpfileWriterIdAwareUrl());
+    _configData.startingChangesetId = _db.getNextId("changesets");
+    _configData.startingNodeId      = _db.getNextId(ElementType::Node);
+    _configData.startingWayId       = _db.getNextId(ElementType::Way);
+    _configData.startingRelationId  = _db.getNextId(ElementType::Relation);
+  }
 
+  LOG_DEBUG("Changeset user ID: " << QString::number(_configData.changesetUserId));
+  LOG_DEBUG("Starting changeset ID: " << QString::number(_configData.startingChangesetId));
   LOG_DEBUG("Starting node ID: " << QString::number(_configData.startingNodeId));
-
-  // TODO: needs to be a config value
-  _configData.maxMapElements      = 1000000000;
+  LOG_DEBUG("Starting way ID: " << QString::number(_configData.startingWayId));
+  LOG_DEBUG("Starting relation ID: " << QString::number(_configData.startingRelationId));
 }
 
 std::list<QString> PostgresqlDumpfileWriter::_createSectionNameList()
@@ -437,22 +460,7 @@ PostgresqlDumpfileWriter::ElementIdDatatype PostgresqlDumpfileWriter::_establish
   return dbIdentifier;
 }
 
-unsigned int PostgresqlDumpfileWriter::_tileForPoint(const double lat, const double lon) const
-{
-  const int lonInt = round((lon + 180.0) * 65535.0 / 360.0);
-  const int latInt = round((lat + 90.0) * 65535.0 / 180.0);
-
-  unsigned int tile = 0;
-
-  for (int i = 15; i >= 0; i--)
-  {
-    tile = (tile << 1) | ((lonInt >> i) & 1);
-    tile = (tile << 1) | ((latInt >> i) & 1);
-  }
-
-  return tile;
-}
-
+//TODO: This should use ApiDb::COORDINATE_SCALE instead.
 unsigned int PostgresqlDumpfileWriter::_convertDegreesToNanodegrees(const double degrees) const
 {
   return ( round(degrees * 10000000.0) );
@@ -470,7 +478,7 @@ void PostgresqlDumpfileWriter::_writeNodeToTables(
   const int nodeXNanodegrees = _convertDegreesToNanodegrees(nodeX);
   const int changesetId = _getChangesetId();
   const QString datestring = QDateTime::currentDateTime().toUTC().toString("yyyy-MM-dd hh:mm:ss.zzz");
-  const QString tileNumberString(QString::number(_tileForPoint(nodeY, nodeX)));
+  const QString tileNumberString(QString::number(ApiDb::tileForPoint(nodeY, nodeX)));
 
   if ( (nodeYNanodegrees < -900000000) || (nodeYNanodegrees > 900000000) )
   {
@@ -739,6 +747,7 @@ void PostgresqlDumpfileWriter::_incrementChangesInChangeset()
     _writeChangesetToTable();
     _changesetData.changesetId++;
     _changesetData.changesInChangeset = 0;
+    _changesetData.changesetBounds.init();
   }
 }
 
@@ -803,17 +812,22 @@ void PostgresqlDumpfileWriter::_writeChangesetToTable()
 {
   if ( _changesetData.changesetId == _configData.startingChangesetId )
   {
-    _createTable( "changesets", "COPY changesets (id, user_id, created_at, closed_at, num_changes) FROM stdin;\n" );
+    _createTable(
+      "changesets", "COPY changesets (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, num_changes) FROM stdin;\n" );
   }
 
   QStringList changesetsStream  = _outputSections["changesets"];
   const QString datestring = QDateTime::currentDateTime().toUTC().toString("yyyy-MM-dd hh:mm:ss.zzz");
-  const QString changesetFormat("%1\t%2\t%3\t%4\t%5\n");
+  const QString changesetFormat("%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\t%9\n");
 
   changesetsStream << changesetFormat.arg(
     QString::number(_changesetData.changesetId),
     QString::number(_configData.changesetUserId),
     datestring,
+    QString::number((qlonglong)OsmApiDb::toOsmApiDbCoord(_changesetData.changesetBounds.getMinY())),
+    QString::number((qlonglong)OsmApiDb::toOsmApiDbCoord(_changesetData.changesetBounds.getMaxY())),
+    QString::number((qlonglong)OsmApiDb::toOsmApiDbCoord(_changesetData.changesetBounds.getMinX())),
+    QString::number((qlonglong)OsmApiDb::toOsmApiDbCoord(_changesetData.changesetBounds.getMaxX())),
     datestring,
     QString::number(_changesetData.changesInChangeset) );
   _outputSections["changesets"] = changesetsStream;

@@ -72,6 +72,7 @@ import hoot.services.db2.QCurrentWayNodes;
 import hoot.services.db2.QCurrentWays;
 import hoot.services.db2.QJobStatus;
 import hoot.services.db2.QMaps;
+import hoot.services.db2.QReviewBookmarks;
 import hoot.services.db2.QUsers;
 import hoot.services.models.osm.Element.ElementType;
 
@@ -83,6 +84,7 @@ public class DbUtils {
     private static final Logger log = LoggerFactory.getLogger(DbUtils.class);
 
     public static final String TIMESTAMP_DATE_FORMAT = "YYYY-MM-dd HH:mm:ss";
+    public static final String OSM_API_TIMESTAMP_FORMAT = "YYYY-MM-dd HH:mm:ss.SSS";
 
     public static final String TIME_STAMP_REGEX = "\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d+";
 
@@ -467,6 +469,41 @@ public class DbUtils {
             new SQLDeleteClause(conn, configuration, maps).where(maps.displayName.eq(mapName)).execute();
 
             conn.commit();
+        }
+    }
+    
+    /**
+    *
+    *
+    * @param conn
+    * @param mapName
+    * @throws Exception
+    */
+    public static void deleteBookmarksById(Connection conn, String mapName) throws Exception {
+        try {
+        	Configuration configuration = getConfiguration();
+        	
+            List<Long> mapIds = getMapIdsByName(conn, mapName);
+            if (mapIds.size() > 0) {
+                long mapId = mapIds.get(0);
+
+                QReviewBookmarks reviewBookmarks = QReviewBookmarks.reviewBookmarks;
+                
+                try {
+                	new SQLDeleteClause(conn, configuration, reviewBookmarks).where(reviewBookmarks.mapId.eq(mapId)).execute();
+                }
+                catch (Exception e) {
+                    String msg = "Error deleting bookmark...  ";
+                    msg += "  " + e.getCause().getMessage();
+                    throw new Exception(msg);
+                }
+
+            }
+        }
+        catch (Exception e) {
+            String msg = "Error deleting bookmark...  ";
+            msg += "  " + e.getCause().getMessage();
+            throw new Exception(msg);
         }
     }
 

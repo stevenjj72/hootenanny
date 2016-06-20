@@ -4,19 +4,17 @@
 set -x
 set -e
 
-make -sj`nproc`
+cd $HOOT_HOME
 
 hoot --version --debug
 
 export HOOT_TEST_DIFF=--diff
-
 make -sj`nproc` test-all
 
-cd $HOOT_HOME/docs
-make -sj`nproc`
+# This is done in VagrantBuild.sh
+# cd $HOOT_HOME/docs
+# make -sj`nproc`
 
-cd $HOOT_HOME
 make -sj`nproc` archive
 
 make -sj`nproc` coverage
-

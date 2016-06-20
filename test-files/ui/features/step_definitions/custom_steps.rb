@@ -16,6 +16,10 @@ When(/^I click the "([^"]*)" icon$/) do |cls|
   find('._icon.' + cls).click
 end
 
+When(/^I click the "([^"]*)" icon under the "([^"]*)" link$/) do |cls, txt|
+  parent = find('a', :text=> txt).find('._icon.' + cls).click
+end
+
 When(/^I click the "([^"]*)" link$/) do |linkText|
   find('a', :text=> linkText).click
 end
@@ -28,12 +32,92 @@ When(/^I click the "([^"]*)" classed link under "([^"]*)"$/) do |classed, parent
   find('div.' + parent).find('a.' + classed).click
 end
 
+When(/^I select a way map feature with id "([^"]*)"$/) do |id|
+  find('div.layer-data').all('path[class*=" ' + id + '"]').last.click
+end
+
+When(/^I select a node map feature with id "([^"]*)"$/) do |id|
+  find('div.layer-data').all('g[class*=" ' + id + '"]').last.click
+end
+
+Then (/^I should (not )?see an element "([^"]*)"$/) do |negate, selector|
+  expectation = negate ? :should_not : :should
+  page.send(expectation, have_css(selector))
+end
+
+Then (/^I should (not )?see the element (.*)$/) do |negate, selector|
+  expectation = negate ? :should_not : :should
+  page.send(expectation, have_css(selector))
+end
+
 Then(/^I should see "([^"]*)"$/) do |text|
-  page.should have_content(text)
+  #page.should have_content(text)
+  expect(page).to have_content(text)
 end
 
 Then(/^I should not see "([^"]*)"$/) do |text|
-  page.should have_no_content(text)
+  #page.should have_no_content(text)
+  expect(page).to have_no_content(text)
+end
+
+Then(/^I should see (checkbox )?"([^"]*)" (not )?enabled$/) do |cbox, text,state|
+  lbl = find('label', :text=> text, :match => :prefer_exact)
+  if cbox
+    el = lbl.find('input')
+  else
+    el = lbl.find(:xpath, '..').find('input')
+  end
+
+  if state
+    el[:disabled].should eq "true"
+  else
+    el[:disabled].should_not be
+  end
+end
+
+Then(/^I should see "([^"]*)" combobox (not )?enabled$/) do |text,state|
+  lbl = find('label', :text=> text, :match => :prefer_exact)
+  el = lbl.find(:xpath,"..").find('.combobox-input')
+
+  if state
+    el[:disabled].should eq "true"
+  else
+    el[:disabled].should_not be
+  end
+end
+
+Then(/^I should see checkbox "([^"]*)" (un)?checked$/) do |text, unchk|
+  lbl = find('label', :text=> text, :match => :prefer_exact)
+  cbox = lbl.find('input')
+  if unchk
+    expect(cbox).to_not be_checked
+  else
+    expect(cbox).to be_checked
+  end
+end
+
+Then(/^I (un)?check the "([^"]*)" checkbox$/) do |unchk,text|
+  lbl = find('label', :text=> text, :match => :prefer_exact)
+  cbox = lbl.find('input')
+  if unchk
+    cbox.set(false)
+  else
+    cbox.set(true)
+  end
+end
+
+Then(/^I should see an alert containing "([^"]*)"$/) do |text|
+  alertText = page.driver.browser.switch_to.alert.text
+  expect(alertText).to include text
+end
+
+Then (/^I should( not)? see a link "([^"]*)"$/) do |negate, txt|
+  expectation = negate ? :should_not : :should
+  if negate
+    page.should_not have_selector('a', :text=> txt)
+  else
+    page.should have_selector('a', :text=> txt)
+  end
 end
 
 When(/^I select the "([^"]*)" div$/) do |cls|
@@ -115,6 +199,15 @@ Then(/^I should see options in this order:$/) do |table|
   actual_order.should == expected_order
 end
 
+Then(/^I should see these tags in the table:$/) do |table|
+  include_hidden_fields do
+    expected = table.raw
+    keys = page.all('ul.tag-list input.key').map(&:value)
+    values = page.all('ul.tag-list input.value').map(&:value)
+    actual = keys.zip(values)
+    actual.should == expected
+  end
+end
 Then(/^I click on the "([^"]*)" option in the "([^"]*)"$/) do |label,div|
   find('#' + div).find('label', :text => label).click
 end
@@ -125,7 +218,19 @@ When(/^I select the "([^"]*)" option in the "([^"]*)" combobox$/) do |opt, cb|
   page.find('div.combobox').find('a', :text=> opt).click
 end
 
+When(/^I select the "([^"]*)" option labelled "([^"]*)"$/) do |opt, lbl|
+  combobox = page.find('label', :text=> lbl).find(:xpath,"..")
+  combobox.find('.combobox-caret').click
+  page.find('div.combobox').find('a', :text=> opt).click
+end
+
 When(/^I select the "([^"]*)" option in "([^"]*)"$/) do |opt, el|
+  combobox = page.find(el)
+  combobox.find('.combobox-caret').click
+  page.find('div.combobox').find('a', :text=> opt).click
+end
+
+When(/^The value of "([^"]*)" option in "([^"]*)"$/) do |opt, el|
   combobox = page.find(el)
   combobox.find('.combobox-caret').click
   page.find('div.combobox').find('a', :text=> opt).click
@@ -162,6 +267,17 @@ end
 
 When(/^I fill "([^"]*)" input with "([^"]*)"$/) do |el, value|
   find('input.' + el).set(value)
+  sleep 1
+end
+
+When(/^I fill "([^"]*)" textarea with: (.*)$/) do |el, value|
+  find('textarea.' + el).set(value)
+  sleep 1
+end
+
+When(/^I add to "([^"]*)" textarea with: (.*)$/) do |el, value|
+  txt = find('textarea.' + el).value + "\n" + value
+  find('textarea.' + el).set(txt)
   sleep 1
 end
 
@@ -214,8 +330,8 @@ When(/^I click on "([^"]*)"$/) do |el|
   find(el).click
 end
 
-When(/^I press "([^"]*)" big loud span$/) do |txt|
-  find('span.big.loud', :text=>txt).click
+When(/^I press "([^"]*)" span with text "([^"]*)"$/) do |cls,txt|
+  find('span.' + cls, :text=>txt).click
 end
 
 When(/^I press "([^"]*)" big loud link$/) do |cls|
@@ -264,6 +380,20 @@ When(/^I wait ([0-9]*) "([^"]*)" to not see "([^"]*)"$/) do |timeout, unit, text
   oldTimeout = Capybara.default_max_wait_time
   Capybara.default_max_wait_time = Float(timeout) * multiplier
   page.should have_no_content(text)
+  Capybara.default_max_wait_time = oldTimeout
+end
+
+When(/^I wait ([0-9]*) "([^"]*)" to see "([^"]*)" element with text "([^"]*)"$/) do |timeout, unit, el, text|
+  if unit == "seconds"
+    multiplier = 1
+  elsif unit == "minutes"
+    multiplier = 60
+  else
+    throw :badunits
+  end
+  oldTimeout = Capybara.default_max_wait_time
+  Capybara.default_max_wait_time = Float(timeout) * multiplier
+  page.find(el, :text => text)
   Capybara.default_max_wait_time = oldTimeout
 end
 
@@ -330,7 +460,7 @@ Then(/^I type "([^"]*)" in input "([^"]*)"$/) do |text, id|
 end
 
 Then(/^I click the "([^"]*)" with text "([^"]*)"$/) do |el, text|
-  page.find(el, :text => text)
+  page.find(el, :text => text).click
 end
 
 Then(/^I accept the alert$/) do
@@ -342,6 +472,11 @@ Then(/^I should see element "([^"]*)" with value "([^"]*)"$/) do |id, value|
   # expect(page).to have_selector("input[value='" + value + "']")
   # page.should have_xpath("//input[@value='" + value + "']")
   find(id).value.should eq value
+end
+
+Then(/^I should see element "([^"]*)" with no value and placeholder "([^"]*)"$/) do |id, value|
+  find(id).value.should eq ""
+  page.find(:css, 'input[placeholder="' + value + '"]')
 end
 
 Then(/^I choose "([^"]*)" radio button$/) do |text|
@@ -365,6 +500,18 @@ Then(/^the download file "([^"]*)" should exist$/) do |file|
   # puts name
   expect( File.exists?(name) ).to be true
   File.delete(name)
+end
+
+Then(/^the log file "([^"]*)" should exist$/) do |file|
+  name = ENV['HOME'] + '/Downloads/' + file
+  # puts name
+  expect(!Dir.glob(name).empty?).to be true
+  File.delete(Dir[ENV['HOME'] + '/Downloads/' + file].last)
+end
+
+Then "the downloaded file content should be:" do |content|
+  page.response_headers["Content-Disposition"].should == "attachment"
+  page.source.should == content
 end
 
 When(/^I click the "([^"]*)" classed element under "([^"]*)" with text "([^"]*)"$/) do |classed, el, text|
@@ -427,4 +574,10 @@ When(/^I delete any existing "([^"]*)" basemap if necessary$/) do |text|
     Capybara.default_max_wait_time = oldTimeout
   rescue Capybara::ElementNotFound
   end
+end
+
+Then(/^I open the wfs export url$/) do
+  url = find('input.wfsfileExportOutputName').value
+  visit url
+  # need a way to check the WFS GetCapabilities response is valid
 end
