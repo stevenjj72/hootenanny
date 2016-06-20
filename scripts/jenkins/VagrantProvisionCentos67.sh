@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 HOOT_HOME=$HOME/hoot
 echo HOOT_HOME: $HOOT_HOME
 cd ~
@@ -101,14 +103,14 @@ EOT
     sudo service postgresql-$PG_VERSION restart
 
     # create the osm api test db
-    sudo -i /var/lib/hootenanny/scripts/SetupOsmApiDB.sh
+    sudo -i $HOOT_HOME/scripts/SetupOsmApiDB.sh
 
     # Create Tomcat context path for tile images
     TOMCAT_SRV=/etc/tomcat6/server.xml
     if ! grep -i --quiet 'ingest/processed' $TOMCAT_SRV; then
         sudo -u tomcat cp $TOMCAT_SRV $TOMCAT_SRV.orig
         echo "Adding Tomcat context path for tile images"
-        sudo sed -i "s@<\/Host>@ <Context docBase=\"\/var\/lib\/hootenanny\/ingest\/processed\" path=\"\/static\" \/>\n &@" $TOMCAT_SRV
+        sudo sed -i "s@<\/Host>@ <Context docBase=\"$HOOT_HOME\/ingest\/processed\" path=\"\/static\" \/>\n &@" $TOMCAT_SRV
     fi
     # Allow linking in Tomcat context
     TOMCAT_CTX=/etc/tomcat6/context.xml
@@ -121,34 +123,34 @@ EOT
     export TOMCAT_HOME=/usr/share/tomcat6
     if [ ! -d $TOMCAT_HOME/.deegree ]; then
         echo "Creating .deegree directory for webapp"
-        sudo mkdir $TOMCAT_HOME/.deegree
-        sudo chown tomcat:tomcat $TOMCAT_HOME/.deegree
+        mkdir $TOMCAT_HOME/.deegree
+        #sudo chown tomcat:tomcat $TOMCAT_HOME/.deegree
     fi
-    BASEMAP_UPLOAD_HOME=/var/lib/hootenanny/ingest/upload
+    BASEMAP_UPLOAD_HOME=$HOOT_HOME/ingest/upload
     if [ ! -d $BASEMAP_UPLOAD_HOME ]; then
         echo "Creating ingest/upload directory for webapp"
-        sudo mkdir -p $BASEMAP_UPLOAD_HOME
-        sudo chown tomcat:tomcat $BASEMAP_UPLOAD_HOME
+        mkdir -p $BASEMAP_UPLOAD_HOME
+        #sudo chown tomcat:tomcat $BASEMAP_UPLOAD_HOME
     fi
-    BASEMAP_PROCESSED_HOME=/var/lib/hootenanny/ingest/processed
+    BASEMAP_PROCESSED_HOME=$HOOT_HOME/ingest/processed
     if [ ! -d $BASEMAP_PROCESSED_HOME ]; then
         echo "Creating ingest/processed directory for webapp"
-        sudo mkdir -p $BASEMAP_PROCESSED_HOME
-        sudo chown tomcat:tomcat $BASEMAP_PROCESSED_HOME
+        mkdir -p $BASEMAP_PROCESSED_HOME
+        #sudo chown tomcat:tomcat $BASEMAP_PROCESSED_HOME
     fi
-    UPLOAD_HOME=/var/lib/hootenanny/upload
+    UPLOAD_HOME=$HOOT_HOME/upload
     if [ ! -d $UPLOAD_HOME ]; then
         echo "Creating upload directory for webapp"
-        sudo mkdir -p $UPLOAD_HOME
-        sudo chown tomcat:tomcat $UPLOAD_HOME
+        mkdir -p $UPLOAD_HOME
+        #sudo chown tomcat:tomcat $UPLOAD_HOME
     fi
-    CUSTOMSCRIPT_HOME=/var/lib/hootenanny/customscript
+    CUSTOMSCRIPT_HOME=$HOOT_HOME/customscript
     if [ ! -d $CUSTOMSCRIPT_HOME ]; then
         echo "Creating customscript directory for webapp"
-        sudo mkdir -p $CUSTOMSCRIPT_HOME
-        sudo chown tomcat:tomcat $CUSTOMSCRIPT_HOME
+        mkdir -p $CUSTOMSCRIPT_HOME
+        #sudo chown tomcat:tomcat $CUSTOMSCRIPT_HOME
     fi
-    sudo chmod 777 /var/lib/hootenanny/tmp
+    sudo chmod 777 $HOOT_HOME/tmp
 
 
 #     # Update the db password in hoot-services war
@@ -211,11 +213,11 @@ if ! grep --quiet "export HOOT_HOME" ~/.bash_profile; then
     source ~/.bash_profile
 fi
 
-if ! grep --quiet "export JAVA_HOME" ~/.bash_profile; then
-    echo "Adding Java home to profile..."
-    echo "export JAVA_HOME=/etc/alternatives/jre_1.8.0" >> ~/.bash_profile
-    source ~/.bash_profile
-fi
+# if ! grep --quiet "export JAVA_HOME" ~/.bash_profile; then
+#     echo "Adding Java home to profile..."
+#     echo "export JAVA_HOME=/etc/alternatives/jre_1.8.0" >> ~/.bash_profile
+#     source ~/.bash_profile
+# fi
 
 # if ! grep --quiet "export HADOOP_HOME" ~/.bash_profile; then
 #     echo "Adding Hadoop home to profile..."
