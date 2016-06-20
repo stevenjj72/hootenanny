@@ -16,7 +16,6 @@ echo "gpgcheck=0" | sudo tee -a /etc/yum.repos.d/hoot.repo
 # Link $HOOT_HOME and /var/lib/hootenanny so we can use the stuff in the RPM's and also build Hoot
 sudo ln -s $HOOT_HOME /var/lib/hootenanny
 
-
 sudo yum -y update
 
 #sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
@@ -24,7 +23,7 @@ sudo yum -y install hootenanny-core-deps
 sudo yum -y install hootenanny-core-devel-deps
 sudo yum -y install hootenanny-services-devel-deps
 
-sudo yum -y install tomcat6
+sudo yum -y install tomcat6 ccache
 
 
 ##### Taken from the Hoot RPM spec file. We are using the "autostart" bit
@@ -32,9 +31,14 @@ sudo yum -y install tomcat6
     PG_SERVICE=$(ls /etc/init.d | grep postgresql-)
     sudo service $PG_SERVICE initdb
     sudo service $PG_SERVICE start
-    PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
+  sudo /sbin/chkconfig --add postgresql-$PG_VERSION
+  sudo /sbin/chkconfig postgresql-$PG_VERSION on
+
+    export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
 
     sudo service tomcat6 start
+  sudo /sbin/chkconfig --add tomcat6
+  sudo /sbin/chkconfig tomcat6 on
 
     # create Hoot services db
     if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw hoot; then
@@ -109,7 +113,7 @@ EOT
         sudo sed -i "s@^<Context>@<Context allowLinking=\"true\">@" $TOMCAT_CTX
     fi
     # Create directories for webapp
-    TOMCAT_HOME=/usr/share/tomcat6
+    export TOMCAT_HOME=/usr/share/tomcat6
     if [ ! -d $TOMCAT_HOME/.deegree ]; then
         echo "Creating .deegree directory for webapp"
         sudo mkdir $TOMCAT_HOME/.deegree
@@ -182,40 +186,6 @@ EOT
     fi
 
 
-
-
-
-
-
-
-# set Postgres to autostart
-export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
-sudo /sbin/chkconfig --add postgresql-$PG_VERSION
-sudo /sbin/chkconfig postgresql-$PG_VERSION on
-# set Tomcat to autostart
-sudo /sbin/chkconfig --add tomcat6
-sudo /sbin/chkconfig tomcat6 on
-# set NodeJS node-mapnik-server to autostart
-sudo /sbin/chkconfig --add node-mapnik-server
-sudo /sbin/chkconfig node-mapnik-server on
-
-##### End from Hoot RPM Spec file
-
-# Add some stuff to get development going
-# if ! dpkg -l | grep --quiet dictionaries-common; then
-#     # See /usr/share/doc/dictionaries-common/README.problems for details
-#     # http://www.linuxquestions.org/questions/debian-26/dpkg-error-processing-dictionaries-common-4175451951/
-#     sudo apt-get -q -y install dictionaries-common >> Ubuntu_upgrade.txt 2>&1
-#
-#     sudo /usr/share/debconf/fix_db.pl
-#
-#     sudo apt-get -q -y install wamerican-insane >> Ubuntu_upgrade.txt 2>&1
-#
-#     sudo /usr/share/debconf/fix_db.pl
-#     sudo dpkg-reconfigure -f noninteractive dictionaries-common
-# fi
-#
-
 echo "### Configuring environment..."
 
 if [ -f $HOOT_HOME/conf/LocalHoot.json ]; then
@@ -254,6 +224,41 @@ if ! grep --quiet "\$HOME/bin" ~/.bash_profile; then
     echo "export PATH=\$PATH:\$HOME/bin" >> ~/.bash_profile
     source ~/.bash_profile
 fi
+
+
+
+
+exit
+#######################################################################
+
+
+# set Postgres to autostart
+export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
+sudo /sbin/chkconfig --add postgresql-$PG_VERSION
+sudo /sbin/chkconfig postgresql-$PG_VERSION on
+# set Tomcat to autostart
+sudo /sbin/chkconfig --add tomcat6
+sudo /sbin/chkconfig tomcat6 on
+# set NodeJS node-mapnik-server to autostart
+sudo /sbin/chkconfig --add node-mapnik-server
+sudo /sbin/chkconfig node-mapnik-server on
+
+##### End from Hoot RPM Spec file
+
+# Add some stuff to get development going
+# if ! dpkg -l | grep --quiet dictionaries-common; then
+#     # See /usr/share/doc/dictionaries-common/README.problems for details
+#     # http://www.linuxquestions.org/questions/debian-26/dpkg-error-processing-dictionaries-common-4175451951/
+#     sudo apt-get -q -y install dictionaries-common >> Ubuntu_upgrade.txt 2>&1
+#
+#     sudo /usr/share/debconf/fix_db.pl
+#
+#     sudo apt-get -q -y install wamerican-insane >> Ubuntu_upgrade.txt 2>&1
+#
+#     sudo /usr/share/debconf/fix_db.pl
+#     sudo dpkg-reconfigure -f noninteractive dictionaries-common
+# fi
+#
 
 # Make sure that we are in ~ before trying to wget & install stuff
 cd ~

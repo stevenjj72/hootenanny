@@ -12,20 +12,25 @@ set -x
 cd $HOOT_HOME
 
 #scripts/jenkins/VeryClean.sh
+rm -rf docs/node_modules hoot-core/tmp/ hoot-core-test/tmp tgs/tmp
+
+# Removed the "-x" from this
+git clean -d -f -f || echo "It is ok if this fails, it sometimes mysteriously doesn't clean"
+
 
 # Maintain vagrant state in the parent directory so very clean will still work.
 mkdir -p ../vagrant-hootenanny
-ln -s ../vagrant-hootenanny .vagrant
+[ -e .vagrant ] || ln -s ../vagrant-hootenanny .vagrant
 
 # Update hoot-ui
 git submodule update --init
 
 # Jenkins Vagrant setup
-ln -s ../../vagrant/VSphereDummy.box VSphereDummy.box
-ln -s ../../vagrant/VagrantfileLocal.centos67 VagrantfileLocal
+[ -e VSphereDummy.box ] || ln -s ../vagrant/VSphereDummy.box VSphereDummy.box
+[ -e VagrantfileLocal ] || ln -s ../../vagrant/VagrantfileLocal.centos67 VagrantfileLocal
 
 # Copy words1.sqlite Db so we don't have to download it again
-#( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
+( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
 
 # Grab the latest version of the software that the VagrantProvision script will try to download
 cp -R ../../software.centos67 software
@@ -36,6 +41,12 @@ cp LocalConfig.pri.orig LocalConfig.pri
 echo "QMAKE_CXXFLAGS += -Werror" >> LocalConfig.pri
 #sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
 #sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
+
+# Add --with-coverage to the standard build.
+# NOTE: We will reset this file in the Jenkins job
+if ! grep --quiet "with-uitests" VagrantBuild.sh; then
+    sed -i s/"--with-uitests"/""/g VagrantBuild.sh
+fi
 
 # Make sure we are not running
 vagrant halt
