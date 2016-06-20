@@ -21,7 +21,10 @@ echo "gpgcheck=0" | sudo tee -a /etc/yum.repos.d/hoot.repo
 # Link $HOOT_HOME and /var/lib/hootenanny so we can use the stuff in the RPM's and also build Hoot
 #sudo ln -s $HOOT_HOME /var/lib/hootenanny
 
-sudo yum -y update
+#sudo yum -y update
+
+# Testing
+sudo yum --enablerepo=hoot clean metadata
 
 #sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
 sudo yum -y install hootenanny-core-deps
@@ -29,6 +32,9 @@ sudo yum -y install hootenanny-core-devel-deps
 sudo yum -y install hootenanny-services-devel-deps
 
 sudo yum -y install tomcat6 ccache
+
+# Trying this _after_ hoot is installed
+sudo yum -y update
 
 # cd away from $HOME to avoid postgres warnings
 cd /tmp
@@ -49,7 +55,6 @@ cd /tmp
 
     # create Hoot services db
     if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw hoot; then
-        RAND_PW=$(pwgen -s 16 1)
         sudo -u postgres createuser --superuser hoot || true
         sudo -u postgres psql -c "alter user hoot with password 'hoottest';"
         sudo -u postgres createdb hoot --owner=hoot
@@ -231,6 +236,64 @@ if ! grep --quiet "\$HOME/bin" ~/.bash_profile; then
     echo "export PATH=\$PATH:\$HOME/bin" >> ~/.bash_profile
     source ~/.bash_profile
 fi
+
+# Configure Tomcat
+if ! grep --quiet TOMCAT6_HOME ~/.bash_profile; then
+    echo "### Adding Tomcat to profile..."
+    echo "export TOMCAT6_HOME=/var/lib/tomcat6" >> ~/.bash_profile
+    source ~/.bash_profile
+fi
+
+# Add tomcat6 and vagrant to each others groups so we can get the group write working with nfs
+if ! groups vagrant | grep --quiet '\btomcat6\b'; then
+    echo "Adding vagrant user to tomcat6 user group..."
+    sudo usermod -a -G tomcat6 vagrant
+fi
+if ! groups tomcat6 | grep --quiet "\bvagrant\b"; then
+    echo "Adding tomcat6 user to vagrant user group..."
+    sudo usermod -a -G vagrant tomcat6
+fi
+
+if ! grep -i --quiet HOOT /etc/default/tomcat6; then
+echo "Configuring tomcat6 environment..."
+# This echo properly substitutes the home path dir and keeps it from having to be hardcoded, but
+# fails on permissions during write...so hardcoding the home path here instead for now.  This
+# hardcode needs to be removed in order for hoot dev env install script to work correctly.
+#
+#sudo echo "#--------------
+# Hoot Settings
+#--------------
+#HOOT_HOME=\$HOOT_HOME/hoot" >> /etc/default/tomcat6
+
+sudo bash -c "cat >> /etc/default/tomcat6" <<EOT
+
+#--------------
+# Hoot Settings
+#--------------
+HOOT_HOME=/home/vagrant/hoot
+HADOOP_HOME=/home/vagrant/hadoop
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:$HOOT_HOME/lib:$HOOT_HOME/pretty-pipes/lib
+#GDAL_DATA=/usr/local/share/gdal
+#GDAL_LIB_DIR=/usr/local/lib
+HOOT_WORKING_NAME=hoot
+PATH=$HOOT_HOME/bin:$PATH
+EOT
+fi
+
+# Can change it to 000 to get rid of errors
+if ! grep -i --quiet 'umask 002' /etc/default/tomcat6; then
+echo "### Changing Tomcat umask to group write..."
+sudo bash -c "cat >> /etc/default/tomcat6" <<EOT
+# Set tomcat6 umask to group write because all files in shared folder are owned by vagrant
+umask 002
+EOT
+fi
+
+if grep -i --quiet '^JAVA_OPTS=.*\-Xmx128m' /etc/default/tomcat6; then
+    echo "### Changing Tomcat java opts..."
+    sudo sed -i.bak "s@\-Xmx128m@\-Xms512m \-Xmx2048m \-XX:PermSize=512m \-XX:MaxPermSize=4096m@" /etc/default/tomcat6
+fi
+
 
 # Make sure that we are in ~ before trying to wget & install stuff
 cd ~
