@@ -212,13 +212,13 @@ if ! grep --quiet "export JAVA_HOME" ~/.bash_profile; then
     source ~/.bash_profile
 fi
 
-if ! grep --quiet "export HADOOP_HOME" ~/.bash_profile; then
-    echo "Adding Hadoop home to profile..."
-    #echo "export HADOOP_HOME=/usr/local/hadoop" >> ~/.bash_profile
-    echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.bash_profile
-    echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.bash_profile
-    source ~/.bash_profile
-fi
+# if ! grep --quiet "export HADOOP_HOME" ~/.bash_profile; then
+#     echo "Adding Hadoop home to profile..."
+#     #echo "export HADOOP_HOME=/usr/local/hadoop" >> ~/.bash_profile
+#     echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.bash_profile
+#     echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.bash_profile
+#     source ~/.bash_profile
+# fi
 
 if ! grep --quiet "\$HOME/bin" ~/.bash_profile; then
     echo "Adding path vars to profile..."
@@ -229,16 +229,13 @@ fi
 # Make sure that we are in ~ before trying to wget & install stuff
 cd ~
 
-# if [ ! -f bin/osmosis ]; then
-#     echo "### Installing Osmosis"
-#     mkdir -p $HOME/bin
-#     if [ ! -f osmosis-latest.tgz ]; then
-#       wget --quiet http://bretth.dev.openstreetmap.org/osmosis-build/osmosis-latest.tgz
-#     fi
-#     mkdir -p $HOME/bin/osmosis_src
-#     tar -zxf osmosis-latest.tgz -C $HOME/bin/osmosis_src
-#     ln -s $HOME/bin/osmosis_src/bin/osmosis $HOME/bin/osmosis
-# fi
+# Clean out tomcat logfile. We restart tomcat after provisioning
+sudo service tomcat6 stop
+sudo rm /var/log/tomcat6/catalina.out
+
+
+### Stop here, Hadoop will be added in later ###
+exit
 
 ##### Start Hadoop #####
 # hoot has only been tested successfully with hadoop 0.20.2, which is not available from public repos,
@@ -386,10 +383,12 @@ EOT
   sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
   cd ~
 
-#  echo '1' | sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.7.0-openjdk.x86_64/bin/java 1
-#  echo '1' | sudo update-alternatives --config java
-#  echo '1' | sudo update-alternatives --install "/usr/bin/javac" "javac" "$JAVA_HOME/bin/javac" 1
-#  echo '1' | sudo update-alternatives --config javac
+  echo '1' | sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.7.0-openjdk.x86_64/bin/java 1
+  # Testing indicates that the 1.8.0 Java is "1", 1.7.0 is "2"
+  #echo '1' | sudo update-alternatives --config java
+  echo '2' | sudo update-alternatives --config java
+  echo '1' | sudo update-alternatives --install "/usr/bin/javac" "javac" "$JAVA_HOME/bin/javac" 1
+  echo '1' | sudo update-alternatives --config javac
 
   # test hadoop out
   #stop-all.sh
@@ -400,16 +399,4 @@ fi
 
 cd ~
 ##### End Hadoop #####
-
-# Clean out tomcat logfile. We restart tomcat after provisioning
-sudo service tomcat6 stop
-sudo rm /var/log/tomcat6/catalina.out
-
-cd $HOOT_HOME
-
-# rm -rf $HOOT_HOME/ingest
-# mkdir -p $HOOT_HOME/ingest/processed
-#
-# rm -rf $HOOT_HOME/upload
-# mkdir -p $HOOT_HOME/upload
 
