@@ -33,7 +33,7 @@ git submodule update --init
 ( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
 
 # This ended up with wrong permissions
-chmod a+r conf/words1.sqlite
+chmod a+rw conf/words1.sqlite
 
 # Grab the latest version of the software that the VagrantProvision script will try to download
 cp -R ../../software.centos67 software
