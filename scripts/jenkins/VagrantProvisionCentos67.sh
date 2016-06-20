@@ -4,6 +4,9 @@ HOOT_HOME=$HOME/hoot
 echo HOOT_HOME: $HOOT_HOME
 cd ~
 
+# Centos doesn't have this file
+touch ~/.profile
+
 # Now setup Centos
 # Setup the Hoot repo so we get all of the things needed to build Hoot
 echo "[hoot]" | sudo tee /etc/yum.repos.d/hoot.repo
