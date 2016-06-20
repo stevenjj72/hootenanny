@@ -47,6 +47,10 @@ if grep --quiet "with-uitests" VagrantBuild.sh; then
     sed -i s/"\-\-with-uitests"/""/g VagrantBuild.sh
 fi
 
+if grep --quiet "tomcat6" VagrantBuild.sh; then
+    sed -i s/"tomcat6"/"tomcat"/g VagrantBuild.sh
+fi
+
 # Make sure we are not running
 vagrant halt
 
