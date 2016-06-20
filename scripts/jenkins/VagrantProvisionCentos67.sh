@@ -17,7 +17,7 @@ echo "gpgcheck=0" | sudo tee -a /etc/yum.repos.d/hoot.repo
 
 
 # Link $HOOT_HOME and /var/lib/hootenanny so we can use the stuff in the RPM's and also build Hoot
-sudo ln -s $HOOT_HOME /var/lib/hootenanny
+#sudo ln -s $HOOT_HOME /var/lib/hootenanny
 
 sudo yum -y update
 
@@ -28,6 +28,8 @@ sudo yum -y install hootenanny-services-devel-deps
 
 sudo yum -y install tomcat6 ccache
 
+# cd away from $HOME to avoid postgres warnings
+cd /tmp
 
 ##### Taken from the Hoot RPM spec file. We are using the "autostart" bit
     # init and start Postgres
