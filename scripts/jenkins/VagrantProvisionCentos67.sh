@@ -245,13 +245,13 @@ if ! grep --quiet TOMCAT6_HOME ~/.bash_profile; then
 fi
 
 # Add tomcat6 and vagrant to each others groups so we can get the group write working with nfs
-if ! groups vagrant | grep --quiet '\btomcat6\b'; then
-    echo "Adding vagrant user to tomcat6 user group..."
-    sudo usermod -a -G tomcat6 vagrant
+if ! groups vagrant | grep --quiet '\btomcat\b'; then
+    echo "Adding vagrant user to tomcat user group..."
+    sudo usermod -a -G tomcat vagrant
 fi
-if ! groups tomcat6 | grep --quiet "\bvagrant\b"; then
-    echo "Adding tomcat6 user to vagrant user group..."
-    sudo usermod -a -G vagrant tomcat6
+if ! groups tomcat | grep --quiet "\bvagrant\b"; then
+    echo "Adding tomcat user to vagrant user group..."
+    sudo usermod -a -G vagrant tomcat
 fi
 
 if ! grep -i --quiet HOOT /etc/default/tomcat6; then
