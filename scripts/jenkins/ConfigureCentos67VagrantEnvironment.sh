@@ -30,7 +30,7 @@ git submodule update --init
 [ -e VagrantfileLocal ] || ln -s ../../vagrant/VagrantfileLocal.centos67 VagrantfileLocal
 
 # Copy words1.sqlite Db so we don't have to download it again
-( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
+[ -e conf/words1.sqlite ] || ( [ -e $WORDS_HOME/words1.sqlite ] &&  cp $WORDS_HOME/words1.sqlite conf )
 
 # This ended up with wrong permissions
 chmod a+rw conf/words1.sqlite
