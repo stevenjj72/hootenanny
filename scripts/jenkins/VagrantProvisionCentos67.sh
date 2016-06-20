@@ -51,8 +51,7 @@ cd /tmp
     if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw hoot; then
         RAND_PW=$(pwgen -s 16 1)
         sudo -u postgres createuser --superuser hoot || true
-        sudo -u postgres psql -c "alter user hoot with password '$RAND_PW';"
-        sudo sed -i s/DB_PASSWORD=.*/DB_PASSWORD=$RAND_PW/ /var/lib/hootenanny/conf/DatabaseConfig.sh
+        sudo -u postgres psql -c "alter user hoot with password 'hoottest';"
         sudo -u postgres createdb hoot --owner=hoot
         sudo -u postgres createdb wfsstoredb --owner=hoot
         sudo -u postgres psql -d hoot -c 'create extension hstore;'
