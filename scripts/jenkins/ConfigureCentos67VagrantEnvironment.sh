@@ -35,12 +35,9 @@ git submodule update --init
 # Grab the latest version of the software that the VagrantProvision script will try to download
 cp -R ../../software.centos67 software
 
-# Error out on any warnings. This only applies to Ubuntu 14.04, not CentOS (yet)
-# See: https://github.com/ngageoint/hootenanny/issues/348
 cp LocalConfig.pri.orig LocalConfig.pri
-echo "QMAKE_CXXFLAGS += -Werror" >> LocalConfig.pri
-#sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
-#sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
+sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
+sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
 
 # Add --with-coverage to the standard build.
 # NOTE: We will reset this file in the Jenkins job
