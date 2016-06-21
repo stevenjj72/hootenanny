@@ -6,9 +6,6 @@ HOOT_HOME=$HOME/hoot
 echo HOOT_HOME: $HOOT_HOME
 cd ~
 
-# Centos doesn't have this file
-touch ~/.profile
-
 # Now setup Centos
 # Setup the Hoot repo so we get all of the things needed to build Hoot
 echo "[hoot]" | sudo tee /etc/yum.repos.d/hoot.repo
@@ -35,6 +32,9 @@ sudo yum -y install tomcat6 ccache
 
 # Trying this _after_ hoot is installed
 sudo yum -y update
+
+# Centos doesn't have this file and the standard Ubuntu scripts need it.
+touch ~/.profile
 
 # cd away from $HOME to avoid postgres warnings
 cd /tmp
@@ -297,6 +297,11 @@ fi
 
 # Make sure that we are in ~ before trying to wget & install stuff
 cd ~
+
+# Sigh, Centos
+sudo cp /home/vagrant/.bash_profile /usr/share/tomcat6/.profile
+#cp /home/vagrant/.bash_profile /home/vagrant/.profile
+
 
 # Clean out tomcat logfile. We restart tomcat after provisioning
 sudo service tomcat6 stop
