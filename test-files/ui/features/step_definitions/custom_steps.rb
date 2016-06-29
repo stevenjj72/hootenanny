@@ -33,11 +33,17 @@ When(/^I click the "([^"]*)" classed link under "([^"]*)"$/) do |classed, parent
 end
 
 When(/^I select a way map feature with id "([^"]*)"$/) do |id|
+  oldTimeout = Capybara.default_max_wait_time
+  Capybara.default_max_wait_time = 10
   find('div.layer-data').all('path[class*=" ' + id + '"]').last.click
+  Capybara.default_max_wait_time = oldTimeout
 end
 
 When(/^I select a node map feature with id "([^"]*)"$/) do |id|
+  oldTimeout = Capybara.default_max_wait_time
+  Capybara.default_max_wait_time = 10
   find('div.layer-data').all('g[class*=" ' + id + '"]').last.click
+  Capybara.default_max_wait_time = oldTimeout
 end
 
 Then (/^I should (not )?see an element "([^"]*)"$/) do |negate, selector|
@@ -255,6 +261,11 @@ When(/^I click the "([^"]*)" at "([^"]*)","([^"]*)"$/) do |el, x, y|
   sleep 3
 end
 
+When(/^I double-click the "([^"]*)" at "([^"]*)","([^"]*)"$/) do |el, x, y|
+  find('#' + el).double_click_at(x,y)
+  sleep 3
+end
+
 When(/^I double-click the "([^"]*)"$/) do |el|
   find('#' + el).double_click
   sleep 1
@@ -401,6 +412,14 @@ When(/^I close the UI alert$/) do
   find('#alerts').all('.x')[0].click
 end
 
+When(/^I change the reference layer color to ([^"]*)$/) do |color|
+  page.first('div.big.data').click
+  swatch = find('a[data-color="' + color + '"')
+  rgb = swatch.native.css_value('background').split(")").first + ')'
+  swatch.click
+  expect(page.first('path.stroke.tag-hoot').native.css_value('stroke')).to eq(rgb)
+end
+
 When(/^I scroll element into view and press "([^"]*)"$/) do |id|
   Capybara.ignore_hidden_elements = false
   element = page.driver.browser.find_element(:id, id)
@@ -463,6 +482,20 @@ Then(/^I click the "([^"]*)" with text "([^"]*)"$/) do |el, text|
   page.find(el, :text => text).click
 end
 
+Then(/^I hover over the "([^"]*)" with text "([^"]*)"$/) do |el, text|
+  page.find(el, :text => text).hover
+end
+
+Then(/^I should see a measurement line$/) do
+  page.should have_css('line.measure-line-0')
+  page.should have_css('text.measure-label-text')
+end
+
+Then(/^I should see a measurement area$/) do
+  page.should have_css('polygon.measure-area')
+  page.should have_css('text.measure-label-text')
+end
+
 Then(/^I accept the alert$/) do
   sleep 2
   page.driver.browser.switch_to.alert.accept
@@ -476,7 +509,8 @@ end
 
 Then(/^I should see element "([^"]*)" with no value and placeholder "([^"]*)"$/) do |id, value|
   find(id).value.should eq ""
-  page.find(:css, 'input[placeholder="' + value + '"]')
+  #page.find(:css, 'input[placeholder="' + value + '"]')
+  find(id, 'input[placeholder="' + value + '"]')
 end
 
 Then(/^I choose "([^"]*)" radio button$/) do |text|
@@ -500,6 +534,13 @@ Then(/^the download file "([^"]*)" should exist$/) do |file|
   # puts name
   expect( File.exists?(name) ).to be true
   File.delete(name)
+end
+
+Then(/^the download file pattern "([^"]*)" should exist$/) do |file|
+  name = ENV['HOME'] + '/Downloads/' + file
+  # puts name
+  expect( Dir.glob(name).empty? ).to be false
+  File.delete(*Dir.glob(name))
 end
 
 Then(/^the log file "([^"]*)" should exist$/) do |file|
