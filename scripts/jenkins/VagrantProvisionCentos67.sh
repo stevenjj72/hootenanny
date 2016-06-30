@@ -22,9 +22,6 @@ sudo yum -y update
 
 sudo yum -y install hootenanny-core-deps hootenanny-core-devel-deps hootenanny-services-devel-deps tomcat6 ccache
 
-# Trying this _after_ hoot is installed
-#sudo yum -y update
-
 # Install Mocha for services tests
 sudo npm install --silent -g mocha
 sudo rm -rf $HOME/tmp
@@ -41,13 +38,20 @@ if [ -f $HOOT_HOME/hoot-services/src/main/resources/conf/local.conf ]; then
     rm -f $HOOT_HOME/hoot-services/src/main/resources/conf/local.conf
 fi
 
+# Add the Tomcat user to the vagrant group and the vagrant user to the tomcat group
+sudo usermod -a -G tomcat vagrant
+sudo usermod -a -G vagrant tomcat
+
+# Let the Tomcat user run stuff in the Vagrant directory
+chmod g+rx $HOME
+
 cd $HOOT_HOME
 
 # Use ccache if it is available
 cp LocalConfig.pri.orig LocalConfig.pri
 command -v ccache >/dev/null 2>&1 && echo "QMAKE_CXX=ccache g++" >> LocalConfig.pri
 
-# This is for later in the build
+# This is for later, the UI will need it
 sudo sh -c "echo 'export HOOT_HOME=/var/lib/hootenanny' > /etc/profile.d/hootenanny.sh"
 sudo chmod 755 /etc/profile.d/hootenanny.sh
 
@@ -133,7 +137,7 @@ fi
 
 
 echo "### Configure AutoStart..."
-# Avoid postgres warnings
+# Get out of the vagrant directory to avoid postgres warnings
 cd /tmp
 
 # set Postgres to autostart

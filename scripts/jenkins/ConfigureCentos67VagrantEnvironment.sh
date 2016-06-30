@@ -26,7 +26,7 @@ mkdir -p ../vagrant-hootenanny
 git submodule update --init
 
 # Jenkins Vagrant setup
-[ -e VSphereDummy.box ] || ln -s ../vagrant/VSphereDummy.box VSphereDummy.box
+[ -e VSphereDummy.box ] || ln -s ../../vagrant/VSphereDummy.box VSphereDummy.box
 [ -e VagrantfileLocal ] || ln -s ../../vagrant/VagrantfileLocal.centos67 VagrantfileLocal
 
 # Copy words1.sqlite Db so we don't have to download it again
