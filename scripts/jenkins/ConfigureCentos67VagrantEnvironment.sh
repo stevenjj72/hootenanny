@@ -38,26 +38,14 @@ chmod a+rw conf/words1.sqlite
 # Grab the latest version of the software that the VagrantProvision script will try to download
 cp -R ../../software.centos67 software
 
-cp LocalConfig.pri.orig LocalConfig.pri
-sed -i s/"QMAKE_CXX=g++"/"#QMAKE_CXX=g++"/g LocalConfig.pri
-sed -i s/"#QMAKE_CXX=ccache g++"/"QMAKE_CXX=ccache g++"/g LocalConfig.pri
-
-# NOTE: We will reset this file in the Jenkins job
-if grep --quiet "with-uitests" VagrantBuild.sh; then
-    sed -i s/"\-\-with-uitests"/""/g VagrantBuild.sh
-fi
-
-if grep --quiet "tomcat6" VagrantBuild.sh; then
-    sed -i s/"tomcat6"/"tomcat"/g VagrantBuild.sh
-fi
-
 # Make sure we are not running
 vagrant halt
 
 REBUILD_VAGRANT=false
 
-# Grab the Centos provision script and stomp on the Ubuntu one.
+# Grab the Centos provision and build scripts and stomp on the Ubuntu ones.
 cp scripts/jenkins/VagrantProvisionCentos67.sh VagrantProvision.sh
+cp scripts/jenkins/VagrantBuildCentos67.sh Vagrantbuild.sh
 
 # Taking this out since we are copying the VagrantProvision.sh
 #[ -f Vagrant.marker ] && [ Vagrant.marker -ot VagrantProvision.sh ] && REBUILD_VAGRANT=true

@@ -14,189 +14,28 @@ echo "name=hoot" | sudo tee -a /etc/yum.repos.d/hoot.repo
 echo "baseurl=https://s3.amazonaws.com/hoot-rpms/stable/el6/" | sudo tee -a /etc/yum.repos.d/hoot.repo
 echo "gpgcheck=0" | sudo tee -a /etc/yum.repos.d/hoot.repo
 
-
-# Link $HOOT_HOME and /var/lib/hootenanny so we can use the stuff in the RPM's and also build Hoot
-#sudo ln -s $HOOT_HOME /var/lib/hootenanny
-
-#sudo yum -y update
-
-# Testing
+# Update the Hoot and other repos
 sudo yum --enablerepo=hoot clean metadata
-
-#sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
-sudo yum -y install hootenanny-core-deps
-sudo yum -y install hootenanny-core-devel-deps
-sudo yum -y install hootenanny-services-devel-deps
-
-sudo yum -y install tomcat6 ccache
 
 # Trying this _after_ hoot is installed
 sudo yum -y update
 
-# Centos doesn't have this file and the standard Ubuntu scripts need it.
-touch ~/.profile
+#sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
 
-# cd away from $HOME to avoid postgres warnings
-cd /tmp
+#sudo yum -y install hootenanny-core-deps
+#sudo yum -y install hootenanny-core-devel-deps
+# sudo yum -y install hootenanny-services-devel-deps
+# sudo yum -y install tomcat6 ccache npm
 
-##### Taken from the Hoot RPM spec file. We are using the "autostart" bit
-    # init and start Postgres
-    PG_SERVICE=$(ls /etc/init.d | grep postgresql-)
-    sudo service $PG_SERVICE initdb
-    sudo service $PG_SERVICE start
-  sudo /sbin/chkconfig --add postgresql-$PG_VERSION
-  sudo /sbin/chkconfig postgresql-$PG_VERSION on
+# Trying one line
+sudo yum -y install hootenanny-core-deps hootenanny-core-devel-deps hootenanny-services-devel-deps tomcat6 ccache npm mocha
 
-    export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
+# Trying this _after_ hoot is installed
+#sudo yum -y update
 
-    sudo service tomcat6 start
-  sudo /sbin/chkconfig --add tomcat6
-  sudo /sbin/chkconfig tomcat6 on
-
-    # create Hoot services db
-    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw hoot; then
-        sudo -u postgres createuser --superuser hoot || true
-        sudo -u postgres psql -c "alter user hoot with password 'hoottest';"
-        sudo -u postgres createdb hoot --owner=hoot
-        sudo -u postgres createdb wfsstoredb --owner=hoot
-        sudo -u postgres psql -d hoot -c 'create extension hstore;'
-        sudo -u postgres psql -d postgres -c "UPDATE pg_database SET datistemplate='true' WHERE datname='wfsstoredb'"
-        sudo -u postgres psql -d wfsstoredb -c 'create extension postgis;'
-    fi
-
-    # configure Postgres settings
-    PG_HB_CONF=/var/lib/pgsql/$PG_VERSION/data/pg_hba.conf
-    if ! sudo grep -i --quiet hoot $PG_HB_CONF; then
-        sudo -u postgres cp $PG_HB_CONF $PG_HB_CONF.orig
-        sudo -u postgres sed -i '1ihost    all            hoot            127.0.0.1/32            md5' $PG_HB_CONF
-        sudo -u postgres sed -i '1ihost    all            hoot            ::1/128                 md5' $PG_HB_CONF
-    fi
-    POSTGRES_CONF=/var/lib/pgsql/$PG_VERSION/data/postgresql.conf
-    if ! grep -i --quiet HOOT $POSTGRES_CONF; then
-        sudo -u postgres cp $POSTGRES_CONF $POSTGRES_CONF.orig
-        sudo -u postgres sed -i s/^max_connections/\#max_connections/ $POSTGRES_CONF
-        sudo -u postgres sed -i s/^shared_buffers/\#shared_buffers/ $POSTGRES_CONF
-        sudo -u postgres bash -c "cat >> $POSTGRES_CONF" <<EOT
-#--------------
-# Hoot Settings
-#--------------
-max_connections = 1000
-shared_buffers = 1024MB
-max_files_per_process = 1000
-work_mem = 16MB
-maintenance_work_mem = 256MB
-checkpoint_segments = 20
-autovacuum = off
-EOT
-    fi
-    # configure kernel parameters
-    SYSCTL_CONF=/etc/sysctl.conf
-    if ! grep --quiet 1173741824 $SYSCTL_CONF; then
-        sudo cp $SYSCTL_CONF $SYSCTL_CONF.orig
-        echo "Setting kernel.shmmax"
-        sudo sysctl -w kernel.shmmax=1173741824
-        sudo sh -c "echo 'kernel.shmmax=1173741824' >> $SYSCTL_CONF"
-        #                 kernel.shmmax=68719476736
-    fi
-    if ! grep --quiet 2097152 $SYSCTL_CONF; then
-        echo "Setting kernel.shmall"
-        sudo sysctl -w kernel.shmall=2097152
-        sudo sh -c "echo 'kernel.shmall=2097152' >> $SYSCTL_CONF"
-        #                 kernel.shmall=4294967296
-    fi
-    sudo service postgresql-$PG_VERSION restart
-
-    # create the osm api test db
-    sudo -i $HOOT_HOME/scripts/SetupOsmApiDB.sh
-
-    # Create Tomcat context path for tile images
-    TOMCAT_SRV=/etc/tomcat6/server.xml
-    if ! grep -i --quiet 'ingest/processed' $TOMCAT_SRV; then
-        sudo -u tomcat cp $TOMCAT_SRV $TOMCAT_SRV.orig
-        echo "Adding Tomcat context path for tile images"
-        sudo sed -i "s@<\/Host>@ <Context docBase=\"$HOOT_HOME\/ingest\/processed\" path=\"\/static\" \/>\n &@" $TOMCAT_SRV
-    fi
-    # Allow linking in Tomcat context
-    TOMCAT_CTX=/etc/tomcat6/context.xml
-    if ! grep -i --quiet 'allowLinking="true"' $TOMCAT_CTX; then
-        sudo -u tomcat cp $TOMCAT_CTX $TOMCAT_CTX.orig
-        echo "Set allowLinking to true in Tomcat context"
-        sudo sed -i "s@^<Context>@<Context allowLinking=\"true\">@" $TOMCAT_CTX
-    fi
-    # Create directories for webapp
-    export TOMCAT_HOME=/usr/share/tomcat6
-    if [ ! -d $TOMCAT_HOME/.deegree ]; then
-        echo "Creating .deegree directory for webapp"
-        mkdir $TOMCAT_HOME/.deegree
-        #sudo chown tomcat:tomcat $TOMCAT_HOME/.deegree
-    fi
-    BASEMAP_UPLOAD_HOME=$HOOT_HOME/ingest/upload
-    if [ ! -d $BASEMAP_UPLOAD_HOME ]; then
-        echo "Creating ingest/upload directory for webapp"
-        mkdir -p $BASEMAP_UPLOAD_HOME
-        #sudo chown tomcat:tomcat $BASEMAP_UPLOAD_HOME
-    fi
-    BASEMAP_PROCESSED_HOME=$HOOT_HOME/ingest/processed
-    if [ ! -d $BASEMAP_PROCESSED_HOME ]; then
-        echo "Creating ingest/processed directory for webapp"
-        mkdir -p $BASEMAP_PROCESSED_HOME
-        #sudo chown tomcat:tomcat $BASEMAP_PROCESSED_HOME
-    fi
-    UPLOAD_HOME=$HOOT_HOME/upload
-    if [ ! -d $UPLOAD_HOME ]; then
-        echo "Creating upload directory for webapp"
-        mkdir -p $UPLOAD_HOME
-        #sudo chown tomcat:tomcat $UPLOAD_HOME
-    fi
-    CUSTOMSCRIPT_HOME=$HOOT_HOME/customscript
-    if [ ! -d $CUSTOMSCRIPT_HOME ]; then
-        echo "Creating customscript directory for webapp"
-        mkdir -p $CUSTOMSCRIPT_HOME
-        #sudo chown tomcat:tomcat $CUSTOMSCRIPT_HOME
-    fi
-    sudo chmod 777 $HOOT_HOME/tmp
-
-
-#     # Update the db password in hoot-services war
-#     source /var/lib/hootenanny/conf/DatabaseConfig.sh
-#     while [ ! -f /var/lib/tomcat6/webapps/hoot-services/WEB-INF/classes/db/spring-database.xml ]; do
-#         echo "Waiting for hoot-services.war to deploy"
-#         sleep 1
-#     done
-#     sudo sed -i s/password\:\ hoottest/password\:\ $DB_PASSWORD/ /var/lib/tomcat6/webapps/hoot-services/WEB-INF/classes/db/liquibase.properties
-#     sudo sed -i s/value=\"hoottest\"/value=\"$DB_PASSWORD\"/ /var/lib/tomcat6/webapps/hoot-services/WEB-INF/classes/db/spring-database.xml
-#     sudo sed -i s/dbPassword=hoottest/dbPassword=$DB_PASSWORD/ /var/lib/tomcat6/webapps/hoot-services/WEB-INF/classes/conf/hoot-services.conf
-#     sudo sed -i s/\<Password\>hoottest\<\\/Password\>/\<Password\>$DB_PASSWORD\<\\/Password\>/ /var/lib/tomcat6/webapps/hoot-services/WEB-INF/workspace/jdbc/WFS_Connection.xml
-#     sudo sed -i s/\<jdbcPassword\>hoottest\<\\/jdbcPassword\>/\<jdbcPassword\>$DB_PASSWORD\<\\/jdbcPassword\>/ /var/lib/tomcat6/webapps/hoot-services/META-INF/maven/hoot/hoot-services/pom.xml
-#
-#     sudo service tomcat6 restart
-#
-#     # Apply any database schema changes
-#     cd $TOMCAT_HOME/webapps/hoot-services/WEB-INF
-#     liquibase --contexts=default,production \
-#         --changeLogFile=classes/db/db.changelog-master.xml \
-#         --promptForNonLocalDatabase=false \
-#         --driver=org.postgresql.Driver \
-#         --url=jdbc:postgresql:$DB_NAME \
-#         --username=$DB_USER \
-#         --password=$DB_PASSWORD \
-#         --logLevel=warning \
-#         --classpath=lib/postgresql-9.1-901-1.jdbc4.jar \
-#         update
-
-    # Configuring firewall
-    if ! sudo iptables --list-rules | grep -i --quiet 'dport 80'; then
-        sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
-        sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT
-        sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8000 -j ACCEPT
-        sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8094 -j ACCEPT
-        sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8096 -j ACCEPT
-        sudo iptables -I PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-ports 8080
-        sudo iptables -I OUTPUT -t nat -s 0/0 -d 127/8 -p tcp --dport 80 -j REDIRECT --to-ports 8080
-        sudo service iptables save
-        sudo service iptables restart
-    fi
-
+# Install Mocha for services tests
+sudo npm install --silent -g mocha
+sudo rm -rf $HOME/tmp
 
 echo "### Configuring environment..."
 
@@ -210,102 +49,97 @@ if [ -f $HOOT_HOME/hoot-services/src/main/resources/conf/local.conf ]; then
     rm -f $HOOT_HOME/hoot-services/src/main/resources/conf/local.conf
 fi
 
-if ! grep --quiet "export HOOT_HOME" ~/.bash_profile; then
-    echo "Adding hoot home to profile..."
-    echo "export HOOT_HOME=\$HOME/hoot" >> ~/.bash_profile
-    echo "export PATH=\$PATH:\$HOOT_HOME/bin" >> ~/.bash_profile
-    source ~/.bash_profile
+cd $HOOT_HOME
+
+# Use ccache if it is available
+cp LocalConfig.pri.orig LocalConfig.pri
+command -v ccache >/dev/null 2>&1 && echo "QMAKE_CXX=ccache g++" >> LocalConfig.pri
+
+# This is for later in the build
+sudo sh -c "echo 'export HOOT_HOME=/var/lib/hootenanny' > /etc/profile.d/hootenanny.sh"
+sudo chmod 755 /etc/profile.d/hootenanny.sh
+
+echo "### Configure Tomcat..."
+# Tomcat environment
+sudo mkdir -p /var/lib/tomcat6/webapps
+sudo chown tomcat:tomcat /var/lib/tomcat6/webapps
+
+# create the osm api test db
+$HOOT_HOME/scripts/SetupOsmApiDB.sh
+
+# Create Tomcat context path for tile images
+TOMCAT_SRV=/etc/tomcat6/server.xml
+if ! grep -i --quiet 'ingest/processed' $TOMCAT_SRV; then
+    sudo -u tomcat cp $TOMCAT_SRV $TOMCAT_SRV.orig
+    echo "Adding Tomcat context path for tile images"
+    sudo sed -i "s@<\/Host>@ <Context docBase=\"\/var\/lib\/hootenanny\/ingest\/processed\" path=\"\/static\" \/>\n &@" $TOMCAT_SRV
 fi
-
-# if ! grep --quiet "export JAVA_HOME" ~/.bash_profile; then
-#     echo "Adding Java home to profile..."
-#     echo "export JAVA_HOME=/etc/alternatives/jre_1.8.0" >> ~/.bash_profile
-#     source ~/.bash_profile
-# fi
-
-# if ! grep --quiet "export HADOOP_HOME" ~/.bash_profile; then
-#     echo "Adding Hadoop home to profile..."
-#     #echo "export HADOOP_HOME=/usr/local/hadoop" >> ~/.bash_profile
-#     echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.bash_profile
-#     echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.bash_profile
-#     source ~/.bash_profile
-# fi
-
-if ! grep --quiet "\$HOME/bin" ~/.bash_profile; then
-    echo "Adding path vars to profile..."
-    echo "export PATH=\$PATH:\$HOME/bin" >> ~/.bash_profile
-    source ~/.bash_profile
+# Allow linking in Tomcat context
+TOMCAT_CTX=/etc/tomcat6/context.xml
+if ! grep -i --quiet 'allowLinking="true"' $TOMCAT_CTX; then
+    sudo -u tomcat cp $TOMCAT_CTX $TOMCAT_CTX.orig
+    echo "Set allowLinking to true in Tomcat context"
+    sudo sed -i "s@^<Context>@<Context allowLinking=\"true\">@" $TOMCAT_CTX
 fi
-
-# Configure Tomcat
-if ! grep --quiet TOMCAT6_HOME ~/.bash_profile; then
-    echo "### Adding Tomcat to profile..."
-    echo "export TOMCAT6_HOME=/var/lib/tomcat6" >> ~/.bash_profile
-    source ~/.bash_profile
+# Create directories for webapp
+TOMCAT_HOME=/usr/share/tomcat6
+if [ ! -d $TOMCAT_HOME/.deegree ]; then
+    echo "Creating .deegree directory for webapp"
+    sudo mkdir $TOMCAT_HOME/.deegree
+    sudo chown tomcat:tomcat $TOMCAT_HOME/.deegree
 fi
-
-# Add tomcat6 and vagrant to each others groups so we can get the group write working with nfs
-if ! groups vagrant | grep --quiet '\btomcat\b'; then
-    echo "Adding vagrant user to tomcat user group..."
-    sudo usermod -a -G tomcat vagrant
+BASEMAP_UPLOAD_HOME=/var/lib/hootenanny/ingest/upload
+if [ ! -d $BASEMAP_UPLOAD_HOME ]; then
+    echo "Creating ingest/upload directory for webapp"
+    sudo mkdir -p $BASEMAP_UPLOAD_HOME
+    sudo chown tomcat:tomcat $BASEMAP_UPLOAD_HOME
 fi
-if ! groups tomcat | grep --quiet "\bvagrant\b"; then
-    echo "Adding tomcat user to vagrant user group..."
-    sudo usermod -a -G vagrant tomcat
+BASEMAP_PROCESSED_HOME=/var/lib/hootenanny/ingest/processed
+if [ ! -d $BASEMAP_PROCESSED_HOME ]; then
+    echo "Creating ingest/processed directory for webapp"
+    sudo mkdir -p $BASEMAP_PROCESSED_HOME
+    sudo chown tomcat:tomcat $BASEMAP_PROCESSED_HOME
 fi
-
-if ! grep -i --quiet HOOT /etc/default/tomcat6; then
-echo "Configuring tomcat6 environment..."
-# This echo properly substitutes the home path dir and keeps it from having to be hardcoded, but
-# fails on permissions during write...so hardcoding the home path here instead for now.  This
-# hardcode needs to be removed in order for hoot dev env install script to work correctly.
-#
-#sudo echo "#--------------
-# Hoot Settings
-#--------------
-#HOOT_HOME=\$HOOT_HOME/hoot" >> /etc/default/tomcat6
-
-sudo bash -c "cat >> /etc/default/tomcat6" <<EOT
-
-#--------------
-# Hoot Settings
-#--------------
-HOOT_HOME=/home/vagrant/hoot
-HADOOP_HOME=/home/vagrant/hadoop
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:$HOOT_HOME/lib:$HOOT_HOME/pretty-pipes/lib
-#GDAL_DATA=/usr/local/share/gdal
-#GDAL_LIB_DIR=/usr/local/lib
-HOOT_WORKING_NAME=hoot
-PATH=$HOOT_HOME/bin:$PATH
-EOT
+UPLOAD_HOME=/var/lib/hootenanny/upload
+if [ ! -d $UPLOAD_HOME ]; then
+    echo "Creating upload directory for webapp"
+    sudo mkdir -p $UPLOAD_HOME
+    sudo chown tomcat:tomcat $UPLOAD_HOME
 fi
-
-# Can change it to 000 to get rid of errors
-if ! grep -i --quiet 'umask 002' /etc/default/tomcat6; then
-echo "### Changing Tomcat umask to group write..."
-sudo bash -c "cat >> /etc/default/tomcat6" <<EOT
-# Set tomcat6 umask to group write because all files in shared folder are owned by vagrant
-umask 002
-EOT
+CUSTOMSCRIPT_HOME=/var/lib/hootenanny/customscript
+if [ ! -d $CUSTOMSCRIPT_HOME ]; then
+    echo "Creating customscript directory for webapp"
+    sudo mkdir -p $CUSTOMSCRIPT_HOME
+    sudo chown tomcat:tomcat $CUSTOMSCRIPT_HOME
 fi
-
-if grep -i --quiet '^JAVA_OPTS=.*\-Xmx128m' /etc/default/tomcat6; then
-    echo "### Changing Tomcat java opts..."
-    sudo sed -i.bak "s@\-Xmx128m@\-Xms512m \-Xmx2048m \-XX:PermSize=512m \-XX:MaxPermSize=4096m@" /etc/default/tomcat6
+TMP_HOME=/var/lib/hootenanny/tmp
+if [ ! -d $TMP_HOME ]; then
+    echo "Creating tmp directory for webapp"
+    sudo mkdir -p $TMP_HOME
+    sudo chown tomcat:tomcat $TMP_HOME
+fi
+REPORT_HOME=/var/lib/hootenanny/data/reports
+if [ ! -d $REPORT_HOME ]; then
+    echo "Creating data/reports directory for webapp"
+    sudo mkdir -p $REPORT_HOME
+    sudo chown tomcat:tomcat $REPORT_HOME
+    sudo chown tomcat:tomcat $REPORT_HOME/..
 fi
 
 
-# Make sure that we are in ~ before trying to wget & install stuff
-cd ~
+echo "### Configure AutoStart..."
+# set Postgres to autostart
+export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
+sudo /sbin/chkconfig --add postgresql-$PG_VERSION
+sudo /sbin/chkconfig postgresql-$PG_VERSION on
+# set Tomcat to autostart
+sudo /sbin/chkconfig --add tomcat6
+sudo /sbin/chkconfig tomcat6 on
 
-# Sigh, Centos
-sudo cp /home/vagrant/.bash_profile /usr/share/tomcat6/.profile
-#cp /home/vagrant/.bash_profile /home/vagrant/.profile
-
-
-# Clean out tomcat logfile. We restart tomcat after provisioning
-sudo service tomcat6 stop
-sudo rm /var/log/tomcat6/catalina.out
+## For the future
+# set NodeJS node-mapnik-server to autostart
+#sudo /sbin/chkconfig --add node-mapnik-server
+#sudo /sbin/chkconfig node-mapnik-server on
 
 
 ### Stop here, Hadoop will be added in later ###
