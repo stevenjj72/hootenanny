@@ -45,7 +45,7 @@ REBUILD_VAGRANT=false
 
 # Grab the Centos provision and build scripts and stomp on the Ubuntu ones.
 cp scripts/jenkins/VagrantProvisionCentos67.sh VagrantProvision.sh
-cp scripts/jenkins/VagrantBuildCentos67.sh Vagrantbuild.sh
+cp scripts/jenkins/VagrantBuildCentos67.sh VagrantBuild.sh
 
 # Taking this out since we are copying the VagrantProvision.sh
 #[ -f Vagrant.marker ] && [ Vagrant.marker -ot VagrantProvision.sh ] && REBUILD_VAGRANT=true

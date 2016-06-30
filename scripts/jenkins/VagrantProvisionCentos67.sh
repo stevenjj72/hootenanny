@@ -20,15 +20,7 @@ sudo yum --enablerepo=hoot clean metadata
 # Trying this _after_ hoot is installed
 sudo yum -y update
 
-#sudo yum -y install hootenanny-core >> Centos_Update.txt 2>&1
-
-#sudo yum -y install hootenanny-core-deps
-#sudo yum -y install hootenanny-core-devel-deps
-# sudo yum -y install hootenanny-services-devel-deps
-# sudo yum -y install tomcat6 ccache npm
-
-# Trying one line
-sudo yum -y install hootenanny-core-deps hootenanny-core-devel-deps hootenanny-services-devel-deps tomcat6 ccache npm mocha
+sudo yum -y install hootenanny-core-deps hootenanny-core-devel-deps hootenanny-services-devel-deps tomcat6 ccache
 
 # Trying this _after_ hoot is installed
 #sudo yum -y update
@@ -126,8 +118,24 @@ if [ ! -d $REPORT_HOME ]; then
     sudo chown tomcat:tomcat $REPORT_HOME/..
 fi
 
+echo "### Configure Firewall..."
+if ! sudo iptables --list-rules | grep -i --quiet 'dport 80'; then
+    sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+    sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT
+    sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8000 -j ACCEPT
+    sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8094 -j ACCEPT
+    sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 8096 -j ACCEPT
+    sudo iptables -I PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-ports 8080
+    sudo iptables -I OUTPUT -t nat -s 0/0 -d 127/8 -p tcp --dport 80 -j REDIRECT --to-ports 8080
+    sudo service iptables save
+    sudo service iptables restart
+fi
+
 
 echo "### Configure AutoStart..."
+# Avoid postgres warnings
+cd /tmp
+
 # set Postgres to autostart
 export PG_VERSION=$(sudo -u postgres psql -c 'SHOW SERVER_VERSION;' | egrep -o '[0-9]{1,}\.[0-9]{1,}')
 sudo /sbin/chkconfig --add postgresql-$PG_VERSION

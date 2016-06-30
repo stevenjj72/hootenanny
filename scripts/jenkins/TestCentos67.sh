@@ -5,7 +5,7 @@ set -e
 
 cd $HOOT_HOME
 
-make -sj`nproc`
+#make -sj`nproc`
 
 hoot --version --debug
 
@@ -19,6 +19,10 @@ HootTest --exclude=.*RubberSheetConflateTest.sh \
   --slow
 
 # This is a broken out version of "test-all" so we can exclude tests that fail on Centos67
+
+# This fails
 #make -sj`nproc` services-test-all
 make -sj`nproc` pp-test
+
+# This fails as well
 make -sj`nproc` plugins-test
