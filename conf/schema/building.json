@@ -342,6 +342,10 @@
             "building=1",
             "building=on"
         ],
+        "categories": [
+            "poi",
+            "hgispoi"
+        ],
         "isA": "building",
         "name": "building=yes",
         "objectType": "tag",
