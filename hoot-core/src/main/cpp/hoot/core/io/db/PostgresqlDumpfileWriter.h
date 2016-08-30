@@ -119,7 +119,7 @@ private:
 
   std::list<QString> _sectionNames;
 
-  QString _outputFilename;
+  QFile _outputFilename;
 
   struct _ElementWriteStats
   {

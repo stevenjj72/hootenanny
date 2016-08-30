@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,6 +27,7 @@
 #include "ReviewMarker.h"
 
 #include <hoot/core/util/Log.h>
+#include <hoot/core/ops/RemoveElementOp.h>
 
 // Tgs
 #include <tgs/RStarTree/HilbertCurve.h>
@@ -255,7 +256,7 @@ void ReviewMarker::mark(const OsmMapPtr& map, const ElementPtr& e, const QString
 
 void ReviewMarker::removeElement(const OsmMapPtr& map, ElementId eid)
 {
-  map->removeElement(eid);
+  RemoveElementOp::removeElement(map, eid);
 }
 
 }

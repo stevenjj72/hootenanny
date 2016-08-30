@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 package hoot.services.utils;
 
@@ -75,7 +75,7 @@ public final class DataDefinitionManager {
         }
     }
 
-    public static void deleteDb(String dbname, boolean force) throws SQLException {
+    static void deleteDb(String dbname, boolean force) throws SQLException {
         try (Connection conn = DbUtils.createConnection()) {
             // TODO: re-evaluate what this if block is supposed to to.
             if (force) {
@@ -128,7 +128,7 @@ public final class DataDefinitionManager {
         return tblList;
     }
 
-    public static void createTable(String createTblSql, String dbname) throws SQLException {
+    static void createTable(String createTblSql, String dbname) throws SQLException {
         try (Connection conn = DbUtils.createConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(createTblSql)) {
                 stmt.executeUpdate();

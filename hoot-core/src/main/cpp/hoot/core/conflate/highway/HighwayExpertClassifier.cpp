@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "HighwayExpertClassifier.h"
 
@@ -55,6 +55,11 @@ MatchClassification HighwayExpertClassifier::classify(const ConstOsmMapPtr& map,
     result.setMatchP(m.getMatchP() + result.getMatchP());
     result.setMissP(m.getMissP() + result.getMissP());
     result.setReviewP(m.getReviewP() + result.getReviewP());
+  }
+
+  if (result.getMatchP() + result.getMissP() + result.getReviewP() == 0.0)
+  {
+    result.setMiss();
   }
 
   result.normalize();

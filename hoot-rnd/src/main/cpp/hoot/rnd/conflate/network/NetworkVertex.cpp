@@ -22,12 +22,27 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "NetworkVertex.h"
 
+// hoot
+#include <hoot/core/util/Log.h>
+
 namespace hoot
 {
+
+int NetworkVertex::uidCount = 0;
+
+NetworkVertex::NetworkVertex(ConstElementPtr e) : _e(e)
+{
+  _uid = uidCount++;
+}
+
+void NetworkVertex::reset()
+{
+  uidCount = 0;
+}
 
 QString NetworkVertex::toString() const
 {
@@ -38,7 +53,7 @@ QString NetworkVertex::toString() const
   }
   else
   {
-    result = _e->getElementId().toString();
+    result = QString("(%1) %2").arg(_uid).arg(_e->getElementId().toString());
   }
 
   return result;

@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef NETWORKVERTEXSCORE_H
 #define NETWORKVERTEXSCORE_H
@@ -48,7 +48,7 @@ public:
 
   ConstNetworkVertexPtr getV2() const { return _v2; }
 
-  double getScore() const { return _score12 * _score21; }
+  double getScore() const { return sqrt(_score12 * _score21); }
 
   double getScore12() const { return _score12; }
 
@@ -67,6 +67,9 @@ private:
 };
 
 typedef shared_ptr<NetworkVertexScore> NetworkVertexScorePtr;
+
+// not implemented
+bool operator<(NetworkVertexScorePtr, NetworkVertexScorePtr);
 
 }
 

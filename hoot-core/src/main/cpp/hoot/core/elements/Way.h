@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -209,6 +209,16 @@ private:
 
 typedef boost::shared_ptr<Way> WayPtr;
 typedef boost::shared_ptr<const Way> ConstWayPtr;
+
+inline bool operator<(WayPtr w1, WayPtr w2)
+{
+  return w1->getElementId() < w2->getElementId();
+}
+
+inline bool operator<(ConstWayPtr w1, ConstWayPtr w2)
+{
+  return w1->getElementId() < w2->getElementId();
+}
 
 template<typename IT>
 void Way::addNodes(IT start, IT end)

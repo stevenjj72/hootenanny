@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "OsmNetworkExtractor.h"
 
@@ -56,13 +56,13 @@ OsmNetworkExtractor::OsmNetworkExtractor()
 void OsmNetworkExtractor::_addEdge(ConstElementPtr from, ConstElementPtr to,
   QList<ConstElementPtr> members, bool directed)
 {
-  NetworkVertexPtr v1 = _network->getVertex(from->getElementId());
+  ConstNetworkVertexPtr v1 = _network->getSingleVertex(from->getElementId());
   if (!v1.get())
   {
     v1.reset(new NetworkVertex(from));
     _network->addVertex(v1);
   }
-  NetworkVertexPtr v2 = _network->getVertex(to->getElementId());
+  ConstNetworkVertexPtr v2 = _network->getSingleVertex(to->getElementId());
   if (!v2.get())
   {
     v2.reset(new NetworkVertex(to));
