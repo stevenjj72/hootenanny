@@ -69,7 +69,8 @@ def printJavascript(schema):
             continue
 
         print '        { name:"%s",' % (f); # name = geom + FCODE
-        print '          fcode:"%s",' % (schema[f]['fcode'])
+        if schema[f]['fcode'] != '':
+            print '          fcode:"%s",' % (schema[f]['fcode'])
         print '          desc:"%s",' % (schema[f]['desc'])
         print '          geom:"%s",' % (schema[f]['geom'])
         print '          columns:[ '
@@ -78,7 +79,8 @@ def printJavascript(schema):
         for k in sorted(schema[f]['columns'].keys()):
             print '                     { name:"%s",' % (k)
             print '                       desc:"%s" ,' % (schema[f]['columns'][k]['desc'])
-            print '                       optional:"%s" ,' % (schema[f]['columns'][k]['optional'])
+            if 'optional' in schema[f]['columns'][k]:
+                print '                       optional:"%s" ,' % (schema[f]['columns'][k]['optional'])
 
             #if schema[f]['columns'][k]['length'] != '':
             if 'length' in schema[f]['columns'][k]:
@@ -106,7 +108,8 @@ def printJavascript(schema):
 
             else:
                 print '                       type:"%s",' % (schema[f]['columns'][k]['type'])
-                print '                       defValue:"%s" ' % (schema[f]['columns'][k]['defValue'])
+                if 'defValue' in schema[f]['columns'][k]:
+                    print '                       defValue:"%s" ' % (schema[f]['columns'][k]['defValue'])
 
             if num_attrib == 1:  # Are we at the last attribute? yes = no trailing comma
                 print '                     } // End of %s' % (k)
@@ -414,6 +417,33 @@ def printAttributeCsv(schema):
                 #print '"%s","%s","%s"' % (i,j,k)
                 print '%s,"%s","%s"' % (i,j,k)
 # End printAttributeCsv
+
+
+# Add o2s etc
+def addOtherFeatures(schema):
+    # This is not very good. There is probably a better way
+    for layer in ['Area','Line','Point']:
+        schema['o2s_' + layer[0]] = { 'name': 'o2s_' + layer[0], 'fcode':'', 'desc': 'o2s', 'geom': layer,
+            'columns':{ 'tag1':{ 'name':'tag1', 'desc':'Tag List', 'type':'String'},
+                        'tag2':{ 'name':'tag2', 'desc':'Tag List', 'type':'String', 'defValue': ''},
+                        'tag3':{ 'name':'tag3', 'desc':'Tag List', 'type':'String', 'defValue': ''},
+                        'tag4':{ 'name':'tag4', 'desc':'Tag List', 'type':'String', 'defValue': ''}
+                    } }
+
+        schema['review_' + layer[0]] = { 'name': 'review_' + layer[0], 'fcode':'', 'desc': 'Review Features', 'geom': layer,
+            'columns':{ 'score':{ 'name':'score', 'desc':'Review Score', 'type':'String'},
+                        'note':{ 'name':'note', 'desc':'Review Note', 'type':'String', 'defValue': ''},
+                        'source':{ 'name':'source', 'desc':'Review Source', 'type':'String', 'defValue': ''},
+                        'uuid':{ 'name':'uuid', 'desc':'Review uuid', 'type':'String', 'defValue': ''}
+                      } }
+
+        #schema['extra_' + layer[0]] = { 'name': 'extra_' + layer[0], 'fcode':'', 'desc': 'extra tag values', 'geom': layer,
+            #'columns':{ 'tags':{ 'name':'tags', 'desc':'Tag List', 'type':'String'},
+                        #'uuid':{ 'name':'uuid', 'desc':'Feature uuid', 'type':'String', 'defValue': ''}
+                    #} }
+
+    return schema
+# End addOtherFeatures
 
 
 def openFile(path, mode):
@@ -1846,6 +1876,10 @@ else:
     printVariableBody('building_FFN',building_FFN)
     printVariableBody('facility_FFN',facility_FFN)
     printVariableBody('fortified_FFN',fortified_FFN)
+
+    # Add o2s, extra and review features
+    schema = addOtherFeatures(schema)
+
     printJavascript(schema)
     printJSFooter()
 # End

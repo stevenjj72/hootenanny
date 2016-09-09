@@ -872,6 +872,8 @@ translate = {
 
         for (var i=0, sLen = schema.length; i < sLen; i++)
         {
+            if (! schema[i]['fcode']) continue;
+
             var attrArray = [];
             for (var j=0, cLen = schema[i].columns.length; j < cLen; j++)
             {
@@ -892,6 +894,8 @@ translate = {
 
         for (var i=0, sLen = schema.length; i < sLen; i++)
         {
+            if (! schema[i]['fcode']) continue;
+
             lookup[schema[i].geom.charAt(0) + schema[i].fcode] = schema[i].name;
         }
 

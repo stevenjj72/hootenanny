@@ -39,6 +39,8 @@ tds61 = {
         layerNameLookup = {}; // <GLOBAL> Lookup table for converting an FCODE to a layername
         nfddAttrLookup = {}; // <GLOBAL> Lookup table for checking what attrs are in an FCODE
         
+        hoot.require('tds61_schema');
+
         // Warning: This is <GLOBAL> so we can get access to it from other functions
         tds61.rawSchema = tds61.schema.getDbSchema();
 
@@ -82,15 +84,8 @@ tds61 = {
             // Now build the FCODE/layername lookup table. Note: This is <GLOBAL>
             layerNameLookup = translate.makeLayerNameLookup(tds61.rawSchema);
 
-            // Now add an o2s[A,L,P] feature to the tds61.rawSchema
-            // We can drop features but this is a nice way to see what we would drop
-            tds61.rawSchema = translate.addEmptyFeature(tds61.rawSchema);
-
-            // Add the empty Review layers
-            tds61.rawSchema = translate.addReviewFeature(tds61.rawSchema);
-
             // Debugging:
-            // translate.dumpSchema(tds61.rawSchema);
+            //translate.dumpSchema(tds61.rawSchema);
 
             return tds61.rawSchema;
         }
@@ -208,8 +203,8 @@ tds61 = {
         tdsAttrLookup = translate.makeTdsAttrLookup(newSchema);
 
         // Debug:
-        // print("tdsAttrLookup");
-        // translate.dumpLookup(tdsAttrLookup);
+        //print("tdsAttrLookup");
+        //translate.dumpLookup(tdsAttrLookup);
 
         // Add the ESRI Feature Dataset name to the schema
         //  newSchema = translate.addFdName(newSchema,'TDS');

@@ -40,6 +40,8 @@
 mgcp = {
     getDbSchema: function() {
 
+    hoot.require('mgcp_schema')
+
     mgcp.rawSchema = mgcp.schema.getDbSchema(); // This is <GLOBAL> so we can access it from other areas
 
     // Build the MGCP fcode/attrs lookup table. Note: This is <GLOBAL>
@@ -47,19 +49,6 @@ mgcp = {
 
     // Now build the FCODE/layername lookup table. Note: This is <GLOBAL>
     layerNameLookup = translate.makeLayerNameLookup(mgcp.rawSchema);
-
-    // Now add an o2s[A,L,P] feature to the mgcp.rawSchema
-    // We can drop features but this is a nice way to see what we would drop
-    mgcp.rawSchema = translate.addEmptyFeature(mgcp.rawSchema);
-
-    // Add empty Review layers
-    mgcp.rawSchema = translate.addReviewFeature(mgcp.rawSchema);
-
-    // Add empty "extra" feature layers if needed
-    if (config.getOgrMgcpExtra() == 'file') mgcp.rawSchema = translate.addExtraFeature(mgcp.rawSchema);
-
-    // This function dumps the schema to the screen for debugging
-    // translate.dumpSchema(mgcp.rawSchema);
 
     return mgcp.rawSchema;
     }, // End of getDbSchema

@@ -39,6 +39,8 @@ tds = {
         layerNameLookup = {}; // <GLOBAL> Lookup table for converting an FCODE to a layername
         nfddAttrLookup = {}; // <GLOBAL> Lookup table for checking what attrs are in an FCODE
 
+        hoot.require('tds40_schema');
+
         // Warning: This is <GLOBAL> so we can get access to it from other functions
         tds.rawSchema = tds.schema.getDbSchema();
 
@@ -85,15 +87,8 @@ tds = {
             // Now build the FCODE/layername lookup table. Note: This is <GLOBAL>
             layerNameLookup = translate.makeLayerNameLookup(tds.rawSchema);
 
-            // Now add an o2s[A,L,P] feature to the tds.rawSchema
-            // We can drop features but this is a nice way to see what we would drop
-            tds.rawSchema = translate.addEmptyFeature(tds.rawSchema);
-
-            // Add the empty Review layers
-            tds.rawSchema = translate.addReviewFeature(tds.rawSchema);
-
             // Debugging:
-            // translate.dumpSchema(tds.rawSchema);
+            //translate.dumpSchema(tds.rawSchema);
 
             return tds.rawSchema;
         }
