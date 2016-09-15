@@ -116,7 +116,6 @@ exports.getSearchRadius = function(e) {
             //for building, here force to use radius defined in distances for building=yes
             if (distances[i].k == "building" && distances[i].v == "yes") {
                 radius = distances[i].review;
-                hoot.log("radius final: " + radius);
             }
         }
     }
