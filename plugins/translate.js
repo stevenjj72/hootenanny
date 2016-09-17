@@ -1186,6 +1186,8 @@ translate = {
     { 
         for (var i = 0, schemaLen = schema.length; i < schemaLen; i++)
         {
+            if (schema[i]['name'].indexOf('_') > -1) continue;
+
             schema[i].fdname = name;
         }
 

@@ -12,7 +12,7 @@ SHELL=/bin/bash
 
 # If you're adding another schema file be sure and update the archive target
 # too.
-SCHEMA_FILES=plugins/tds61_schema.js plugins/tds61_full_schema.js plugins/etds61_rules.js plugins/etds61_osm_rules.js plugins/tds40_schema.js plugins/tds40_full_schema.js plugins/etds40_rules.js plugins/etds40_osm_rules.js plugins/mgcp_schema.js plugins/emgcp_rules.js plugins/emgcp_osm_rules.js
+SCHEMA_FILES=plugins/tds61_schema.js plugins/tds61_tds_schema.js plugins/tds61_full_schema.js plugins/tds61_attrlookup.js plugins/tds61_tdsattrlookup.js plugins/etds61_rules.js plugins/etds61_osm_rules.js plugins/tds40_schema.js plugins/tds40_full_schema.js plugins/etds40_rules.js plugins/etds40_osm_rules.js plugins/mgcp_schema.js plugins/emgcp_rules.js plugins/emgcp_osm_rules.js
 
 -include Makefile.inc
 
@@ -213,11 +213,26 @@ plugins/tds61_schema.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz 
 	mkdir -p $(@D)
 	$< $(word 2,$^) $(word 3,$^) > $@ || (rm -f $@ ; exit -1)
 
+# TDSv61 Themaic Group structured schema built from the TDSv60 spec with NGA's extensions
+plugins/tds61_tds_schema.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
+	mkdir -p $(@D)
+	$< --tdsschema $(word 2,$^) $(word 3,$^) > $@ || (rm -f $@ ; exit -1)
+
 # TDSv61 full schema is built from the TDSv60 spec with NGA's extensions.
 # This one has all of the Text Enumerations
 plugins/tds61_full_schema.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
 	mkdir -p $(@D)
 	$< --fullschema $(word 2,$^) $(word 3,$^) > $@ || (rm -f $@ ; exit -1)
+
+# TDSv61 attribute lookup table built from the TDSv60 spec with NGA's extensions.
+plugins/tds61_attrlookup.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
+	mkdir -p $(@D)
+	$< --attrlookup $(word 2,$^) $(word 3,$^) > $@ || (rm -f $@ ; exit -1)
+
+# TDSv61 thematic group attribute lookup table built from the TDSv60 spec with NGA's extensions.
+plugins/tds61_tdsattrlookup.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
+	mkdir -p $(@D)
+	$< --tdsattrlookup $(word 2,$^) $(word 3,$^) > $@ || (rm -f $@ ; exit -1)
 
 # Build the TDS61 "To English" rules
 plugins/etds61_rules.js: scripts/ConvertTDSv61Schema.py conf/nfdd/TDSv60.csv.gz conf/nfdd/TDS_NGAv01.csv.gz
@@ -366,7 +381,10 @@ archive: js-make services-build docs
 	cp plugins/etds40_osm_rules.js $(HOOT_TARNAME)/plugins/etds40_osm_rules.js
 	# TDSv61
 	cp plugins/tds61_schema.js $(HOOT_TARNAME)/plugins/tds61_schema.js
+	cp plugins/tds61_tds_schema.js $(HOOT_TARNAME)/plugins/tds61_tds_schema.js
 	cp plugins/tds61_full_schema.js $(HOOT_TARNAME)/plugins/tds61_full_schema.js
+	cp plugins/tds61_attrlookup.js $(HOOT_TARNAME)/plugins/tds61_attrlookup.js
+	cp plugins/tds61_tdsattrlookup.js $(HOOT_TARNAME)/plugins/tds61_tdsattrlookup.js
 	cp plugins/etds61_rules.js $(HOOT_TARNAME)/plugins/etds61_rules.js
 	cp plugins/etds61_osm_rules.js $(HOOT_TARNAME)/plugins/etds61_osm_rules.js
 	# MGCP

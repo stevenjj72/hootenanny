@@ -1,36 +1,37 @@
 #!/usr/bin/python
 
- #/*
- #* This file is part of Hootenanny.
- #*
- #* Hootenanny is free software: you can redistribute it and/or modify
- #* it under the terms of the GNU General Public License as published by
- #* the Free Software Foundation, either version 3 of the License, or
- #* (at your option) any later version.
- #*
- #* This program is distributed in the hope that it will be useful,
- #* but WITHOUT ANY WARRANTY; without even the implied warranty of
- #* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- #* GNU General Public License for more details.
- #*
- #* You should have received a copy of the GNU General Public License
- #* along with this program.  If not, see <http://www.gnu.org/licenses/>.
- #*
- #* --------------------------------------------------------------------
- #*
- #* The following copyright notices are generated automatically. If you
- #* have a new notice to add, please use the format:
- #* " * @copyright Copyright ..."
- #* This will properly maintain the copyright information. DigitalGlobe
- #* copyrights will be updated automatically.
- #*
- #* @copyright Copyright (C) 2012, 2013 DigitalGlobe (http://www.digitalglobe.com/)
- #*/
+#/*
+#* This file is part of Hootenanny.
+#*
+#* Hootenanny is free software: you can redistribute it and/or modify
+#* it under the terms of the GNU General Public License as published by
+#* the Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* This program is distributed in the hope that it will be useful,
+#* but WITHOUT ANY WARRANTY; without even the implied warranty of
+#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#* GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU General Public License
+#* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#*
+#* --------------------------------------------------------------------
+#*
+#* The following copyright notices are generated automatically. If you
+#* have a new notice to add, please use the format:
+#* " * @copyright Copyright ..."
+#* This will properly maintain the copyright information. DigitalGlobe
+#* copyrights will be updated automatically.
+#*
+#* @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+#*/
 
 
 # ConvertTDSv40Schema.py
 #
 # This script builds a schema from a csv file
+# The script also generates rules and lookup tables from the schema
 #
 # Note: This script does not do any error or sanity checking of the input files.
 #
@@ -39,7 +40,7 @@
 
 import sys,os,csv,argparse,gzip
 
-
+# Start printJSHeader
 def printJSHeader():
     print notice
     print
@@ -53,6 +54,8 @@ def printJSHeader():
     print '//  Schema built from %s' % (main_csv_file)
     print 'getDbSchema: function()'
     print '{'
+# End printJSHeader
+
 
 # printJavascript: Dump out the structure as Javascript
 #
@@ -127,6 +130,7 @@ def printJavascript(schema):
     print '    ]; // End of schema\n' # End of schema
 
 
+# Start printJSFooter
 def printJSFooter():
     print '    return schema; \n'
     print '} // End of getDbSchema\n'
@@ -134,8 +138,7 @@ def printJSFooter():
     print
     print 'exports.getDbSchema = tds.schema.getDbSchema;'
     print
-
-# End printJavascript
+# End printJSFooter
 
 
 # Print out a codelist as a JS variable
@@ -477,7 +480,7 @@ notice = """/*
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2012, 2013 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
  ////
@@ -487,10 +490,6 @@ notice = """/*
  """
 
 geo_list = {'T':'Table', 'C':'Line', 'S':'Area', 'P':'Point' }
-
-buildingFuncList = {
-    }
-
 
 textFuncList = {
     'CPS':'text_CPS',

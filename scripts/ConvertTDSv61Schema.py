@@ -1,31 +1,31 @@
 #!/usr/bin/python
 
- #/*
- #* This file is part of Hootenanny.
- #*
- #* Hootenanny is free software: you can redistribute it and/or modify
- #* it under the terms of the GNU General Public License as published by
- #* the Free Software Foundation, either version 3 of the License, or
- #* (at your option) any later version.
- #*
- #* This program is distributed in the hope that it will be useful,
- #* but WITHOUT ANY WARRANTY; without even the implied warranty of
- #* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- #* GNU General Public License for more details.
- #*
- #* You should have received a copy of the GNU General Public License
- #* along with this program.  If not, see <http://www.gnu.org/licenses/>.
- #*
- #* --------------------------------------------------------------------
- #*
- #* The following copyright notices are generated automatically. If you
- #* have a new notice to add, please use the format:
- #* " * @copyright Copyright ..."
- #* This will properly maintain the copyright information. DigitalGlobe
- #* copyrights will be updated automatically.
- #*
- #* @copyright Copyright (C) 2012, 2013 DigitalGlobe (http://www.digitalglobe.com/)
- #*/
+#/*
+#* This file is part of Hootenanny.
+#*
+#* Hootenanny is free software: you can redistribute it and/or modify
+#* it under the terms of the GNU General Public License as published by
+#* the Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* This program is distributed in the hope that it will be useful,
+#* but WITHOUT ANY WARRANTY; without even the implied warranty of
+#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#* GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU General Public License
+#* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#*
+#* --------------------------------------------------------------------
+#*
+#* The following copyright notices are generated automatically. If you
+#* have a new notice to add, please use the format:
+#* " * @copyright Copyright ..."
+#* This will properly maintain the copyright information. DigitalGlobe
+#* copyrights will be updated automatically.
+#*
+#* @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+#*/
 
 
 # ConvertTDSv61Schema.py
@@ -40,7 +40,7 @@
 
 import sys,os,csv,argparse,gzip
 
-
+# Start printJSHeader
 def printJSHeader():
     print notice
     print
@@ -54,6 +54,8 @@ def printJSHeader():
     print '//  Schema built from %s and %s' % (main_csv_file, other_csv_file)
     print 'getDbSchema: function()'
     print '{'
+# End printJSFooter
+
 
 # printJavascript: Dump out the structure as Javascript
 #
@@ -71,6 +73,8 @@ def printJavascript(schema):
         print '        { name:"%s",' % (f); # name = geom + FCODE
         if schema[f]['fcode'] != '':
             print '          fcode:"%s",' % (schema[f]['fcode'])
+        if 'fdname' in schema[f]:
+            print '          fdname:"%s",' % (schema[f]['fdname'])
         print '          desc:"%s",' % (schema[f]['desc'])
         print '          geom:"%s",' % (schema[f]['geom'])
         print '          columns:[ '
@@ -126,8 +130,10 @@ def printJavascript(schema):
             num_feat -= 1
 
     print '    ]; // End of schema\n' # End of schema
+# End printJavascript
 
 
+# Start printJSFooter
 def printJSFooter():
     print '    return schema; \n'
     print '} // End of getDbSchema\n'
@@ -135,8 +141,7 @@ def printJSFooter():
     print
     print 'exports.getDbSchema = tds61.schema.getDbSchema;'
     print
-
-# End printJavascript
+# End printJSFooter
 
 
 # Print out a codelist as a JS variable
@@ -419,6 +424,48 @@ def printAttributeCsv(schema):
 # End printAttributeCsv
 
 
+# Print Attribute lookup table
+def printAttrLookup(schema):
+    tList = {}
+    for i in schema:
+        attrList = []
+        for j in schema[i]['columns']:
+            attrList.append(schema[i]['columns'][j]['name'])
+
+        tList[schema[i]['geom'][0] + schema[i]['fcode']] = attrList
+
+    print notice
+    print ''
+    print '/*'
+    print '    TDSv61 Attribute Lookup Table\n'
+    print '    Huge piles of Ugly JSON!'
+    print '*/\n'
+    print 'tds61.attrLookup = %s' % (tList)
+    print '// End of tds61.attrLookup\n'
+# End printAttrLookup
+
+
+# Print Attribute lookup table
+def printTdsAttrLookup(schema):
+    tList = {}
+    for i in schema:
+        attrList = []
+        for j in schema[i]['columns']:
+            attrList.append(schema[i]['columns'][j]['name'])
+
+        tList[i] = attrList
+
+    print notice
+    print ''
+    print '/*'
+    print '    TDSv61 Thematic Group Attribute Lookup Table\n'
+    print '    Huge piles of Ugly JSON!'
+    print '*/\n'
+    print 'tds61.tdsAttrLookup = %s' % (tList)
+    print '// End of tds61.tdsAttrLookup\n'
+# End printTdsAttrLookup
+
+
 # Add o2s etc
 def addOtherFeatures(schema):
     # This is not very good. There is probably a better way
@@ -437,10 +484,10 @@ def addOtherFeatures(schema):
                         'uuid':{ 'name':'uuid', 'desc':'Review uuid', 'type':'String', 'defValue': ''}
                       } }
 
-        #schema['extra_' + layer[0]] = { 'name': 'extra_' + layer[0], 'fcode':'', 'desc': 'extra tag values', 'geom': layer,
-            #'columns':{ 'tags':{ 'name':'tags', 'desc':'Tag List', 'type':'String'},
-                        #'uuid':{ 'name':'uuid', 'desc':'Feature uuid', 'type':'String', 'defValue': ''}
-                    #} }
+        schema['extra_' + layer[0]] = { 'name': 'extra_' + layer[0], 'fcode':'', 'desc': 'extra tag values', 'geom': layer,
+            'columns':{ 'tags':{ 'name':'tags', 'desc':'Tag List', 'type':'String'},
+                        'uuid':{ 'name':'uuid', 'desc':'Feature uuid', 'type':'String', 'defValue': ''}
+                    } }
 
     return schema
 # End addOtherFeatures
@@ -478,7 +525,7 @@ notice = """/*
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2012, 2013 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
  ////
@@ -487,11 +534,151 @@ notice = """/*
  ////
  """
 
+thematic_list = {
+        'PAA010':'IndustryPnt', 'AAA010':'IndustrySrf', 'LAA011':'IndustryCrv', 'PAA020':'IndustryPnt',
+        'AAA020':'IndustrySrf', 'PAA040':'IndustryPnt', 'AAA040':'IndustrySrf', 'PAA045':'IndustryPnt',
+        'AAA052':'IndustrySrf', 'PAA054':'IndustryPnt', 'PAB000':'IndustryPnt', 'AAB000':'IndustrySrf',
+        'AAB010':'IndustrySrf', 'PAB021':'UtilityInfrastructurePnt', 'AAB040':'IndustrySrf', 'PAB507':'IndustryPnt',
+        'AAB507':'IndustrySrf', 'PAC010':'IndustryPnt', 'AAC010':'IndustrySrf', 'PAC020':'IndustryPnt',
+        'AAC020':'IndustrySrf', 'AAC030':'IndustrySrf', 'PAC040':'IndustryPnt', 'AAC040':'IndustrySrf',
+        'PAC060':'IndustryPnt', 'AAC060':'IndustrySrf', 'PAC507':'UtilityInfrastructurePnt',
+        'AAC507':'UtilityInfrastructureSrf', 'PAD010':'UtilityInfrastructurePnt', 'AAD010':'UtilityInfrastructureSrf',
+        'PAD020':'UtilityInfrastructurePnt', 'AAD020':'UtilityInfrastructureSrf', 'PAD025':'UtilityInfrastructurePnt',
+        'AAD025':'UtilityInfrastructureSrf', 'PAD030':'UtilityInfrastructurePnt', 'AAD030':'UtilityInfrastructureSrf',
+        'PAD041':'UtilityInfrastructurePnt', 'AAD041':'UtilityInfrastructureSrf', 'PAD050':'UtilityInfrastructurePnt',
+        'AAD050':'UtilityInfrastructureSrf', 'PAD055':'UtilityInfrastructurePnt', 'AAD055':'UtilityInfrastructureSrf',
+        'PAD060':'UtilityInfrastructurePnt', 'AAD060':'UtilityInfrastructureSrf', 'PAF010':'UtilityInfrastructurePnt',
+        'LAF020':'IndustryCrv', 'PAF030':'UtilityInfrastructurePnt', 'AAF030':'UtilityInfrastructureSrf',
+        'PAF040':'IndustryPnt', 'AAF040':'IndustrySrf', 'PAF050':'IndustryPnt', 'LAF050':'IndustryCrv',
+        'PAF060':'StructurePnt', 'AAF060':'StructureSrf', 'PAF070':'IndustryPnt', 'PAF080':'IndustryPnt',
+        'AAG030':'FacilitySrf', 'AAG040':'FacilitySrf', 'PAG050':'StructurePnt', 'LAH025':'MilitaryCrv',
+        'AAH025':'MilitarySrf', 'PAH055':'MilitaryPnt', 'AAH055':'MilitarySrf', 'PAH060':'MilitaryPnt',
+        'AAH060':'MilitarySrf', 'PAH070':'TransportationGroundPnt', 'AAI020':'SettlementSrf', 'AAI021':'SettlementSrf',
+        'PAI030':'SettlementPnt', 'AAI030':'SettlementSrf', 'PAJ030':'AgriculturePnt', 'AAJ030':'AgricultureSrf',
+        'PAJ050':'AgriculturePnt', 'AAJ050':'AgricultureSrf', 'PAJ051':'UtilityInfrastructurePnt', 'PAJ055':'IndustryPnt',
+        'AAJ055':'IndustrySrf', 'PAJ080':'AgriculturePnt', 'AAJ080':'AgricultureSrf', 'PAJ085':'AgriculturePnt',
+        'AAJ085':'AgricultureSrf', 'PAJ110':'AgriculturePnt', 'AAJ110':'AgricultureSrf', 'PAK020':'RecreationPnt',
+        'LAK020':'RecreationCrv', 'AAK020':'RecreationSrf', 'PAK030':'RecreationPnt', 'AAK030':'RecreationSrf',
+        'PAK040':'RecreationPnt', 'AAK040':'RecreationSrf', 'PAK060':'RecreationPnt', 'AAK060':'RecreationSrf',
+        'AAK061':'RecreationSrf', 'AAK070':'RecreationSrf', 'PAK080':'RecreationPnt', 'LAK080':'RecreationCrv',
+        'AAK090':'RecreationSrf', 'AAK100':'RecreationSrf', 'AAK101':'RecreationSrf', 'PAK110':'RecreationPnt',
+        'AAK110':'RecreationSrf', 'AAK120':'CultureSrf', 'PAK121':'CulturePnt', 'AAK121':'CultureSrf',
+        'LAK130':'RecreationCrv', 'AAK130':'RecreationSrf', 'PAK150':'RecreationPnt', 'LAK150':'RecreationCrv',
+        'LAK155':'RecreationCrv', 'AAK155':'RecreationSrf', 'PAK160':'RecreationPnt', 'AAK160':'RecreationSrf',
+        'PAK161':'RecreationPnt', 'PAK164':'RecreationPnt', 'AAK164':'RecreationSrf', 'PAK170':'RecreationPnt',
+        'AAK170':'RecreationSrf', 'PAK180':'RecreationPnt', 'AAK180':'RecreationSrf', 'PAL010':'FacilityPnt',
+        'AAL010':'FacilitySrf', 'PAL011':'FacilityPnt', 'AAL011':'FacilitySrf', 'PAL012':'CulturePnt',
+        'AAL012':'CultureSrf', 'PAL013':'StructurePnt', 'AAL013':'StructureSrf', 'PAL014':'StructurePnt',
+        'AAL014':'StructureSrf', 'PAL017':'UtilityInfrastructurePnt', 'PAL018':'StructurePnt', 'LAL018':'StructureCrv',
+        'AAL018':'StructureSrf', 'PAL019':'StructurePnt', 'AAL019':'StructureSrf', 'PAL020':'SettlementPnt',
+        'AAL020':'SettlementSrf', 'PAL025':'CulturePnt', 'PAL030':'CulturePnt', 'AAL030':'CultureSrf',
+        'PAL036':'CulturePnt', 'AAL036':'CultureSrf', 'LAL060':'MilitaryCrv', 'AAL060':'MilitarySrf',
+        'AAL065':'MilitarySrf', 'LAL070':'StructureCrv', 'PAL073':'StructurePnt', 'PAL080':'StructurePnt',
+        'LAL080':'StructureCrv', 'PAL099':'StructurePnt', 'AAL099':'StructureSrf', 'PAL105':'SettlementPnt',
+        'AAL105':'SettlementSrf', 'PAL110':'StructurePnt', 'PAL120':'MilitaryPnt', 'AAL120':'MilitarySrf',
+        'PAL130':'CulturePnt', 'LAL130':'CultureCrv', 'AAL130':'CultureSrf', 'LAL140':'StructureCrv',
+        'AAL140':'StructureSrf', 'PAL142':'StructurePnt', 'AAL142':'StructureSrf', 'PAL155':'TransportationGroundPnt',
+        'LAL155':'TransportationGroundCrv', 'PAL165':'TransportationGroundPnt', 'PAL170':'RecreationPnt',
+        'AAL170':'RecreationSrf', 'AAL175':'CultureSrf', 'AAL180':'CultureSrf', 'LAL195':'TransportationGroundCrv',
+        'AAL195':'TransportationGroundSrf', 'PAL200':'CulturePnt', 'AAL200':'CultureSrf', 'PAL201':'CulturePnt',
+        'AAL201':'CultureSrf', 'PAL208':'SettlementPnt', 'AAL208':'SettlementSrf', 'PAL211':'TransportationGroundPnt',
+        'LAL211':'TransportationGroundCrv', 'AAL211':'TransportationGroundSrf', 'PAL241':'StructurePnt',
+        'AAL241':'StructureSrf', 'PAL250':'StructurePnt', 'LAL260':'StructureCrv', 'PAL270':'AgriculturePnt',
+        'AAL270':'AgricultureSrf', 'PAL351':'AeronauticPnt', 'AAL351':'AeronauticSrf', 'PAL371':'StructurePnt',
+        'AAL371':'StructureSrf', 'PAL375':'MilitaryPnt', 'AAL375':'MilitarySrf', 'PAL376':'MilitaryPnt',
+        'AAL376':'MilitarySrf', 'PAL510':'AeronauticPnt', 'PAM010':'StoragePnt', 'AAM010':'StorageSrf',
+        'PAM011':'StoragePnt', 'AAM011':'StorageSrf', 'PAM020':'AgriculturePnt', 'AAM020':'AgricultureSrf',
+        'PAM030':'StoragePnt', 'AAM030':'StorageSrf', 'PAM040':'IndustryPnt', 'AAM040':'IndustrySrf',
+        'PAM060':'MilitaryPnt', 'AAM060':'MilitarySrf', 'PAM065':'StoragePnt', 'AAM065':'StorageSrf',
+        'PAM070':'StoragePnt', 'AAM070':'StorageSrf', 'PAM071':'StoragePnt', 'AAM071':'StorageSrf',
+        'PAM075':'StoragePnt', 'AAM075':'StorageSrf', 'PAM080':'StoragePnt', 'AAM080':'StorageSrf',
+        'LAN010':'TransportationGroundCrv', 'LAN050':'TransportationGroundCrv', 'AAN060':'TransportationGroundSrf',
+        'PAN075':'TransportationGroundPnt', 'AAN075':'TransportationGroundSrf', 'PAN076':'TransportationGroundPnt',
+        'AAN076':'TransportationGroundSrf', 'PAN085':'TransportationGroundPnt', 'LAP010':'TransportationGroundCrv',
+        'PAP020':'TransportationGroundPnt', 'LAP030':'TransportationGroundCrv', 'AAP030':'TransportationGroundSrf',
+        'PAP033':'TransportationGroundPnt', 'PAP040':'TransportationGroundPnt', 'LAP040':'TransportationGroundCrv',
+        'PAP041':'TransportationGroundPnt', 'LAP041':'TransportationGroundCrv', 'LAP050':'TransportationGroundCrv',
+        'AAP055':'TransportationGroundSrf', 'PAP056':'TransportationGroundPnt', 'AAP056':'TransportationGroundSrf',
+        'LAQ035':'TransportationGroundCrv', 'PAQ040':'TransportationGroundPnt', 'LAQ040':'TransportationGroundCrv',
+        'AAQ040':'TransportationGroundSrf', 'PAQ045':'TransportationGroundPnt', 'LAQ045':'TransportationGroundCrv',
+        'AAQ045':'TransportationGroundSrf', 'LAQ050':'TransportationGroundCrv', 'AAQ050':'TransportationGroundSrf',
+        'PAQ055':'TransportationGroundPnt', 'PAQ056':'TransportationGroundPnt', 'LAQ056':'TransportationGroundCrv',
+        'AAQ056':'TransportationGroundSrf', 'PAQ059':'TransportationGroundPnt', 'LAQ059':'TransportationGroundCrv',
+        'PAQ060':'AeronauticPnt', 'AAQ060':'AeronauticSrf', 'PAQ062':'TransportationGroundPnt',
+        'LAQ063':'TransportationGroundCrv', 'AAQ063':'TransportationGroundSrf', 'PAQ065':'TransportationGroundPnt',
+        'LAQ065':'TransportationGroundCrv', 'PAQ068':'TransportationGroundPnt', 'AAQ068':'TransportationGroundSrf',
+        'LAQ070':'TransportationWaterCrv', 'LAQ075':'TransportationGroundCrv', 'PAQ080':'TransportationWaterPnt',
+        'AAQ080':'TransportationWaterSrf', 'PAQ095':'TransportationGroundPnt', 'PAQ110':'AeronauticPnt',
+        'PAQ111':'TransportationWaterPnt', 'LAQ113':'UtilityInfrastructureCrv', 'PAQ114':'UtilityInfrastructurePnt',
+        'PAQ115':'UtilityInfrastructurePnt', 'PAQ116':'UtilityInfrastructurePnt', 'AAQ116':'UtilityInfrastructureSrf',
+        'PAQ118':'TransportationGroundPnt', 'LAQ120':'TransportationGroundCrv', 'PAQ125':'TransportationGroundPnt',
+        'AAQ125':'TransportationGroundSrf', 'LAQ130':'TransportationGroundCrv', 'AAQ130':'TransportationGroundSrf',
+        'PAQ135':'TransportationGroundPnt', 'AAQ135':'TransportationGroundSrf', 'AAQ140':'TransportationGroundSrf',
+        'PAQ141':'TransportationGroundPnt', 'AAQ141':'TransportationGroundSrf', 'LAQ150':'StructureCrv',
+        'AAQ150':'StructureSrf', 'LAQ151':'TransportationGroundCrv', 'AAQ151':'TransportationGroundSrf',
+        'PAQ160':'TransportationGroundPnt', 'PAQ161':'TransportationGroundPnt', 'PAQ162':'TransportationGroundPnt',
+        'PAQ170':'TransportationGroundPnt', 'AAQ170':'TransportationGroundSrf', 'LAT005':'UtilityInfrastructureCrv',
+        'PAT010':'UtilityInfrastructurePnt', 'PAT011':'UtilityInfrastructurePnt', 'PAT012':'UtilityInfrastructurePnt',
+        'AAT012':'UtilityInfrastructureSrf', 'LAT041':'TransportationGroundCrv', 'PAT042':'UtilityInfrastructurePnt',
+        'PAT045':'FacilityPnt', 'AAT045':'FacilitySrf', 'LBA010':'PhysiographyCrv',
+        'PBA030':'PhysiographyPnt', 'ABA030':'PhysiographySrf', 'ABA040':'HydrographySrf',
+        'ABB005':'PortorHarbourSrf', 'PBB009':'PortorHarbourPnt', 'ABB009':'PortorHarbourSrf',
+        'LBB081':'PortorHarbourCrv', 'ABB081':'PortorHarbourSrf', 'LBB082':'PortorHarbourCrv',
+        'ABB082':'PortorHarbourSrf', 'ABB090':'PortorHarbourSrf', 'PBB110':'HydrographyPnt',
+        'ABB110':'HydrographySrf', 'ABB199':'PortorHarbourSrf', 'PBB201':'PortorHarbourPnt',
+        'ABB201':'PortorHarbourSrf', 'PBB241':'PortorHarbourPnt', 'ABB241':'PortorHarbourSrf',
+        'PBC050':'HydrographicAidtoNavigationPnt', 'ABC050':'HydrographicAidtoNavigationSrf',
+        'PBC070':'HydrographicAidtoNavigationPnt', 'PBD100':'PortorHarbourPnt', 'ABD100':'PortorHarbourSrf',
+        'PBD115':'HydrographyPnt', 'ABD115':'HydrographySrf', 'PBD140':'HydrographyPnt', 'ABD140':'HydrographySrf',
+        'PBD181':'HydrographyPnt', 'LBH010':'HydrographyCrv', 'ABH010':'HydrographySrf', 'PBH012':'HydrographyPnt',
+        'ABH015':'VegetationSrf', 'LBH020':'TransportationWaterCrv', 'ABH020':'TransportationWaterSrf',
+        'LBH030':'HydrographyCrv', 'ABH030':'HydrographySrf', 'ABH040':'IndustrySrf', 'PBH051':'AgriculturePnt',
+        'ABH051':'AgricultureSrf', 'LBH065':'HydrographyCrv', 'PBH070':'TransportationGroundPnt',
+        'LBH070':'TransportationGroundCrv', 'ABH070':'TransportationGroundSrf', 'PBH075':'CulturePnt',
+        'ABH075':'CultureSrf', 'ABH077':'VegetationSrf', 'PBH082':'HydrographyPnt', 'ABH082':'HydrographySrf',
+        'ABH090':'HydrographySrf', 'LBH100':'HydrographyCrv', 'ABH100':'HydrographySrf', 'LBH110':'HydrographyCrv',
+        'ABH116':'SubterraneanSrf', 'PBH120':'HydrographyPnt', 'LBH120':'HydrographyCrv', 'ABH120':'HydrographySrf',
+        'ABH135':'AgricultureSrf', 'LBH140':'HydrographyCrv', 'ABH140':'HydrographySrf', 'PBH145':'HydrographyPnt',
+        'ABH150':'PhysiographySrf', 'PBH155':'IndustryPnt', 'ABH155':'IndustrySrf', 'ABH160':'PhysiographySrf',
+        'LBH165':'HydrographyCrv', 'ABH165':'HydrographySrf', 'PBH170':'HydrographyPnt', 'ABH170':'HydrographySrf',
+        'PBH180':'HydrographyPnt', 'LBH180':'HydrographyCrv', 'PBH220':'UtilityInfrastructurePnt',
+        'ABH220':'UtilityInfrastructureSrf', 'PBH230':'HydrographyPnt', 'ABH230':'HydrographySrf',
+        'ABI005':'PortorHarbourSrf', 'PBI006':'TransportationWaterPnt', 'LBI006':'TransportationWaterCrv',
+        'ABI006':'TransportationWaterSrf', 'PBI010':'HydrographyPnt', 'PBI020':'HydrographyPnt', 'LBI020':'HydrographyCrv',
+        'ABI020':'HydrographySrf', 'PBI030':'TransportationWaterPnt', 'LBI030':'TransportationWaterCrv',
+        'ABI030':'TransportationWaterSrf', 'PBI040':'HydrographyPnt', 'LBI040':'HydrographyCrv', 'PBI044':'HydrographyPnt',
+        'LBI044':'HydrographyCrv', 'ABI044':'HydrographySrf', 'PBI045':'TransportationWaterPnt',
+        'LBI045':'TransportationWaterCrv', 'PBI050':'HydrographyPnt', 'ABI050':'HydrographySrf', 'LBI060':'HydrographyCrv',
+        'PBI070':'HydrographyPnt', 'ABJ020':'PhysiographySrf', 'ABJ030':'PhysiographySrf', 'LBJ031':'PhysiographyCrv',
+        'ABJ031':'PhysiographySrf', 'LBJ040':'PhysiographyCrv', 'PBJ060':'PhysiographyPnt', 'ABJ065':'PhysiographySrf',
+        'ABJ080':'PhysiographySrf', 'ABJ099':'PhysiographySrf', 'ABJ100':'PhysiographySrf', 'ABJ110':'VegetationSrf',
+        'LCA010':'HypsographyCrv', 'PCA030':'HypsographyPnt', 'ADA005':'PhysiographySrf', 'ADA010':'PhysiographySrf',
+        'LDB010':'PhysiographyCrv', 'ADB028':'SubterraneanSrf', 'PDB029':'PhysiographyPnt', 'LDB061':'PhysiographyCrv',
+        'ADB061':'PhysiographySrf', 'LDB070':'PhysiographyCrv', 'LDB071':'PhysiographyCrv', 'ADB080':'PhysiographySrf',
+        'LDB090':'PhysiographyCrv', 'ADB090':'PhysiographySrf', 'LDB100':'PhysiographyCrv', 'LDB110':'PhysiographyCrv',
+        'PDB115':'PhysiographyPnt', 'ADB115':'PhysiographySrf', 'PDB150':'PhysiographyPnt', 'PDB160':'PhysiographyPnt',
+        'ADB160':'PhysiographySrf', 'ADB170':'PhysiographySrf', 'PDB180':'PhysiographyPnt', 'ADB180':'PhysiographySrf',
+        'LDB190':'PhysiographyCrv', 'ADB211':'PhysiographySrf', 'AEA010':'AgricultureSrf', 'LEA020':'VegetationCrv',
+        'AEA030':'AgricultureSrf', 'AEA031':'CultureSrf', 'AEA040':'AgricultureSrf', 'AEA050':'AgricultureSrf',
+        'AEA055':'AgricultureSrf', 'AEB010':'VegetationSrf', 'AEB020':'VegetationSrf', 'AEB070':'VegetationSrf',
+        'PEC005':'VegetationPnt', 'AEC010':'AgricultureSrf', 'LEC015':'VegetationCrv', 'AEC015':'VegetationSrf',
+        'PEC020':'PhysiographyPnt', 'AEC020':'PhysiographySrf', 'LEC040':'VegetationCrv', 'AEC040':'VegetationSrf',
+        'AEC060':'VegetationSrf', 'AED010':'VegetationSrf', 'AED020':'VegetationSrf', 'AEE010':'VegetationSrf',
+        'AEE030':'PhysiographySrf', 'PFA012':'CulturePnt', 'AFA012':'CultureSrf', 'PFA015':'MilitaryPnt',
+        'AFA015':'MilitarySrf', 'AFA100':'MilitarySrf', 'PFA165':'MilitaryPnt', 'AFA165':'MilitarySrf',
+        'AFA210':'CultureSrf', 'PGB005':'AeronauticPnt', 'AGB005':'AeronauticSrf', 'AGB015':'AeronauticSrf',
+        'PGB030':'AeronauticPnt', 'AGB030':'AeronauticSrf', 'PGB035':'AeronauticPnt', 'AGB035':'AeronauticSrf',
+        'PGB040':'AeronauticPnt', 'AGB040':'AeronauticSrf', 'AGB045':'AeronauticSrf', 'LGB050':'MilitaryCrv',
+        'AGB055':'AeronauticSrf', 'PGB065':'AeronauticPnt', 'AGB065':'AeronauticSrf', 'AGB070':'AeronauticSrf',
+        'LGB075':'AeronauticCrv', 'AGB075':'AeronauticSrf', 'PGB230':'AeronauticPnt', 'AGB230':'AeronauticSrf',
+        'PGB250':'AeronauticPnt', 'AGB250':'AeronauticSrf', 'AIA040':'BoundarySrf', 'PSU001':'MilitaryPnt',
+        'ASU001':'MilitarySrf', 'ASU004':'MilitarySrf', 'LSU030':'MilitaryCrv', 'PZB030':'BoundaryPnt',
+        'PZB050':'HypsographyPnt', 'AZD020':'InformationSrf', 'PZD040':'InformationPnt', 'PZD045':'InformationPnt',
+        'LZD045':'InformationCrv', 'AZD045':'InformationSrf', 'PZD070':'HydrographyPnt', 'AZD070':'HydrographySrf',
+        'AZI031':'ResourceSrf', 'AZI039':'MetadataSrf'
+        }
+
 geo_list = {'T':'Table', 'C':'Line', 'S':'Area', 'P':'Point' }
-
-buildingFuncList = {
-    }
-
 
 textFuncList = {
     'CPS':'text_CPS',
@@ -1597,6 +1784,54 @@ text_SAX_RX8 = {
 }
 
 
+# makeTDSschema
+def makeTDSschema(rawSchema):
+    tdsSchema = {}
+    layerName = ''
+    fCode = ''
+    geomType = ''
+
+    # Go through the layer list and build a skeleton schema
+    for fc in thematic_list:
+        layerName = thematic_list[fc]
+
+        if layerName.find('Pnt') > -1:
+            geomType = 'Point'
+        elif layerName.find('Srf') > -1:
+            geomType = 'Area'
+        else:
+            geomType = 'Line'
+
+        if layerName not in tdsSchema:
+            tdsSchema[layerName] = {'name':layerName,'desc':layerName,'fcode':'','fdname':'TDS','geom':geomType,'columns':{} }
+
+    # Now go through the old schema and populate the new one
+    for os in rawSchema:
+        if rawSchema[os]['geom'] == 'Table':
+            continue
+
+        fCode = rawSchema[os]['geom'][0] + rawSchema[os]['fcode']
+        layerName = thematic_list[fCode]
+
+        for oCol in rawSchema[os]['columns']:
+            if oCol in tdsSchema[layerName]['columns']:
+                if rawSchema[os]['columns'][oCol]['type'] == 'enumeration':
+                    for rawEnum in rawSchema[os]['columns'][oCol]['enum']:
+                        found = False
+                        for tdsEnum in tdsSchema[layerName]['columns'][oCol]['enum']:
+                            if rawEnum['name'] == tdsEnum['name']:
+                                found = True
+                                break
+
+                        if not found:
+                            tdsSchema[layerName]['columns'][oCol]['enum'].append(rawEnum)
+
+            else:
+                tdsSchema[layerName]['columns'][oCol] = rawSchema[os]['columns'][oCol]
+
+    return tdsSchema
+# End makeTDSschema
+
 
 # The main loop to process a file
 def processFile(fileName):
@@ -1666,18 +1901,14 @@ def processFile(fileName):
             tschema[fName]['desc'] = fDesc
             tschema[fName]['geom'] = fGeometry
             tschema[fName]['columns'] = {}
-            tschema[fName]['columns']['F_CODE'] = { 'name':'F_CODE','desc':"Feature Code",'type':'String','optional':'R','defValue':'','length':'5'}
+            tschema[fName]['columns']['F_CODE'] = {'name':'F_CODE','desc':"Feature Code",'type':'String','optional':'R','defValue':'','length':'5'}
+            tschema[fName]['columns']['FCSUBTYPE'] = {'name':'FCSUBTYPE','desc':"Feature Code Subtype",'type':'Integer','optional':'R','defValue':''}
 
         if aName != '':
             if aName not in tschema[fName]['columns']:
                 tschema[fName]['columns'][aName] = {}
-                tschema[fName]['columns'][aName] = { 'name':aName,
-                                                        'desc':aDesc,
-                                                        'type':aType,
-                                                        'optional':'R',
-                                                        'defValue':aDefault,
-                                                        }
-                                                        # 'length':aLength
+                tschema[fName]['columns'][aName] = {'name':aName,'desc':aDesc,'type':aType,'optional':'R','defValue':aDefault}
+
                 if aLength != '':
                     tschema[fName]['columns'][aName]['length'] = aLength
 
@@ -1805,6 +2036,9 @@ parser.add_argument('--toenglish', help='Dump out To English translation rules',
 parser.add_argument('--fromenglish', help='Dump out From English translation rules',action='store_true')
 parser.add_argument('--attributecsv', help='Dump out attributes as a CSV file',action='store_true')
 parser.add_argument('--fullschema', help='Dump out a schema with text enumerations',action='store_true')
+parser.add_argument('--tdsschema', help='Dump out a schema with thematic groups',action='store_true')
+parser.add_argument('--attrlookup', help='Dump out a schema with thematic groups',action='store_true')
+parser.add_argument('--tdsattrlookup', help='Dump out a schema with thematic groups',action='store_true')
 parser.add_argument('mainfile', help='The main TDS spec csv file', action='store')
 parser.add_argument('otherfile', help='The NGA Additional attributes csv file', action='store')
 
@@ -1850,6 +2084,7 @@ elif args.fromenglish:
     printFromEnglish(schema)
 elif args.attributecsv:
     printAttributeCsv(schema)
+
 elif args.fullschema:
     printJSHeader()
     printVariableBody('building_FFN',building_FFN)
@@ -1870,6 +2105,30 @@ elif args.fullschema:
 
     printJavascript(schema)
     printJSFooter()
+
+elif args.attrlookup:
+    printAttrLookup(schema)
+
+elif args.tdsattrlookup:
+    schema = makeTDSschema(schema)
+    printTdsAttrLookup(schema)
+
+elif args.tdsschema:
+    dropTextEnumerations(schema)
+
+    schema = makeTDSschema(schema)
+
+    printJSHeader()
+    printVariableBody('building_FFN',building_FFN)
+    printVariableBody('facility_FFN',facility_FFN)
+    printVariableBody('fortified_FFN',fortified_FFN)
+
+    # Add o2s, extra and review features
+    schema = addOtherFeatures(schema)
+
+    printJavascript(schema)
+    printJSFooter()
+
 else:
     dropTextEnumerations(schema)
     printJSHeader()
