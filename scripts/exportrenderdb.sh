@@ -11,6 +11,7 @@ export RENDER_DB="$DB_NAME"_renderdb_"$MAP_ID"
 #  Export hoot dataset to a PostGIS render db
 #
 createdb $AUTH $RENDER_DB -E UTF-8
+psql $AUTH -d $RENDER_DB -c 'CREATE EXTENSION hstore' &>/dev/null;
 if psql $AUTH -d $RENDER_DB -c 'CREATE EXTENSION postgis' &>/dev/null; then
     #Do Nothing
     :
