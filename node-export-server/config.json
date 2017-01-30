@@ -1,13 +1,13 @@
 {
   "datasources": {
     "RenderDb": {
-      "conn": "PG:dbname='osmhaiti' host='192.168.33.12' port='5432' user='vagrant' password=''"
+      "conn": "PG:dbname='osmhaiti' host='localhost' port='5432' user='vagrant' password=''"
     },
     "API": {
-      "conn": "http://192.168.33.12:3000/api/0.6/map"
+      "conn": "http://localhost:3000/api/0.6/map"
     },
     "APIDB": {
-      "conn": "osmapidb://vagrant:lqlrtktnabwx5gfI@192.168.33.12:5432/openstreetmap"
+      "conn": "osmapidb://vagrant:vagrant!@localhost:5432/openstreetmap"
     }
   },
   "formats": {
