@@ -32,8 +32,7 @@ get_pid() {
 }
 
 start_it() {
-    mkdir -p "$LOG_DIR"
-    chown $USER:$USER "$LOG_DIR"
+    sudo -u $USER mkdir -p "$LOG_DIR"
 
     echo "Starting node app ..."
     echo "cd $APP_DIR && npm start 1>$LOG_FILE 2>&1 &" | sudo -i -u $USER
