@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,14 +22,13 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #include "MapCropper.h"
 
 // GEOS
 #include <geos/geom/GeometryFactory.h>
-#include <geos/geom/LineString.h>
 #include <geos/geom/MultiLineString.h>
 #include <geos/geom/Point.h>
 #include <geos/geom/Polygon.h>
@@ -38,8 +37,8 @@
 #include <geos/util/GEOSException.h>
 
 // Hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/conflate/NodeToWayMap.h>
 #include <hoot/core/index/OsmMapIndex.h>
 #include <hoot/core/ops/RemoveWayOp.h>
@@ -52,6 +51,8 @@
 #include <hoot/core/util/Log.h>
 #include <hoot/core/util/Validate.h>
 #include <hoot/core/visitors/RemoveEmptyRelationsVisitor.h>
+#include <hoot/core/OsmMap.h>
+#include <hoot/core/elements/Way.h>
 
 // Standard
 #include <limits>
@@ -90,7 +91,8 @@ void MapCropper::setConfiguration(const Settings& conf)
   if (!boundsStr.isEmpty())
   {
     const QString errorMsg =
-      "Invalid bounds passed to map cropper: " + boundsStr + ".  Must be of the form: minx,miny,maxx,maxy";
+      "Invalid bounds passed to map cropper: " + boundsStr +
+      ".  Must be of the form: minx,miny,maxx,maxy";
     const QRegExp boundsRegEx("(-*\\d+\\.*\\d*,){3}-*\\d+\\.*\\d*");
     if (!boundsRegEx.exactMatch(boundsStr))
     {
@@ -114,7 +116,7 @@ void MapCropper::setConfiguration(const Settings& conf)
 
 void MapCropper::apply(shared_ptr<OsmMap>& map)
 {
-  LOG_INFO("Cropping map.");
+  LOG_INFO("Cropping map...");
   shared_ptr<OsmMap> result = map;
 
   if (MapProjector::isGeographic(map) == false && _nodeBounds.isNull() == false)
@@ -157,7 +159,7 @@ void MapCropper::apply(shared_ptr<OsmMap>& map)
 
   // go through all the nodes
   long nodesRemoved = 0;
-  const NodeMap nodes = result->getNodeMap();
+  const NodeMap nodes = result->getNodes();
   for (NodeMap::const_iterator it = nodes.begin(); it != nodes.end(); it++)
   {
     const Coordinate& c = it->second->toCoordinate();

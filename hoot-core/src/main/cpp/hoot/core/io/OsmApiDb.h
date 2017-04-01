@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,18 +22,16 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef OSMAPIDB_H
 #define OSMAPIDB_H
 
 // Hoot
 #include <hoot/core/io/ApiDb.h>
-#include <hoot/core/algorithms/zindex/Range.h>
 
 // Qt
 #include <QFile>
-
 
 namespace hoot
 {
@@ -42,6 +40,10 @@ class OsmApiDb : public ApiDb
 {
 
 public:
+
+  static std::string className() { return "hoot::OsmApiDb"; }
+
+  static unsigned int logWarnCount;
 
   static const QString TIME_FORMAT;
   static const QString TIMESTAMP_FUNCTION;
@@ -52,7 +54,7 @@ public:
 
   virtual void close();
 
-  virtual bool isSupported(QUrl url);
+  virtual bool isSupported(const QUrl& url);
 
   virtual void open(const QUrl& url);
 
@@ -114,13 +116,20 @@ public:
 
   shared_ptr<QSqlQuery> selectTagsForRelation(long wayId);
 
+  /**
+   * Increment the sequence ID for the given sequence and return it
+   *
+   * @param tableName element type associated with the sequence
+   * @return the next sequence ID for the given type
+   */
   virtual long getNextId(const ElementType& elementType);
 
   /**
-   * Gets the next sequence ID for the given database table
+   * Increment the sequence ID for the given sequence and return it
    *
-   * @param tableName database table name
-   * @return an element ID
+   * @param tableName database table name associated with the sequence
+   * @return the next sequence ID for the given type
+   * @todo need to make use of sequence and table strings more consistent here
    */
   long getNextId(const QString tableName);
 
@@ -146,6 +155,9 @@ public:
 
   virtual QString tableTypeToTableName(const TableType& tableType) const;
 
+  static QString elementTypeToElementTableName(const ElementType& elementType,
+                                               const bool historical, const bool tags);
+
 protected:
 
   void _resetQueries();
@@ -165,7 +177,10 @@ private:
 
   void _init();
 
-  QString _elementTypeToElementTableName(const ElementType& elementType) const;
+  QString _elementTypeToElementTableNameStr(const ElementType& elementType) const;
+
+  long _getIdFromSequence(const ElementType& elementType, const QString sequenceType);
+  long _getIdFromSequence(const QString tableName, const QString sequenceType);
 
 };
 

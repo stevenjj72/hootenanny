@@ -15,41 +15,43 @@ Hootenanny is an open source conflation tool developed to facilitate automated a
 of critical Foundation GEOINT features in the topographic domain.  In short, it merges multiple maps of geodata into a 
 single seamless map.
 
-Conflation occurs at the dataset level, where the user’s workflow determines the best reference dataset and source content, geometry and attributes, to transfer to the output map.  Hootenanny's internal processing leverages the key value pair structure of OpenStreetMap (OSM) for improved utility and applicability to broader user groups, e.g. normalized attributes can be used to aid in feature matching and OSM’s free tagging system allows the map to include an unlimited number of attributes describing each feature. 
+Conflation occurs at the dataset level, where the user’s workflow determines the best reference dataset, source content, geometry, and attributes to transfer to the output map.  Hootenanny's internal processing leverages the key value pair structure of OpenStreetMap (OSM) for improved utility and applicability to broader user groups.  Normalized attributes can be used to aid in feature matching, and OSM’s free tagging system allows the map to include an unlimited number of attributes describing each feature. 
 
 # Project Goals
+* Automatically combine geospatial features for decision making
+* Allow for reviewing and manually resolving features which cannot be automatically matched with sufficient certainty
+* Maintain geometry and attribute provenance for combined features
 * Create up-to-date routable transportation networks from multiple sources
-* Combine attributes from different sources
-* Combine POIs and polygons for geolocation and sense making
-* Maintain geometry and attribute provenance
 
 # Supported Geodata Types
 Hootenanny can conflate:
 * POIs
 * Building polygons
-* Transportation polylines (highways, cart tracks, trails, bridges, and tunnels)
-* Waterway polylines (hydrologic features such as rivers, streams, drainage, and ditches).
+* Transportation polylines
+* Waterway polylines
 
 # Supported Data Formats
 Hootenanny can import from:
+* OpenStreetMap XML (.osm)
 * Shapefile (.shp)
-* OpenStreetMap (.osm)
 * ESRI File Geodatabase (.gdb)
-* .zip files containing shapefiles and/or .gdb files
+* Zip files containing shapefiles and/or ESRI File Geodatabase files (.zip)
+* OpenStreetMap Protocol Buffers (.osm.pbf)
+* OpenStreetMap JSON file (.json; similar to Overpass JSON)
 * geonames.org (.geonames)
-* OSM API database via bounding box query
+* Hootenanny API Database (hootapidb://)
+* OpenStreetMap API Database (osmapidb://)
 
 Hootenanny can export to: 
+* OpenStreetMap XML file (.osm)
 * Shapefile (.shp)
-* OpenStreetMap (.osm)
 * ESRI File Geodatabase (.gdb)
-* Web Feature Service (WFS)
-* OSM XML changeset file
-* Directly to an OSM API database via SQL changeset
-
-Note:
-* .gdb, Shapefile, and OSM formats are exported as a zip file containing all of the associated files
-* WFS is exported as WFS Get Capabilities service URL that can be added into an OGC-enabled third party application
+* OpenStreetMap Protocol Buffers file (.osm.pbf)
+* OpenStreetMap JSON file (.json; similar to Overpass JSON)
+* Hootenanny API Database (hootapidb://)
+* OpenStreetMap API Database (osmapidb://)
+* OpenStreetMap XML changeset file (.osc)
+* OpenStreetMap SQL changeset file (.osc.sql)
 
 # Tag Schemas
 Hootenanny leverages the OSM key value pair tag concept and PostgreSQL database structure to support translation between various data schemas.  By default, Hootenanny supports automated schema conversion between: 
@@ -82,7 +84,7 @@ Hootenanny is developed under the open source General Public License (GPL) and m
 
 Hootenanny is built upon the open source [Mapbox iD Editor](https://github.com/openstreetmap/iD), which provides an intuitive and user-friendly conflation experience without the extra overhead of thick desktop GIS clients.  The application is primarily supported in either the Chrome or Chromium browser with more limited supported in Firefox.   
 
-A REST API is in place to connect the web browser based User Interface (UI) with the core conflation algorithms and database.  The translation and conflation operations are also exposed through web service endpoints and the resulting vector data is accessible via an Open Geospatial Consortium (OGC) Web Feature Service (WFS) for additional open interoperability. 
+A REST API is in place to connect the web browser based User Interface (UI) with the core conflation algorithms and database.  The translation and conflation operations are also exposed through web service endpoints. 
 
 We actively maintain and update our [Frequently Asked Questions page](https://github.com/ngageoint/hootenanny/wiki/Frequently-Asked-Questions), so please refer to that page for any questions about general Hootenanny capabilities.  If you have any support questions please create an issue in this repo or contact us via email: Hootenanny.Help@DigitalGlobe.com.
 

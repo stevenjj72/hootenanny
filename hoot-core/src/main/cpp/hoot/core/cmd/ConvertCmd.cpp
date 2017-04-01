@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -26,19 +26,21 @@
  */
 
 // Hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/cmd/BaseCommand.h>
 #include <hoot/core/conflate/MapCleaner.h>
 #include <hoot/core/conflate/RubberSheet.h>
 #include <hoot/core/io/OsmMapReaderFactory.h>
 #include <hoot/core/io/OsmMapWriterFactory.h>
-#include <hoot/core/io/PartialOsmMapReader.h>
-#include <hoot/core/io/PartialOsmMapWriter.h>
+#include <hoot/core/io/OsmMapWriter.h>
+#include <hoot/core/io/OsmMapReader.h>
 #include <hoot/core/io/ElementInputStream.h>
 #include <hoot/core/io/ElementOutputStream.h>
 #include <hoot/core/ops/NamedOp.h>
 #include <hoot/core/util/ConfigOptions.h>
+#include <hoot/core/io/PartialOsmMapReader.h>
+#include <hoot/core/io/PartialOsmMapWriter.h>
 
 // Qt
 #include <QElapsedTimer>
@@ -113,8 +115,7 @@ public:
       saveMap(map, args[1]);
     }
 
-    //LOG_DEBUG(_timer->elapsed());
-    LOG_INFO("Convert operation complete.");
+    LOG_DEBUG("Convert operation complete.");
     QString msg = "Convert operation took ";
     const qint64 timeElapsed = timer.elapsed();
     if (timeElapsed > 60000)
@@ -132,7 +133,7 @@ public:
 
   void streamElements(QString in, QString out)
   {
-    LOG_DEBUG("Streaming data conversion (element input/output streams)");
+    LOG_INFO("Streaming data conversion from " << in << " to " << out << "...");
 
     shared_ptr<OsmMapReader> reader = OsmMapReaderFactory::getInstance().createReader(in);
     reader->open(in);
@@ -142,6 +143,19 @@ public:
     shared_ptr<ElementOutputStream> streamWriter = dynamic_pointer_cast<ElementOutputStream>(writer);
 
     ElementOutputStream::writeAllElements(*streamReader, *streamWriter);
+
+    shared_ptr<PartialOsmMapReader> partialReader =
+      dynamic_pointer_cast<PartialOsmMapReader>(reader);
+    if (partialReader.get())
+    {
+      partialReader->finalizePartial();
+    }
+    shared_ptr<PartialOsmMapWriter> partialWriter =
+      dynamic_pointer_cast<PartialOsmMapWriter>(writer);
+    if (partialWriter.get())
+    {
+      partialWriter->finalizePartial();
+    }
   }
 
 };

@@ -35,7 +35,7 @@
 #include <geos/geom/LineString.h>
 
 // Hoot
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/algorithms/MultiLineStringSplitter.h>
 #include <hoot/core/algorithms/linearreference/MultiLineStringLocation.h>
@@ -139,7 +139,7 @@ public:
     relation->addElement("", way1->getElementId());
     map->addElement(relation);
 
-    CPPUNIT_ASSERT_EQUAL((size_t)2, map->getNodeMap().size());
+    CPPUNIT_ASSERT_EQUAL((size_t)2, map->getNodes().size());
     CPPUNIT_ASSERT_EQUAL((size_t)1, map->getWays().size());
 
     MultiLineStringLocation multiLineStringLocation(map, relation, 0,
@@ -149,7 +149,7 @@ public:
     MultiLineStringSplitter().split(map, multiLineStringLocation, match);
     //LOG_VAR(match->getElementId());
 
-    CPPUNIT_ASSERT_EQUAL((size_t)3, map->getNodeMap().size());
+    CPPUNIT_ASSERT_EQUAL((size_t)3, map->getNodes().size());
     CPPUNIT_ASSERT_EQUAL((size_t)2, map->getWays().size());
 
     HOOT_STR_EQUALS("Way:-2", match->getElementId());

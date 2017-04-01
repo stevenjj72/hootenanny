@@ -32,11 +32,11 @@
 #include <cppunit/TestFixture.h>
 
 // Hoot
-#include <hoot/core/Exception.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Exception.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMap.h>
-#include <hoot/core/io/OsmReader.h>
-#include <hoot/core/io/OsmWriter.h>
+#include <hoot/core/io/OsmXmlReader.h>
+#include <hoot/core/io/OsmXmlWriter.h>
 #include <hoot/core/perty/PertyOp.h>
 #include <hoot/core/util/Log.h>
 
@@ -70,7 +70,7 @@ public:
     env.MaxX = 1;
     env.MaxY = 1;
     map->setProjection(MapProjector::createAeacProjection(env));
-    //OsmReader reader;
+    //OsmXmlReader reader;
     //reader.read("test-files/ToyTestA.osm", map);
     // force the map bounds.
     NodePtr n1(new Node(Status::Unknown1, map->createNextNodeId(), 0, 0, 10));
@@ -97,15 +97,15 @@ public:
     // Handy bit for regenerating the test values, _AFTER_ it has been visually verified.
     ////
     QSet<long> nids;
-    NodeMap::const_iterator it = map->getNodeMap().begin();
-    while (it != map->getNodeMap().end()) {
+    NodeMap::const_iterator it = map->getNodes().begin();
+    while (it != map->getNodes().end()) {
       nids.insert(it->first);
       it++;
     }
     QList<long> keys = QList<long>::fromSet(nids);
     qSort(keys);
 
-//    OsmWriter writer;
+//    OsmXmlWriter writer;
 //    QDir().mkpath("test-output/perty");
 //    MapProjector::reprojectToWgs84(map);
 //    writer.write(map, "test-output/perty/BasicTest.osm");
@@ -158,7 +158,7 @@ public:
     env.MaxX = 1;
     env.MaxY = 1;
     map->setProjection(MapProjector::createAeacProjection(env));
-    //OsmReader reader;
+    //OsmXmlReader reader;
     //reader.read("test-files/ToyTestA.osm", map);
     // force the map bounds.
     NodePtr n1(new Node(Status::Unknown1, map->createNextNodeId(), 0, 0, 10));
@@ -178,7 +178,7 @@ public:
       }
     }
 
-    OsmWriter writer;
+    OsmXmlWriter writer;
     QDir().mkpath("test-output/perty");
 
     shared_ptr<OsmMap> original(new OsmMap(map));
@@ -198,7 +198,7 @@ public:
 //      uut.permute(tmp);
 //    }
     //tbs::SampleStats ss(uut._x);
-    //LOG_INFO("sd: " << ss.calculateUnbiasedStandardDeviation());
+    //LOG_TRACE("sd: " << ss.calculateUnbiasedStandardDeviation());
     shared_ptr<OsmMap> debug = uut.generateDebugMap(map);
     //    for (int i = 0; i < 100; i++)
     //    {
@@ -206,7 +206,7 @@ public:
     //      uut.permute(tmp);
     //    }
         //tbs::SampleStats ss(uut._x);
-        //LOG_INFO("sd: " << ss.calculateUnbiasedStandardDeviation
+        //LOG_TRACE("sd: " << ss.calculateUnbiasedStandardDeviation
 
 
     MapProjector::projectToWgs84(debug);

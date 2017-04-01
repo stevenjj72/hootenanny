@@ -26,11 +26,11 @@
  */
 
 // Hoot
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/ops/MergeNearbyNodes.h>
 #include <hoot/core/io/OgrReader.h>
-#include <hoot/core/io/OsmWriter.h>
+#include <hoot/core/io/OsmXmlWriter.h>
 #include <hoot/core/util/Log.h>
 #include <hoot/core/util/Progress.h>
 using namespace hoot;
@@ -71,16 +71,16 @@ public:
 
       MapProjector::projectToOrthographic(map);
 
-      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodeMap().size());
+      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodes().size());
 
       // merge all nodes within a meter.
       MergeNearbyNodes::mergeNodes(map, 1.0);
 
-      CPPUNIT_ASSERT_EQUAL(601, (int)map->getNodeMap().size());
+      CPPUNIT_ASSERT_EQUAL(601, (int)map->getNodes().size());
 
       MapProjector::projectToWgs84(map);
 
-      OsmWriter writer;
+      OsmXmlWriter writer;
       writer.write(map, "output.osm");
 
     }

@@ -1,5 +1,7 @@
 #include "Debug.h"
 
+#include <hoot/core/OsmMap.h>
+
 namespace hoot
 {
 
@@ -19,7 +21,7 @@ void Debug::_init()
 bool Debug::printTroubled(const shared_ptr<const OsmMap>& map)
 {
   bool result = false;
-  const NodeMap& nm = map->getNodeMap();
+  const NodeMap& nm = map->getNodes();
   for (NodeMap::const_iterator it = nm.begin(); it != nm.end(); ++it)
   {
     const shared_ptr<Node>& n = it->second;

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -35,7 +35,7 @@ using namespace boost;
 
 // Hoot
 #include <hoot/core/ConstOsmMapConsumer.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMapListener.h>
 #include <hoot/core/conflate/NodeToWayMap.h>
 #include <hoot/core/elements/ElementVisitor.h>
@@ -49,6 +49,8 @@ using namespace boost;
 #include <hoot/core/util/Validate.h>
 #include <hoot/core/ops/RemoveElementOp.h>
 #include <hoot/core/ops/RemoveNodeOp.h>
+#include <hoot/core/util/Log.h>
+#include <hoot/core/elements/ElementId.h>
 using namespace hoot::elements;
 
 // Qt
@@ -112,7 +114,7 @@ void OsmMap::append(ConstOsmMapPtr appendFromMap)
   }
   _srs = appendFromMap->getProjection();
 
-  const RelationMap& allRelations = appendFromMap->getRelationMap();
+  const RelationMap& allRelations = appendFromMap->getRelations();
   for (RelationMap::const_iterator it = allRelations.begin(); it != allRelations.end(); ++it)
   {
     RelationPtr relation = it->second;
@@ -256,7 +258,7 @@ void OsmMap::_copy(boost::shared_ptr<const OsmMap> from)
   _srs = from->getProjection();
 
   int i = 0;
-  const RelationMap& allRelations = from->getRelationMap();
+  const RelationMap& allRelations = from->getRelations();
   for (RelationMap::const_iterator it = allRelations.begin(); it != allRelations.end(); ++it)
   {
     shared_ptr<Relation> r = shared_ptr<Relation>(new Relation(*(it->second)));
@@ -333,7 +335,7 @@ ElementPtr OsmMap::getElement(ElementType type, long id)
 
 size_t OsmMap::getElementCount() const
 {
-  return getNodeMap().size() + getWays().size() + getRelationMap().size();
+  return getNodes().size() + getWays().size() + getRelations().size();
 }
 
 set<ElementId> OsmMap::getParents(ElementId eid) const
@@ -515,7 +517,7 @@ bool OsmMap::validate(bool strict) const
     }
   }
 
-  const RelationMap& allRelations = getRelationMap();
+  const RelationMap& allRelations = getRelations();
   for (RelationMap::const_iterator it = allRelations.begin(); it != allRelations.end(); ++it)
   {
     const shared_ptr<const Relation>& relation = it->second;
@@ -574,7 +576,7 @@ void OsmMap::visitNodesRo(ElementVisitor& visitor) const
   }
 
   // make a copy so we can iterate through even if there are changes.
-  const NodeMap& allNodes = getNodeMap();
+  const NodeMap& allNodes = getNodes();
   for (NodeMap::const_iterator it = allNodes.begin(); it != allNodes.end(); ++it)
   {
     if (containsNode(it->first))
@@ -612,7 +614,7 @@ void OsmMap::visitRelationsRo(ElementVisitor& visitor) const
   }
 
   // make a copy so we can iterate through even if there are changes.
-  const RelationMap& allRelations = getRelationMap();
+  const RelationMap& allRelations = getRelations();
   for (RelationMap::const_iterator it = allRelations.begin(); it != allRelations.end(); ++it)
   {
     if (containsRelation(it->first))
@@ -631,7 +633,7 @@ void OsmMap::visitRw(ElementVisitor& visitor)
   }
 
   // make a copy so we can iterate through even if there are changes.
-  const NodeMap allNodes = getNodeMap();
+  const NodeMap allNodes = getNodes();
   for (NodeMap::const_iterator it = allNodes.begin(); it != allNodes.end(); ++it)
   {
     if (containsNode(it->first))
@@ -651,7 +653,7 @@ void OsmMap::visitRw(ElementVisitor& visitor)
   }
 
   // make a copy so we can iterate through even if there are changes.
-  const RelationMap allRelations = getRelationMap();
+  const RelationMap allRelations = getRelations();
   for (RelationMap::const_iterator it = allRelations.begin(); it != allRelations.end(); ++it)
   {
     if (containsRelation(it->first))
@@ -682,7 +684,7 @@ void OsmMap::visitWaysRw(ElementVisitor& visitor)
 
 void OsmMap::_replaceNodeInRelations(long oldId, long newId)
 {
-  RelationMap allRelations = getRelationMap();
+  RelationMap allRelations = getRelations();
   const ElementId oldNodeId = ElementId::node(oldId);
 
   LOG_TRACE("Replace node in relations: replace " << oldId << " with " << newId );
@@ -694,14 +696,14 @@ void OsmMap::_replaceNodeInRelations(long oldId, long newId)
   it = _nodes.find(oldId);
   if (it == _nodes.end())
   {
-    //LOG_WARN("Tried to replace a non-existent node " << oldId );
+    LOG_TRACE("Tried to replace a non-existent node " << oldId );
     return;
   }
 
   it = _nodes.find(newId);
   if ( it == _nodes.end() )
   {
-    //LOG_WARN("Replacement node " << newId << "does not exist");
+    LOG_TRACE("Replacement node " << newId << "does not exist");
     return;
   }
 
@@ -714,7 +716,7 @@ void OsmMap::_replaceNodeInRelations(long oldId, long newId)
 
     if ( currRelation->contains(oldNodeId) == true )
     {
-      LOG_DEBUG("Trying to replace node " << oldNode->getId() << " with node " <<
+      LOG_TRACE("Trying to replace node " << oldNode->getId() << " with node " <<
                 newNode->getId() << " in relation " << currRelation->getId());
 
       currRelation->replaceElement(oldNode, newNode);

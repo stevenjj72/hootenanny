@@ -7,6 +7,9 @@ source ~/.profile
 
 #To get rid of "dpkg-preconfigure: unable to re-open stdin: No such file or directory" warnings
 export DEBIAN_FRONTEND=noninteractive
+if [ -f /etc/apt/apt.conf.d/70debconf ]; then
+  sudo sed -i 's/ --apt//' /etc/apt/apt.conf.d/70debconf
+fi
 
 echo "Updating OS..."
 sudo apt-get -qq update > Ubuntu_upgrade.txt 2>&1
@@ -14,7 +17,7 @@ sudo apt-get -q -y upgrade >> Ubuntu_upgrade.txt 2>&1
 sudo apt-get -q -y dist-upgrade >> Ubuntu_upgrade.txt 2>&1
 
 echo "### Setup NTP..."
-sudo apt-get -q -y install ntp
+sudo apt-get -q -y install ntp 2>&1
 sudo service ntp stop
 sudo ntpd -gq
 sudo service ntp start
@@ -58,7 +61,15 @@ if [ ! -f /etc/apt/sources.list.d/pgdg.list ]; then
 fi
 
 echo "### Installing dependencies from repos..."
-sudo apt-get -q -y install texinfo g++ libicu-dev libqt4-dev git-core libboost-dev libcppunit-dev libcv-dev libopencv-dev libgdal-dev liblog4cxx10-dev libnewmat10-dev libproj-dev python-dev libjson-spirit-dev automake protobuf-compiler libprotobuf-dev gdb libqt4-sql-psql libgeos++-dev swig lcov maven libstxxl-dev nodejs-dev nodejs-legacy doxygen xsltproc asciidoc pgadmin3 curl npm libxerces-c28 libglpk-dev libboost-all-dev source-highlight texlive-lang-arabic texlive-lang-hebrew texlive-lang-cyrillic graphviz w3m python-setuptools python python-pip git ccache libogdi3.2-dev gnuplot python-matplotlib libqt4-sql-sqlite ruby ruby-dev xvfb zlib1g-dev patch x11vnc openssh-server htop unzip postgresql-9.6 postgresql-client-9.6 postgresql-9.6-postgis-scripts postgresql-9.6-postgis-2.3 >> Ubuntu_upgrade.txt 2>&1
+sudo apt-get -q -y install texinfo g++ libicu-dev libqt4-dev git-core libboost-dev libcppunit-dev \
+ libcv-dev libopencv-dev liblog4cxx10-dev libnewmat10-dev libproj-dev python-dev libjson-spirit-dev \
+ automake protobuf-compiler libprotobuf-dev gdb libqt4-sql-psql libgeos++-dev swig lcov maven \
+ libstxxl-dev nodejs-dev nodejs-legacy doxygen xsltproc asciidoc curl npm libxerces-c28 \
+ libglpk-dev libboost-all-dev source-highlight texlive-lang-arabic texlive-lang-hebrew \
+ texlive-lang-cyrillic graphviz python-setuptools python python-pip git ccache distcc libogdi3.2-dev \
+ gnuplot python-matplotlib libqt4-sql-sqlite ruby ruby-dev xvfb zlib1g-dev patch x11vnc openssh-server \
+ htop unzip postgresql-9.6 postgresql-client-9.6 postgresql-9.6-postgis-scripts postgresql-9.6-postgis-2.3 \
+ libpango-1.0-0 libappindicator1 >> Ubuntu_upgrade.txt 2>&1
 
 if ! dpkg -l | grep --quiet dictionaries-common; then
     # See /usr/share/doc/dictionaries-common/README.problems for details
@@ -77,6 +88,9 @@ sudo apt-get -y autoremove
 
 echo "### Configuring environment..."
 
+# Configure https alternative mirror for maven isntall, this can likely be removed once
+# we are using maven 3.2.3 or higher
+sudo /usr/bin/perl $HOOT_HOME/scripts/maven/SetMavenHttps.pl
 if ! grep --quiet "export HOOT_HOME" ~/.profile; then
     echo "Adding hoot home to profile..."
     echo "export HOOT_HOME=\$HOME/hoot" >> ~/.profile
@@ -105,15 +119,28 @@ if ! grep --quiet "PATH=" ~/.profile; then
     source ~/.profile
 fi
 
+# Whether the client uses distcc or not, have distcc set up and ready to go.  To turn it on, 
+# enable it in LocalConfig.pri, configure the slaves in ~/.distcc/hosts, and launch distccd on 
+# the slaves.
+if [ ! -f ~/.distcc/hosts ]; then
+    echo "Adding distcc hosts file..."
+    mkdir -p ~/.distcc
+    echo "localhost/4" >> ~/.distcc/hosts
+fi
+if ! grep --quiet "DISTCC_TCP_CORK=0" ~/.profile; then
+    echo "Configuring distcc in profile..."
+    echo "export DISTCC_TCP_CORK=0" >> ~/.profile
+    source ~/.profile
+fi
 if ! ruby -v | grep --quiet 2.3.0; then
     # Ruby via rvm - from rvm.io
-    gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 2>&1
 
     curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s stable
 
     source /home/vagrant/.rvm/scripts/rvm
 
-    rvm install ruby-2.3
+    stdbuf -o L -e L rvm install ruby-2.3
     rvm --default use 2.3
 
 # Don't install documentation for gems
@@ -168,6 +195,7 @@ if  ! dpkg -l | grep --quiet google-chrome-stable; then
     if [ ! -f google-chrome-stable_current_amd64.deb ]; then
       wget --quiet https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     fi
+    sudo apt-get -f -y -q install
     sudo dpkg -i google-chrome-stable_current_amd64.deb
     sudo apt-get -f -y -q install
 fi
@@ -204,29 +232,33 @@ if [ ! -f bin/osmosis ]; then
     ln -s $HOME/bin/osmosis_src/bin/osmosis $HOME/bin/osmosis
 fi
 
-if ! ogrinfo --formats | grep --quiet FileGDB; then
-    if [ ! -f gdal-1.10.1.tar.gz ]; then
-        echo "### Downloading GDAL source..."
-        wget --quiet http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
+# For convenience, set the version of GDAL to download and install
+GDAL_VERSION=2.1.3
+
+if ! $( hash ogrinfo >/dev/null 2>&1 && ogrinfo --version | grep -q $GDAL_VERSION && ogrinfo --formats | grep -q FileGDB ); then
+    if [ ! -f gdal-$GDAL_VERSION.tar.gz ]; then
+        echo "### Downloading GDAL $GDAL_VERSION source..."
+        wget --quiet http://download.osgeo.org/gdal/$GDAL_VERSION/gdal-$GDAL_VERSION.tar.gz
     fi
-    if [ ! -d gdal-1.10.1 ]; then
-        echo "### Extracting GDAL source..."
-        tar zxfp gdal-1.10.1.tar.gz
+    if [ ! -d gdal-$GDAL_VERSION ]; then
+        echo "### Extracting GDAL $GDAL_VERSION source..."
+        tar zxfp gdal-$GDAL_VERSION.tar.gz
     fi
 
-    if [ ! -f FileGDB_API_1_4-64.tar.gz ]; then
+    if [ ! -f FileGDB_API_1_5_64.tar.gz ]; then
         echo "### Downloading FileGDB API source..."
-        wget --quiet https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1_4-64.tar.gz
+        wget --quiet https://github.com/Esri/file-geodatabase-api/raw/master/FileGDB_API_1.5/FileGDB_API_1_5_64.tar.gz
     fi
     if [ ! -d /usr/local/FileGDB_API ]; then
         echo "### Extracting FileGDB API source & installing lib..."
-        sudo mkdir -p /usr/local/FileGDB_API && sudo tar xfp FileGDB_API_1_4-64.tar.gz --directory /usr/local/FileGDB_API --strip-components 1
+        sudo mkdir -p /usr/local/FileGDB_API && sudo tar xfp FileGDB_API_1_5_64.tar.gz --directory /usr/local/FileGDB_API --strip-components 1
         sudo sh -c "echo '/usr/local/FileGDB_API/lib' > /etc/ld.so.conf.d/filegdb.conf"
     fi
 
-    echo "### Building GDAL w/ FileGDB..."
+    echo "### Building GDAL $GDAL_VERSION w/ FileGDB..."
     export PATH=/usr/local/lib:/usr/local/bin:$PATH
-    cd gdal-1.10.1
+    cd gdal-$GDAL_VERSION
+    touch config.rpath
     echo "GDAL: configure"
     sudo ./configure --quiet --with-fgdb=/usr/local/FileGDB_API --with-pg=/usr/bin/pg_config --with-python
     echo "GDAL: make"
@@ -323,7 +355,7 @@ fi
 TOMCAT_HOME=/usr/share/tomcat8
 
 # Install Tomcat 8
-sudo $HOOT_HOME/scripts/tomcat8/ubuntu/tomcat8_install.sh
+sudo $HOOT_HOME/scripts/tomcat/tomcat8/ubuntu/tomcat8_install.sh
 
 # Configure Tomcat
 if ! grep --quiet TOMCAT8_HOME ~/.profile; then
@@ -332,12 +364,6 @@ if ! grep --quiet TOMCAT8_HOME ~/.profile; then
     source ~/.profile
 fi
 
-# Remove gdal libs installed by libgdal-dev that interfere with
-# node-export-server using gdal libs compiled from source (fgdb support)
-if [ -f "/usr/lib/libgdal.*" ]; then
-    echo "Removing GDAL libs installed by libgdal-dev..."
-    sudo rm /usr/lib/libgdal.*
-fi
 
 if [ -f $HOOT_HOME/conf/LocalHoot.json ]; then
     echo "Removing LocalHoot.json..."
@@ -352,7 +378,7 @@ fi
 cd ~
 # hoot has only been tested successfully with hadoop 0.20.2, which is not available from public repos,
 # so purposefully not installing hoot from the repos.
-if ! which hadoop > /dev/null ; then
+if ! hash hadoop >/dev/null 2>&1 ; then
   echo "Installing Hadoop..."
   if [ ! -f hadoop-0.20.2.tar.gz ]; then
     wget --quiet https://archive.apache.org/dist/hadoop/core/hadoop-0.20.2/hadoop-0.20.2.tar.gz
@@ -374,7 +400,6 @@ if ! which hadoop > /dev/null ; then
   cd hadoop
   sudo find . -type d -exec chmod a+rwx {} \;
   sudo find . -type f -exec chmod a+rw {} \;
-  sudo chmod go-w bin
   cd ~
 
 #TODO: remove these home dir hardcodes
@@ -487,6 +512,7 @@ EOT
   sudo mkdir -p $HOME/hadoop/dfs/name/current
   # this could perhaps be more strict
   sudo chmod -R 777 $HOME/hadoop
+  sudo chmod go-w $HOME/hadoop/bin $HOME/hadoop
   echo 'Y' | hadoop namenode -format
 
   cd /lib
@@ -524,11 +550,6 @@ rm -rf $HOME/tmp
 
 cd $HOOT_HOME
 
-rm -rf $HOOT_HOME/ingest
-mkdir -p $HOOT_HOME/ingest/processed
-
-rm -rf $HOOT_HOME/upload
-mkdir -p $HOOT_HOME/upload
 
 # Update marker file date now that dependency and config stuff has run
 # The make command will exit and provide a warning to run 'vagrant provision'
@@ -539,3 +560,31 @@ touch Vagrant.marker
 # switch to auto mode and use the highest priority installed alternatives for Java.
 sudo update-alternatives --auto java
 sudo update-alternatives --auto javac
+if [ ! -d "$HOOT_HOME/userfiles/ingest/processed" ]; then
+    mkdir -p $HOOT_HOME/userfiles/ingest/processed
+fi
+
+# wipe out all dirs. tmp and upload now reside under $HOOT_HOME/userfiles/
+rm -rf $HOOT_HOME/upload
+rm -rf $HOOT_HOME/tmp
+
+if [ -d "$HOOT_HOME/data/reports" ]; then
+    echo "Moving contents of $HOOT_HOME/data/reports to $HOOT_HOME/userfiles/"
+    cp -R $HOOT_HOME/data/reports $HOOT_HOME/userfiles/
+    rm -rf $HOOT_HOME/data/reports
+fi
+
+if [ -d "$HOOT_HOME/customscript" ]; then
+    echo "Moving contents of $HOOT_HOME/customscript to $HOOT_HOME/userfiles/"
+    cp -R $HOOT_HOME/customscript $HOOT_HOME/userfiles/
+    rm -rf $HOOT_HOME/customscript
+fi
+
+if [ -d "$HOOT_HOME/ingest" ]; then
+    echo "Moving contents of $HOOT_HOME/ingest to $HOOT_HOME/userfiles/"
+    cp -R $HOOT_HOME/ingest $HOOT_HOME/userfiles/
+    rm -rf $HOOT_HOME/ingest
+fi
+
+# Always start with a clean $HOOT_HOME/userfiles/tmp
+rm -rf $HOOT_HOME/userfiles/tmp

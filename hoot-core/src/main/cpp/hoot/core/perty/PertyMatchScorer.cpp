@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,8 +27,8 @@
 #include "PertyMatchScorer.h"
 
 // hoot
-#include <hoot/core/Conflator.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/conflate/Conflator.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/conflate/MapCleaner.h>
 #include <hoot/core/conflate/MatchThreshold.h>
 #include <hoot/core/conflate/RubberSheet.h>
@@ -42,6 +42,8 @@
 #include <hoot/core/visitors/SetTagVisitor.h>
 #include <hoot/core/visitors/TagCountVisitor.h>
 #include <hoot/core/visitors/TagRenameKeyVisitor.h>
+#include <hoot/core/OsmMap.h>
+#include <hoot/core/util/Log.h>
 
 // Qt
 #include <QFileInfo>
@@ -119,7 +121,7 @@ shared_ptr<OsmMap> PertyMatchScorer::_loadReferenceMap(const QString referenceMa
   shared_ptr<SetTagVisitor> setAccuracyVisitor(
     new SetTagVisitor(MetadataTags::ErrorCircular(), QString::number(_searchDistance)));
   referenceMap->visitRw(*setAccuracyVisitor);
-  LOG_VARD(referenceMap->getNodeMap().size());
+  LOG_VARD(referenceMap->getNodes().size());
   LOG_VARD(referenceMap->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {
@@ -155,8 +157,8 @@ void PertyMatchScorer::_loadPerturbedMap(const QString perturbedMapInputPath,
   shared_ptr<SetTagVisitor> setAccuracyVisitor(
     new SetTagVisitor(MetadataTags::ErrorCircular(), QString::number(_searchDistance)));
   perturbedMap->visitRw(*setAccuracyVisitor);
-  LOG_VARD(perturbedMap->getNodeMap().size());
-  LOG_VARD(perturbedMap->getWays().size());  
+  LOG_VARD(perturbedMap->getNodes().size());
+  LOG_VARD(perturbedMap->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {
     TagCountVisitor tagCountVisitor;
@@ -171,7 +173,7 @@ void PertyMatchScorer::_loadPerturbedMap(const QString perturbedMapInputPath,
   pertyOp.setConfiguration(_settings);
   LOG_DEBUG("Details: " << pertyOp.toString());
   pertyOp.apply(perturbedMap);
-  LOG_VARD(perturbedMap->getNodeMap().size());
+  LOG_VARD(perturbedMap->getNodes().size());
   LOG_VARD(perturbedMap->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {
@@ -196,7 +198,7 @@ shared_ptr<OsmMap> PertyMatchScorer::_combineMapsAndPrepareForConflation(
 
   shared_ptr<OsmMap> combinedMap(referenceMap);
   OsmUtils::loadMap(combinedMap, perturbedMapInputPath, false, Status::Unknown2);
-  LOG_VARD(combinedMap->getNodeMap().size());
+  LOG_VARD(combinedMap->getNodes().size());
   LOG_VARD(combinedMap->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {
@@ -215,7 +217,7 @@ shared_ptr<OsmMap> PertyMatchScorer::_combineMapsAndPrepareForConflation(
 //  LOG_DEBUG("saving a debug copy to " << combinedOutputPath2 << " ...");
 
   MatchScoringMapPreparer().prepMap(combinedMap, true);
-  LOG_VARD(combinedMap->getNodeMap().size());
+  LOG_VARD(combinedMap->getNodes().size());
   LOG_VARD(combinedMap->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {
@@ -241,7 +243,7 @@ shared_ptr<OsmMap> PertyMatchScorer::_combineMapsAndPrepareForConflation(
     shared_ptr<RubberSheet> rubberSheetOp(new RubberSheet());
     rubberSheetOp->apply(combinedMap);
 
-    LOG_VARD(combinedMap->getNodeMap().size());
+    LOG_VARD(combinedMap->getNodes().size());
     LOG_VARD(combinedMap->getWays().size());
     if (Log::getInstance().getLevel() <= Log::Debug)
     {
@@ -304,7 +306,7 @@ void PertyMatchScorer::_saveMap(OsmMapPtr map, QString path)
 {
   BuildingOutlineUpdateOp().apply(map);
 
-  LOG_VARD(map->getNodeMap().size());
+  LOG_VARD(map->getNodes().size());
   LOG_VARD(map->getWays().size());
   if (Log::getInstance().getLevel() <= Log::Debug)
   {

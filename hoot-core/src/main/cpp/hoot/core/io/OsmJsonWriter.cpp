@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -30,8 +30,8 @@
 using namespace boost;
 
 // Hoot
-#include <hoot/core/Exception.h>
-#include <hoot/core/Factory.h>
+#include <hoot/core/util/Exception.h>
+#include <hoot/core/util/Factory.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/elements/Node.h>
 #include <hoot/core/elements/Relation.h>
@@ -39,6 +39,9 @@ using namespace boost;
 #include <hoot/core/index/OsmMapIndex.h>
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/MetadataTags.h>
+#include <hoot/core/elements/ElementData.h>
+#include <hoot/core/elements/ElementType.h>
+#include <hoot/core/elements/Tags.h>
 
 // Qt
 #include <QBuffer>
@@ -150,8 +153,8 @@ void OsmJsonWriter::_writeKvp(const QString& key, double value)
 void OsmJsonWriter::_writeNodes(shared_ptr<const OsmMap> map)
 {
   QList<long> nids;
-  NodeMap::const_iterator it = map->getNodeMap().begin();
-  while (it != map->getNodeMap().end()) {
+  NodeMap::const_iterator it = map->getNodes().begin();
+  while (it != map->getNodes().end()) {
     nids.append(it->first);
     it++;
   }
@@ -259,8 +262,8 @@ void OsmJsonWriter::_writeWays(shared_ptr<const OsmMap> map)
 
 void OsmJsonWriter::_writeRelations(shared_ptr<const OsmMap> map)
 {
-  RelationMap::const_iterator it = map->getRelationMap().begin();
-  while (it != map->getRelationMap().end())
+  RelationMap::const_iterator it = map->getRelations().begin();
+  while (it != map->getRelations().end())
   {
     if (!_firstElement) _write(",", true);
     _firstElement = false;

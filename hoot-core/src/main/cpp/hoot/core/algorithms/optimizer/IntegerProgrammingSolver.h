@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef INTEGERPROGRAMMINGSOLVER_H
 #define INTEGERPROGRAMMINGSOLVER_H
@@ -39,7 +39,7 @@
 #endif
 
 // Hoot
-#include <hoot/core/Exception.h>
+#include <hoot/core/util/Exception.h>
 #include <hoot/core/util/Log.h>
 
 // Qt
@@ -169,6 +169,7 @@ public:
     glp_iocp iocp;
     glp_init_iocp(&iocp);
     iocp.presolve = GLP_ON;
+    iocp.binarize = GLP_ON;
     if (_timeLimit > 0)
     {
       iocp.tm_lim = _timeLimit * 1000.0 + 0.5;
@@ -186,7 +187,16 @@ public:
       iocp.msg_lev = GLP_MSG_OFF;
     }
 
-    int result = glp_intopt(_lp, &iocp);
+    int result = 0;
+    try
+    {
+      //  This function can intermittently throw an exception that is heretofore unhandled
+      result = glp_intopt(_lp, &iocp);
+    }
+    catch (...)
+    {
+      throw Exception(QString("Error solving integer programming problem in glp_intopt()."));
+    }
 
     // if there was an error and the error was not a timeout or iteration limit error.
     if (result != 0 && result != GLP_EITLIM && result != GLP_ETMLIM)
@@ -216,7 +226,16 @@ public:
       smcp.msg_lev = GLP_MSG_OFF;
     }
 
-    int result = glp_simplex(_lp, &smcp);
+    int result = 0;
+    try
+    {
+      //  This function can potentially throw an exception that is heretofore unhandled
+      result = glp_simplex(_lp, &smcp);
+    }
+    catch (...)
+    {
+      throw Exception(QString("Error solving integer programming problem in glp_simplex()."));
+    }
 
     // if there was an error and the error was not a timeout or iteration limit error.
     if (result != 0 && result != GLP_EITLIM && result != GLP_ETMLIM)

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,13 +22,13 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "FindIntersectionsOp.h"
 
 // Hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/conflate/DuplicateNameRemover.h>
 #include <hoot/core/conflate/DuplicateWayRemover.h>
 #include <hoot/core/conflate/ImpliedDividedMarker.h>
@@ -45,8 +45,7 @@
 #include <hoot/core/visitors/RemoveDuplicateAreaVisitor.h>
 #include <hoot/core/visitors/RemoveEmptyAreasVisitor.h>
 #include <hoot/core/visitors/RemoveElementsVisitor.h>
-
-
+#include <hoot/core/OsmMap.h>
 #include <hoot/core/visitors/RemoveElementsVisitor.h>
 #include <hoot/core/visitors/FindIntersectionsVisitor.h>
 #include <hoot/core/filters/IntersectionFilter.h>
@@ -64,10 +63,10 @@ FindIntersectionsOp::FindIntersectionsOp()
 void FindIntersectionsOp::apply(shared_ptr<OsmMap>& map)
 {
   // remove all relations
-  LOG_INFO(QString("%1 Relations found.").arg(map->getRelationMap().size()));
+  LOG_INFO(QString("%1 Relations found.").arg(map->getRelations().size()));
   shared_ptr<ElementTypeCriterion> rFilter(new ElementTypeCriterion(ElementType::Relation));
   VisitorOp(new RemoveElementsVisitor(rFilter)).apply(map);
-  LOG_INFO(QString("%1 Relations found, after removal").arg(map->getRelationMap().size()));
+  LOG_INFO(QString("%1 Relations found, after removal").arg(map->getRelations().size()));
 
   /// @todo move this to a config file.
   // pragmatically remove "bad" data in OSM afghanistan

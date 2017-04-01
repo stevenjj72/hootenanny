@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef LOGJS_H
 #define LOGJS_H
@@ -55,7 +55,6 @@ private:
   static v8::Handle<v8::Value> trace(const v8::Arguments& args);
   static v8::Handle<v8::Value> logTrace(const v8::Arguments& args);
   static v8::Handle<v8::Value> logDebug(const v8::Arguments& args);
-  static v8::Handle<v8::Value> logVerbose(const v8::Arguments& args);
   static v8::Handle<v8::Value> logInfo(const v8::Arguments& args);
   static v8::Handle<v8::Value> logWarn(const v8::Arguments& args);
   static v8::Handle<v8::Value> logError(const v8::Arguments& args);

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "PoiPolygonMerger.h"
 
@@ -36,6 +36,8 @@
 
 namespace hoot
 {
+
+unsigned int PoiPolygonMerger::logWarnCount = 0;
 
 PoiPolygonMerger::PoiPolygonMerger(const set< pair<ElementId, ElementId> >& pairs) :
 _pairs(pairs)
@@ -69,7 +71,19 @@ void PoiPolygonMerger::apply(const OsmMapPtr& map,
   {
     //building merger must not have been able to merge...maybe need an earlier check for this
     //and also handle it differently...
-    LOG_WARN("Building merger unable to merge.");
+
+    if (logWarnCount < ConfigOptions().getLogWarnMessageLimit())
+    {
+      LOG_WARN("Building merger unable to merge.");
+      LOG_VART(buildings1);
+      LOG_VART(buildings2);
+      LOG_VART(replaced);
+    }
+    else if (logWarnCount == ConfigOptions().getLogWarnMessageLimit())
+    {
+      LOG_WARN(className() << ": " << Log::LOG_WARN_LIMIT_REACHED_MESSAGE);
+    }
+    logWarnCount++;
     return;
   }
   assert(finalBuilding.get());
@@ -77,13 +91,15 @@ void PoiPolygonMerger::apply(const OsmMapPtr& map,
   Tags finalBuildingTags = finalBuilding->getTags();
   if (poiTags1.size())
   {
-    finalBuildingTags = TagMergerFactory::getInstance().mergeTags(poiTags1, finalBuildingTags,
-      finalBuilding->getElementType());
+    finalBuildingTags =
+      TagMergerFactory::getInstance().mergeTags(poiTags1, finalBuildingTags,
+                                                finalBuilding->getElementType());
   }
   if (poiTags2.size())
   {
-    finalBuildingTags = TagMergerFactory::getInstance().mergeTags(finalBuildingTags,
-      poiTags2, finalBuilding->getElementType());
+    finalBuildingTags =
+      TagMergerFactory::getInstance().mergeTags(finalBuildingTags, poiTags2,
+                                                finalBuilding->getElementType());
   }
   finalBuilding->setTags(finalBuildingTags);
 
@@ -229,8 +245,8 @@ ElementId PoiPolygonMerger::merge(OsmMapPtr map)
   int poiCount = 0;
   ElementId poiElementId;
   Status poiStatus;
-  NodeMap::const_iterator nodeItr = map->getNodeMap().begin();
-  while (nodeItr != map->getNodeMap().end())
+  NodeMap::const_iterator nodeItr = map->getNodes().begin();
+  while (nodeItr != map->getNodes().end())
   {
     const int nodeId = nodeItr->first;
     NodePtr node = map->getNode(nodeId);
@@ -285,8 +301,8 @@ ElementId PoiPolygonMerger::merge(OsmMapPtr map)
   }
   if (polyElementId.isNull())
   {
-    RelationMap::const_iterator relItr = map->getRelationMap().begin();
-    while (relItr != map->getRelationMap().end())
+    RelationMap::const_iterator relItr = map->getRelations().begin();
+    while (relItr != map->getRelations().end())
     {
       const int relationId = relItr->first;
       RelationPtr relation = map->getRelation(relationId);

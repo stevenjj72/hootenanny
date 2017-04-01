@@ -33,6 +33,7 @@
 
 // Hoot
 #include <hoot/core/io/HootApiDb.h>
+#include <hoot/core/io/OsmApiDb.h>
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/ConfPath.h>
 
@@ -75,6 +76,14 @@ void ServicesDbTestUtils::compareRecords(QString sql, QString expected, QVariant
   {
     CPPUNIT_ASSERT_EQUAL(expected.toStdString(), result.toStdString());
   }
+}
+
+void ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase()
+{
+  OsmApiDb database;
+  database.open(getOsmApiDbUrl().toString());
+  database.deleteData();
+  database.close();
 }
 
 void ServicesDbTestUtils::execOsmApiDbSqlTestScript(const QString scriptName)
@@ -183,10 +192,10 @@ Settings ServicesDbTestUtils::_readDbConfig()
 {
   Settings result;
   //  Read in the default values
-  QString defaults = ConfPath::getHootHome() + "/conf/DatabaseConfigDefault.sh";
+  QString defaults = ConfPath::getHootHome() + "/conf/database/DatabaseConfigDefault.sh";
   _readDbConfig(result, defaults);
   //  Read in the local values if the file exists
-  QString local = ConfPath::getHootHome() + "/conf/DatabaseConfigLocal.sh";
+  QString local = ConfPath::getHootHome() + "/conf/database/DatabaseConfigLocal.sh";
   if (QFile::exists(local))
   {
     _readDbConfig(result, local);

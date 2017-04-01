@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "ApiDb.h"
 
@@ -34,10 +34,13 @@
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/HootException.h>
 #include <hoot/core/util/Log.h>
-#include <hoot/core/io/ElementCacheLRU.h>
 #include <hoot/core/util/OsmUtils.h>
 #include <hoot/core/algorithms/zindex/ZValue.h>
 #include <hoot/core/algorithms/zindex/ZCurveRanger.h>
+#include <hoot/core/algorithms/zindex/BBox.h>
+#include <hoot/core/elements/ElementType.h>
+#include <hoot/core/algorithms/zindex/Range.h>
+#include <hoot/core/io/TableType.h>
 
 // qt
 #include <QStringList>
@@ -119,7 +122,7 @@ void ApiDb::open(const QUrl& url)
   }
   else
   {
-    _db =  QSqlDatabase::database(connectionName);
+    _db = QSqlDatabase::database(connectionName);
   }
 
   if (_db.isOpen() == false)
@@ -156,14 +159,11 @@ void ApiDb::open(const QUrl& url)
     LOG_WARN("Error disabling Postgresql INFO messages.");
   }
 
-  LOG_DEBUG("Successfully opened _db: " << url.toString());
+  LOG_DEBUG("Successfully opened db: " << url.toString());
 }
 
 long ApiDb::getUserId(const QString email, bool throwWhenMissing)
 {
-  //LOG_DEBUG("debug email = " + email);
-  //LOG_DEBUG("debug throwwhenmissing = " + QString::number(throwWhenMissing));
-
   if (_selectUserByEmail == 0)
   {
     _selectUserByEmail.reset(new QSqlQuery(_db));
@@ -191,7 +191,6 @@ long ApiDb::getUserId(const QString email, bool throwWhenMissing)
   {
     QString error = QString("No user found with the email: %1 (maybe specify `%2=true`?)")
         .arg(email).arg(ConfigOptions::getHootapiDbWriterCreateUserKey());
-    LOG_WARN(error);
     throw HootException(error);
   }
 
@@ -204,7 +203,6 @@ long ApiDb::insertUser(const QString email, const QString displayName)
 {
   long id = -1;
 
-  LOG_DEBUG("Inside insert user");
   if (_insertUser == 0)
   {
     _insertUser.reset(new QSqlQuery(_db));
@@ -227,12 +225,11 @@ long ApiDb::insertUser(const QString email, const QString displayName)
     {
       QString err = QString("Error executing query: %1 (%2)").arg(_insertUser->executedQuery()).
           arg(_insertUser->lastError().text());
-      LOG_WARN(err)
       throw HootException(err);
     }
     else
     {
-      LOG_DEBUG("Did not insert user, queryied a previously created user.")
+      LOG_DEBUG("Did not insert user, queried a previously created user.")
     }
   }
   // if the insert succeeded
@@ -317,29 +314,40 @@ shared_ptr<QSqlQuery> ApiDb::selectNodesForWay(long wayId, const QString sql)
 
 Tags ApiDb::unescapeTags(const QVariant &v)
 {
+  /** NOTE:  When we upgrade from Qt4 to Qt5 we can use the QRegularExpression
+   *  classes that should enable the regex below that has both greedy matching
+   *  and lazy matching in the same regex.  The QRegExp class doesn't allow this
+   *  that is why there are two regex objects in this function.
+   *
+   *  Replace it with this:
+   *    QRegularExpression rxKeyValue("\"(.*?)\"=>\"((?:(?!\",).)*)\"(?:, )?");
+   */
   assert(v.type() == QVariant::String);
-  QString s = v.toString();
+  QString str = v.toString();
 
   Tags result;
-
-  QStringList list = s.split("=>");
-  while (list.size() > 1)
+  QRegExp rxKey("\"(.*)\"=>\"");
+  QRegExp rxValue("((?:(?!\",).)*)\"(?:, )?");
+  //  The key regex needs to be minimal should be (.*?) but that doesn't work
+  //  while the value regex needs to be maximal to consume quotes within the value
+  rxKey.setMinimal(true);
+  rxValue.setMinimal(false);
+  int pos = 0;
+  //  Match the key first
+  while ((pos = rxKey.indexIn(str, pos)) != -1)
   {
-    QString key = list.first();
-    list.pop_front();
-    QString value = list.first();
-    list.pop_front();
-    //  Split the value/key that wasn't split at the beginning
-    if (list.size() > 0)
+    pos += rxKey.matchedLength();
+    //  Then match the value, ignoring any key/value pairs that don't match
+    if ((pos = rxValue.indexIn(str, pos)) != -1)
     {
-      QStringList vk = value.split("\", \"");
-      value = vk[0];
-      list.push_front(vk[1]);
+      QString key = rxKey.cap(1);
+      QString value = rxValue.cap(1);
+      //  Unescape the actual key/value pairs
+      _unescapeString(key);
+      _unescapeString(value);
+      result.insert(key, value);
+      pos += rxValue.matchedLength();
     }
-    //  Unescape the rest
-    _unescapeString(key);
-    _unescapeString(value);
-    result.insert(key, value);
   }
 
   return result;
@@ -409,22 +417,6 @@ unsigned int ApiDb::tileForPoint(double lat, double lon)
   }
 
   return tile;
-}
-
-QSqlQuery ApiDb::_execNoPrepare(const QString sql) const
-{
-  // inserting strings in this fashion is safe b/c it is private and we closely control the table
-  // names.
-  QSqlQuery q(_db);
-  LOG_VARD(sql);
-
-  if (q.exec(sql) == false)
-  {
-    throw HootException(QString("Error executing query: %1 (%2)").arg(q.lastError().text()).arg(sql));
-  }
-  LOG_VARD(q.numRowsAffected());
-
-  return q;
 }
 
 long ApiDb::round(double x)
@@ -674,12 +666,36 @@ shared_ptr<QSqlQuery> ApiDb::getChangesetsCreatedAfterTime(const QString timeStr
     LOG_ERROR(_selectChangesetsCreatedAfterTime->executedQuery());
     LOG_ERROR(_selectChangesetsCreatedAfterTime->lastError().text());
     throw HootException(
-      "Could not execute changesets query: " + _selectChangesetsCreatedAfterTime->lastError().text());
+      "Could not execute changesets query: " +
+      _selectChangesetsCreatedAfterTime->lastError().text());
   }
   LOG_VARD(_selectChangesetsCreatedAfterTime->executedQuery());
   LOG_VARD(_selectChangesetsCreatedAfterTime->numRowsAffected());
 
   return _selectChangesetsCreatedAfterTime;
+}
+
+QMap<QString, QString> ApiDb::getDbUrlParts(const QString url)
+{
+  QMap<QString, QString> dbUrlParts;
+
+  QStringList dbUrlPartsList = url.split("/");
+  dbUrlParts["database"] = dbUrlPartsList[dbUrlPartsList.size() - 1];
+  QStringList userParts = dbUrlPartsList[dbUrlPartsList.size() - 2].split(":");
+  dbUrlParts["user"] = userParts[0];
+  dbUrlParts["password"] = userParts[1].split("@")[0];
+  dbUrlParts["host"] = userParts[1].split("@")[1];
+  dbUrlParts["port"] = userParts[2];
+
+  return dbUrlParts;
+}
+
+QString ApiDb::getPsqlString(const QString url)
+{
+  const QMap<QString, QString> dbUrlParts = getDbUrlParts(url);
+  return
+    "-h " + dbUrlParts["host"] + " -p " + dbUrlParts["port"] +
+    " -U " + dbUrlParts["user"] + " -d " + dbUrlParts["database"];
 }
 
 }

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -28,12 +28,11 @@
 
 // Hoot
 #include <hoot/core/filters/StatusCriterion.h>
-#include <hoot/core/filters/HasTagCriterion.h>
+#include <hoot/core/filters/TagKeyCriterion.h>
 #include <hoot/core/filters/ChainCriterion.h>
 #include <hoot/core/util/MetadataTags.h>
-#include <hoot/core/visitors/SingleStatistic.h>
 #include <hoot/core/visitors/FilteredVisitor.h>
-#include <hoot/core/visitors/CountVisitor.h>
+#include <hoot/core/visitors/ElementCountVisitor.h>
 
 namespace hoot
 {
@@ -46,29 +45,23 @@ bool MapScoringStatusAndRefTagValidator::allTagsAreValid(const ConstOsmMapPtr& m
 {
   //if first map has any element with a hoot::status = Unknown1 tag and a tag with key = REF2,
   //then fail
-  FilteredVisitor unknown1Visitor(
-    new ChainCriterion(
-      new StatusCriterion(Status::Unknown1),
-      new HasTagCriterion(MetadataTags::Ref2())),
-    new CountVisitor());
-  FilteredVisitor& filteredRefVisitor = const_cast<FilteredVisitor&>(unknown1Visitor);
-  SingleStatistic* singleStat = dynamic_cast<SingleStatistic*>(&unknown1Visitor.getChildVisitor());
-  assert(singleStat != 0);
-  map->visitRo(filteredRefVisitor);
-  const long numFirstInputBadTags = singleStat->getStat();
+  const long numFirstInputBadTags =
+    (int)FilteredVisitor::getStat(
+      new ChainCriterion(
+        new StatusCriterion(Status::Unknown1),
+        new TagKeyCriterion(MetadataTags::Ref2())),
+      new ElementCountVisitor(),
+      map);
 
   //if second map has any element with a hoot::status = Unknown2 tag and a tag with key = REF1,
   //then fail
-  FilteredVisitor unknown2Visitor(
-    new ChainCriterion(
-      new StatusCriterion(Status::Unknown2),
-      new HasTagCriterion(MetadataTags::Ref1())),
-    new CountVisitor());
-  filteredRefVisitor = const_cast<FilteredVisitor&>(unknown2Visitor);
-  singleStat = dynamic_cast<SingleStatistic*>(&unknown2Visitor.getChildVisitor());
-  assert(singleStat != 0);
-  map->visitRo(filteredRefVisitor);
-  const long numSecondInputBadTags = singleStat->getStat();
+  const long numSecondInputBadTags =
+    (int)FilteredVisitor::getStat(
+      new ChainCriterion(
+        new StatusCriterion(Status::Unknown2),
+        new TagKeyCriterion(MetadataTags::Ref1())),
+      new ElementCountVisitor(),
+      map);
 
   return (numFirstInputBadTags + numSecondInputBadTags) == 0;
 }

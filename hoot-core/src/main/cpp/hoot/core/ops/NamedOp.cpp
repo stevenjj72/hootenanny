@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,7 +27,7 @@
 #include "NamedOp.h"
 
 // hoot
-#include <hoot/core/Factory.h>
+#include <hoot/core/util/Factory.h>
 #include <hoot/core/elements/ElementVisitor.h>
 #include <hoot/core/ops/VisitorOp.h>
 #include <hoot/core/OsmMap.h>
@@ -69,6 +69,8 @@ void NamedOp::apply(shared_ptr<OsmMap>& map)
       }
 
       t->apply(map);
+
+      LOG_VARD(map->getElementCount());
     }
     else if (f.hasBase<ElementVisitor>(s.toStdString()))
     {
@@ -88,9 +90,9 @@ void NamedOp::apply(shared_ptr<OsmMap>& map)
 
       shared_ptr<OsmMapOperation> op(new VisitorOp(t));
       op->apply(map);
-    }
 
-    LOG_VART(map->getElementCount());
+      LOG_VARD(map->getElementCount());
+    }
   }
 }
 

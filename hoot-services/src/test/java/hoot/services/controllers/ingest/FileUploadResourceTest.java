@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,11 +22,12 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 package hoot.services.controllers.ingest;
 
 import static hoot.services.HootProperties.HOME_FOLDER;
+import static hoot.services.HootProperties.UPLOAD_FOLDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -46,18 +47,17 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import hoot.services.UnitTest;
-import hoot.services.testsupport.HootCustomPropertiesSetter;
+import hoot.services.utils.HootCustomPropertiesSetter;
 
 
 public class FileUploadResourceTest {
     private static File homeFolder;
     private static String original_HOME_FOLDER;
-
+    private static String original_UPLOAD_FOLDER;
 
     private static void copyResourcesInfoTestFolder(String[] resources) throws IOException {
         for (String resource : resources) {
@@ -71,10 +71,12 @@ public class FileUploadResourceTest {
     public static void beforeClass() throws Exception {
         try {
             original_HOME_FOLDER = HOME_FOLDER;
+            original_UPLOAD_FOLDER = UPLOAD_FOLDER;
             homeFolder = new File(FileUtils.getTempDirectory(), "FileUploadResourceTest");
             FileUtils.forceMkdir(homeFolder);
             assertTrue(homeFolder.exists());
             HootCustomPropertiesSetter.setProperty("HOME_FOLDER", homeFolder.getAbsolutePath());
+            HootCustomPropertiesSetter.setProperty("UPLOAD_FOLDER", homeFolder.getAbsolutePath() + "/" + "upload");
 
             copyResourcesInfoTestFolder(new String[]
                     {"ogr.zip", "zip1.zip", "osm.zip", "osm1.osm", "osm2.osm",
@@ -93,13 +95,14 @@ public class FileUploadResourceTest {
     public static void afterClass() throws Exception {
         FileUtils.deleteDirectory(homeFolder);
         HootCustomPropertiesSetter.setProperty("HOME_FOLDER", original_HOME_FOLDER);
+        HootCustomPropertiesSetter.setProperty("UPLOAD_FOLDER", original_UPLOAD_FOLDER);
     }
 
     @Test
     @Category(UnitTest.class)
     public void TestBuildNativeRequestFgdbOgr() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -137,7 +140,7 @@ public class FileUploadResourceTest {
     public void TestBuildNativeRequestFgdbOsm() throws Exception {
         String input = "fgdb_osm.zip";
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -170,7 +173,7 @@ public class FileUploadResourceTest {
     public void TestCreateNativeRequestFgdbOgrZip() throws Exception {
         String input = "fgdb_ogr.zip";
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -209,19 +212,17 @@ public class FileUploadResourceTest {
         int zipCnt = 0;
         zipCnt++;
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         // Test zip containing fgdb + shp
         int shpCnt = 0;
         int osmCnt = 0;
         int geonamesCnt = 0;
         int fgdbCnt = 0;
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt,
-                osmZipCnt, geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "fgdb_ogr",
-                inputsList, "test@test.com", "false", null);
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt,
+                osmZipCnt, geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "fgdb_ogr",
+                inputsList, "test@test.com", "false", null, this.getClass());
+
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -234,7 +235,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -257,7 +258,7 @@ public class FileUploadResourceTest {
     @Category(UnitTest.class)
     public void TestCreateNativeRequestOgrZipAndShp() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -321,15 +322,13 @@ public class FileUploadResourceTest {
         int geonamesCnt = 0;
         geonamesCnt += (Integer) zipStat.get("geonamescnt");
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         // Test zip containing fgdb + shp
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
-                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "fgdb_ogr", inputsList,
-                "test@test.com", "false", null);
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
+                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId,
+                "fgdb_ogr", inputsList, "test@test.com", "false", null,
+                this.getClass());
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -342,7 +341,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -365,7 +364,7 @@ public class FileUploadResourceTest {
     @Category(UnitTest.class)
     public void TestCreateNativeRequestOsmZipAndOsm() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
 
@@ -430,15 +429,12 @@ public class FileUploadResourceTest {
         int geonamesCnt = 0;
         geonamesCnt += (Integer) zipStat.get("osmcnt");
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         // Test zip containing fgdb + shp
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
                 geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "osm", inputsList,
-                "test@test.com", "false", null);
+                "test@test.com", "false", null, this.getClass());
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -451,7 +447,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -474,7 +470,7 @@ public class FileUploadResourceTest {
     @Category(UnitTest.class)
     public void TestCreateNativeRequestOgrZip() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -534,18 +530,17 @@ public class FileUploadResourceTest {
         zipList.add("zip1");
         zipCnt++;
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         // Test zip containing fgdb + shp
         int shpCnt = 0;
         int osmCnt = 0;
         int fgdbCnt = 0;
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
-                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "ogr", inputsList,
-                "test@test.com", "false", null);
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        FileETLCommand command = new FileETLCommand(results, zipCnt,
+                shpZipCnt, fgdbZipCnt, osmZipCnt, geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList,
+                "TDSv61.js", jobId, "ogr", inputsList, "test@test.com", "false",
+                null, this.getClass());
+
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -558,7 +553,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -576,7 +571,7 @@ public class FileUploadResourceTest {
     @Category(UnitTest.class)
     public void TestCreateNativeRequestOgr() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -631,18 +626,16 @@ public class FileUploadResourceTest {
         int geonamesCnt = 0;
         geonamesCnt += (Integer) zipStat.get("osmcnt");
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         int zipCnt = 0;
         int shpZipCnt = 0;
         int osmZipCnt = 0;
         int fgdbZipCnt = 0;
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
-                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "ogr", inputsList,
-                "test@test.com", "false", null);
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
+                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId,
+                "ogr", inputsList, "test@test.com", "false", null,
+                this.getClass());
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -655,7 +648,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -672,7 +665,7 @@ public class FileUploadResourceTest {
     @Category(UnitTest.class)
     public void TestCreateNativeRequestOsm() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -726,19 +719,17 @@ public class FileUploadResourceTest {
         osmCnt += (Integer) zipStat.get("osmcnt");
         geonamesCnt += (Integer) zipStat.get("osmcnt");
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         int zipCnt = 0;
         int shpZipCnt = 0;
         int osmZipCnt = 0;
         int fgdbZipCnt = 0;
         int geonamesZipCnt = 0;
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
-                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "osm", inputsList,
-                "test@test.com", "false", null);
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt,
+                geonamesZipCnt, shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId,
+                "osm", inputsList, "test@test.com", "false", null,
+                this.getClass());
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -751,7 +742,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -765,12 +756,11 @@ public class FileUploadResourceTest {
         FileUtils.forceDelete(workingDir);
     }
 
-    @Ignore
     @Test
     @Category(UnitTest.class)
     public void TestCreateNativeRequestFgdb() throws Exception {
         String jobId = "test-id-123";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -807,19 +797,16 @@ public class FileUploadResourceTest {
         int geonamesCnt = 0;
         geonamesCnt += (Integer) zipStat.get("osmcnt");
 
-        Method createNativeRequestMethod = getCreateNativeRequestMethod();
-
         int zipCnt = 0;
         int shpZipCnt = 0;
         int osmZipCnt = 0;
         int fgdbZipCnt = 0;
         int geonamesZipCnt = 0;
-        JSONArray resA = (JSONArray) createNativeRequestMethod.invoke(res, results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt, geonamesZipCnt,
-                shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "fgdb", inputsList, "test@test.com",
-                "false", null);
+        FileETLCommand command = new FileETLCommand(results, zipCnt, shpZipCnt, fgdbZipCnt, osmZipCnt, geonamesZipCnt,
+                shpCnt, fgdbCnt, osmCnt, geonamesCnt, zipList, "TDSv61.js", jobId, "fgdb", inputsList,
+                "test@test.com", "false", null, this.getClass());
 
-        JSONObject req = (JSONObject) resA.get(0);
-        JSONArray params = (JSONArray) req.get("params");
+        JSONArray params = (JSONArray) command.get("params");
 
         int nP = 0;
 
@@ -832,7 +819,7 @@ public class FileUploadResourceTest {
             }
 
             if (oJ.get("INPUT_PATH") != null) {
-                assertEquals("upload/test-id-123", oJ.get("INPUT_PATH").toString());
+                assertTrue(oJ.get("INPUT_PATH").toString().endsWith("/upload/test-id-123"));
                 nP++;
             }
 
@@ -855,7 +842,7 @@ public class FileUploadResourceTest {
         // Create dummy FGDB
 
         String jobId = "123-456-789";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -879,27 +866,6 @@ public class FileUploadResourceTest {
         item.write(out);
         fileItemsList.add(item);
         assertTrue(out.exists());
-
-        /*
-         * Map<String,String> uploadedFiles = new HashMap<String, String>();
-         * Map<String,String> uploadedFilesPaths = new HashMap<String,
-         * String>();
-         * 
-         * res.serializeFGDB(fileItemsList, jobId, uploadedFiles,
-         * uploadedFilesPaths );
-         * 
-         * org.junit.Assert.assertEquals("GDB", uploadedFiles.get("fgdbTest"));
-         * org.junit.Assert.assertEquals("fgdbTest.gdb",
-         * uploadedFilesPaths.get("fgdbTest"));
-         * 
-         * File fgdbpath = new File(wkdirpath + "/fgdbTest.gdb");
-         * org.junit.Assert.assertTrue(fgdbpath.exists());
-         * 
-         * File content = new File(wkdirpath + "/fgdbTest.gdb/dummy1.gdbtable");
-         * org.junit.Assert.assertTrue(content.exists());
-         * 
-         * FileUtils.forceDelete(workingDir);
-         */
     }
 
     @Test
@@ -911,7 +877,7 @@ public class FileUploadResourceTest {
         // Create dummy FGDB
 
         String jobId = "123-456-789-testosm";
-        String wkdirpath = homeFolder + "/upload/" + jobId;
+        String wkdirpath = UPLOAD_FOLDER + File.separator + jobId;
         File workingDir = new File(wkdirpath);
         FileUtils.forceMkdir(workingDir);
         assertTrue(workingDir.exists());
@@ -935,26 +901,6 @@ public class FileUploadResourceTest {
         item.write(out);
         fileItemsList.add(item);
         assertTrue(out.exists());
-
-        /*
-         * Map<String,String> uploadedFiles = new HashMap<String, String>();
-         * Map<String,String> uploadedFilesPaths = new HashMap<String,
-         * String>();
-         * 
-         * res.serializeUploadedFiles(fileItemsList, jobId, uploadedFiles,
-         * uploadedFilesPaths, wkdirpath);
-         * 
-         * org.junit.Assert.assertEquals("OSM", uploadedFiles.get("dummy1"));
-         * org.junit.Assert.assertEquals("dummy1.osm",
-         * uploadedFilesPaths.get("dummy1"));
-         * 
-         * 
-         * 
-         * File content = new File(wkdirpath + "/dummy1.osm");
-         * org.junit.Assert.assertTrue(content.exists());
-         * 
-         * FileUtils.forceDelete(workingDir);
-         */
     }
 
     private static Method getBuildNativeRequestMethod() throws NoSuchMethodException {
@@ -964,16 +910,5 @@ public class FileUploadResourceTest {
         buildNativeRequestMethod.setAccessible(true);
 
         return buildNativeRequestMethod;
-    }
-
-    private static Method getCreateNativeRequestMethod() throws NoSuchMethodException {
-        Method createNativeRequestMethod = FileUploadResource.class.getDeclaredMethod("createNativeRequest",
-                JSONArray.class, int.class, int.class, int.class, int.class, int.class, int.class, int.class,
-                int.class, int.class, List.class, String.class, String.class, String.class, List.class, String.class,
-                String.class, String.class);
-
-        createNativeRequestMethod.setAccessible(true);
-
-        return createNativeRequestMethod;
     }
 }

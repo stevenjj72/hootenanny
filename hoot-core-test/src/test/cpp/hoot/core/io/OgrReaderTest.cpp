@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -26,10 +26,10 @@
  */
 
 // Hoot
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/io/OgrReader.h>
-#include <hoot/core/io/OsmWriter.h>
+#include <hoot/core/io/OsmXmlWriter.h>
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/util/Log.h>
 #include <hoot/core/util/Progress.h>
@@ -68,7 +68,7 @@ public:
       shared_ptr<OsmMap> map(new OsmMap());
       uut.read("test-files/jakarta_raya_coastline.shp", "", map, progress);
 
-      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodeMap().size());
+      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodes().size());
       CPPUNIT_ASSERT_EQUAL(6, (int)map->getWays().size());
     }
 
@@ -119,7 +119,7 @@ public:
       uut.setTranslationFile("translations/cloudmade.js");
       uut.read("test-files/jakarta_raya_coastline.shp", "", map, progress);
 
-      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodeMap().size());
+      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodes().size());
       CPPUNIT_ASSERT_EQUAL(6, (int)map->getWays().size());
 
       int shoreline = 0;
@@ -149,7 +149,7 @@ public:
       uut.setTranslationFile("cloudmade");
       uut.read("test-files/jakarta_raya_coastline.shp", "", map, progress);
 
-      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodeMap().size());
+      CPPUNIT_ASSERT_EQUAL(604, (int)map->getNodes().size());
       CPPUNIT_ASSERT_EQUAL(6, (int)map->getWays().size());
 
       int shoreline = 0;
@@ -202,7 +202,7 @@ public:
       {
         ElementPtr tempElement = reader.readNextElement();
         numberOfElements++;
-        //LOG_DEBUG(tempElement->toString());
+        LOG_VART(tempElement->toString());
       }
 
       CPPUNIT_ASSERT_EQUAL(610, numberOfElements);

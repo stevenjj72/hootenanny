@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #include "WordCountWriter.h"
@@ -30,6 +30,8 @@
 // hoot
 #include <hoot/core/util/HootException.h>
 #include <hoot/core/util/Log.h>
+#include <hoot/core/util/DbUtils.h>
+#include "WordCount.h"
 
 // Qt
 #include <QtAlgorithms>
@@ -51,19 +53,6 @@ bool descendingCount(const WordCount& w1, const WordCount& w2)
   return w1.count > w2.count;
 }
 
-void WordCountWriter::_exec(QSqlDatabase& db, QString sql)
-{
-  QSqlQuery q(db);
-  if (q.exec(sql) == false)
-  {
-    QString error = QString("Error executing query: %1 (%2)").arg(q.lastError().text()).
-        arg(sql);
-    LOG_WARN(error);
-    throw HootException(error);
-  }
-}
-
-
 void WordCountWriter::write(QString basePath, QVector<WordCount> words)
 {
   LOG_INFO("Start writing");
@@ -74,8 +63,8 @@ void WordCountWriter::write(QString basePath, QVector<WordCount> words)
     throw HootException("Error opening database: " + basePath);
   }
 
-  _exec(db, "CREATE TABLE words (word TEXT PRIMARY KEY, count INT)");
-  _exec(db, "BEGIN");
+  DbUtils::execNoPrepare(db, "CREATE TABLE words (word TEXT PRIMARY KEY, count INT)");
+  DbUtils::execNoPrepare(db, "BEGIN");
 
   QSqlQuery q(db);
   if (q.prepare("INSERT INTO words (word, count) VALUES(:word, :count)") == false)
@@ -91,12 +80,11 @@ void WordCountWriter::write(QString basePath, QVector<WordCount> words)
     {
       QString err = QString("Error executing query: %1 (%2)").arg(q.executedQuery()).
           arg(q.lastError().text());
-      LOG_WARN(err);
       throw HootException(err);
     }
   }
 
-  _exec(db, "COMMIT");
+  DbUtils::execNoPrepare(db, "COMMIT");
   LOG_INFO("Committed");
 }
 

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,14 +22,16 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "FilteredVisitor.h"
 
 // hoot
-#include <hoot/core/Factory.h>
+#include <hoot/core/util/Factory.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/ConstOsmMapConsumer.h>
+#include <hoot/core/filters/ElementCriterion.h>
+#include <hoot/core/visitors/SingleStatistic.h>
 
 namespace hoot
 {
@@ -102,6 +104,33 @@ void FilteredVisitor::visit(const ConstElementPtr& e)
   {
     _visitor->visit(e);
   }
+}
+
+double FilteredVisitor::getStat(ElementCriterion* criterion, ElementVisitor* visitor,
+                                const ConstOsmMapPtr& map)
+{
+  FilteredVisitor filteredVisitor(criterion, visitor);
+  SingleStatistic* stat = dynamic_cast<SingleStatistic*>(&filteredVisitor.getChildVisitor());
+  if (stat == 0)
+  {
+    throw HootException("Visitor does not implement SingleStatistic.");
+  }
+  FilteredVisitor& filteredVis = const_cast<FilteredVisitor&>(filteredVisitor);
+  map->visitRo(filteredVis);
+  return stat->getStat();
+}
+
+double FilteredVisitor::getStat(ElementCriterion* criterion, ElementVisitor* visitor,
+                                const ConstOsmMapPtr& map, const ElementPtr& element)
+{
+  FilteredVisitor filteredVisitor(criterion, visitor);
+  SingleStatistic* stat = dynamic_cast<SingleStatistic*>(&filteredVisitor.getChildVisitor());
+  if (stat == 0)
+  {
+    throw HootException("Visitor does not implement SingleStatistic.");
+  }
+  element->visitRo(*map, filteredVisitor);
+  return stat->getStat();
 }
 
 }

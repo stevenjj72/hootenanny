@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,14 +22,15 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "MatchFactory.h"
 
 // hoot
-#include <hoot/core/Factory.h>
+#include <hoot/core/util/Factory.h>
 #include <hoot/core/ops/Boundable.h>
 #include <hoot/core/util/ConfigOptions.h>
+#include <hoot/core/conflate/MatchThreshold.h>
 
 //Qt
 #include <QString>
@@ -124,7 +125,7 @@ void MatchFactory::_setMatchCreators(QStringList matchCreatorsList)
     QString c = matchCreatorsList[i];
     QStringList args = c.split(",");
     QString className = args[0];
-    //LOG_VARD(className);
+    LOG_VART(className);
     if (className.length() > 0)
     {
       args.removeFirst();

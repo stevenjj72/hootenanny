@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "PbfElementIterator.h"
 
@@ -65,7 +65,7 @@ PbfElementIterator::PbfElementIterator(istream* in)
 void PbfElementIterator::_init(istream* in)
 {
   _in.reset(in);
-  _reader.reset(new PbfReader(false));
+  _reader.reset(new OsmPbfReader(false));
   _reader->setPermissive(true);
   _reader->setUseDataSourceIds(true);
   _reader->setUseFileStatus(false);
@@ -80,7 +80,7 @@ void PbfElementIterator::_next()
   {
     _reader->parseBlob(_blobs[_blobIndex++], _in.get(), _map);
 
-    const NodeMap& nodes = _map->getNodeMap();
+    const NodeMap& nodes = _map->getNodes();
     for (NodeMap::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
     {
       _addElement(_map->getNode(it->first));
@@ -92,7 +92,7 @@ void PbfElementIterator::_next()
       _addElement(_map->getWay(it->first));
     }
 
-    const RelationMap& relations = _map->getRelationMap();
+    const RelationMap& relations = _map->getRelations();
     for (RelationMap::const_iterator it = relations.begin(); it != relations.end(); ++it)
     {
       _addElement(_map->getRelation(it->first));

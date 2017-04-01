@@ -18,7 +18,7 @@
 #define WAYJOINREDUCER_H
 
 // Hoot
-#include <hoot/hadoop/MapStats.h>
+#include <hoot/hadoop/stats/MapStats.h>
 
 // Pretty Pipes
 #include <pp/io/RecordWriter.h>
@@ -44,6 +44,8 @@ public:
   } __attribute__((packed));
 
   static string className() { return "hoot::WayJoin1Reducer"; }
+
+  static unsigned int logWarnCount;
 
   WayJoin1Reducer();
 

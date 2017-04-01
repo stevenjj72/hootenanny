@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,9 +22,11 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "ElementSorter.h"
+
+#include <hoot/core/util/Log.h>
 
 // Standard
 #include <algorithm>
@@ -37,12 +39,13 @@ ElementSorter::ElementSorter(ConstOsmMapPtr source) :
   _wayIndex(0),
   _relationIndex(0)
 {
-  LOG_INFO("Sorting element by element type...");
+  LOG_DEBUG(
+    "Sorting element by element type for map with element count: " << source->getElementCount());
 
   _source = source;
 
-  for (NodeMap::const_iterator it = _source->getNodeMap().begin();
-    it != _source->getNodeMap().end(); ++it)
+  for (NodeMap::const_iterator it = _source->getNodes().begin();
+    it != _source->getNodes().end(); ++it)
   {
     _nodeIds.push_back(it->first);
   }
@@ -51,8 +54,8 @@ ElementSorter::ElementSorter(ConstOsmMapPtr source) :
   {
     _wayIds.push_back(it->first);
   }
-  for (RelationMap::const_iterator it = _source->getRelationMap().begin();
-    it != _source->getRelationMap().end(); ++it)
+  for (RelationMap::const_iterator it = _source->getRelations().begin();
+    it != _source->getRelations().end(); ++it)
   {
     _relationIds.push_back(it->first);
   }

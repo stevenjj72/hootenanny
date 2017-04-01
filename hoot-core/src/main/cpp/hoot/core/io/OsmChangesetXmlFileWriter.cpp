@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,10 +27,11 @@
 #include "OsmChangesetXmlFileWriter.h"
 
 // hoot
-#include <hoot/core/io/OsmWriter.h>
+#include <hoot/core/io/OsmXmlWriter.h>
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/MetadataTags.h>
 #include <hoot/core/util/OsmUtils.h>
+#include <hoot/core/util/Log.h>
 
 // Qt
 #include <QFile>
@@ -40,9 +41,10 @@
 namespace hoot
 {
 
-OsmChangesetXmlFileWriter::OsmChangesetXmlFileWriter()
-  : _precision(ConfigOptions().getWriterPrecision()),
-    _changesetMaxSize(ConfigOptions().getChangesetMaxSize())
+OsmChangesetXmlFileWriter::OsmChangesetXmlFileWriter() :
+_precision(ConfigOptions().getWriterPrecision()),
+_changesetMaxSize(ConfigOptions().getChangesetMaxSize()),
+_multipleChangesetsWritten(false)
 {
 }
 
@@ -60,11 +62,14 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
   while (cs->hasMoreChanges())
   {
     long changesetProgress = 1;
-    //  Create a new filepath if the file is split in multiple files because of the changeset.max.size setting
+    //  Create a new filepath if the file is split in multiple files because of the
+    //  changeset.max.size setting
     //   i.e. <filepath>/<filename>-001.<ext>
     if (fileCount > 0)
+    {
       filepath = QString("%1/%2-%3.%4").arg(dir).arg(file).arg(fileCount, 3, 10, QChar('0')).arg(ext);
-
+      _multipleChangesetsWritten = true;
+    }
     LOG_INFO("Writing changeset to " << filepath);
 
     QFile f;
@@ -88,7 +93,7 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
     while (cs->hasMoreChanges() && changesetProgress <= _changesetMaxSize)
     {
       _change = cs->readNextChange();
-      LOG_VARD(_change.toString());
+      LOG_VART(_change.toString());
       if (_change.type != last)
       {
         if (last != Change::Unknown)
@@ -169,8 +174,8 @@ void OsmChangesetXmlFileWriter::writeNode(QXmlStreamWriter& writer, ConstNodePtr
     if (it.key().isEmpty() == false && it.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmWriter().removeInvalidCharacters(it.key()));
-      writer.writeAttribute("v", OsmWriter().removeInvalidCharacters(it.value()));
+      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(it.key()));
+      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(it.value()));
       writer.writeEndElement();
     }
   }
@@ -217,8 +222,8 @@ void OsmChangesetXmlFileWriter::writeWay(QXmlStreamWriter& writer, ConstWayPtr w
     if (tit.key().isEmpty() == false && tit.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmWriter().removeInvalidCharacters(tit.key()));
-      writer.writeAttribute("v", OsmWriter().removeInvalidCharacters(tit.value()));
+      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(tit.key()));
+      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(tit.value()));
       writer.writeEndElement();
     }
   }
@@ -257,7 +262,7 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
     writer.writeStartElement("member");
     writer.writeAttribute("type", e.getElementId().getType().toString().toLower());
     writer.writeAttribute("ref", QString::number(e.getElementId().getId()));
-    writer.writeAttribute("role", OsmWriter().removeInvalidCharacters(e.role));
+    writer.writeAttribute("role", OsmXmlWriter().removeInvalidCharacters(e.role));
     writer.writeEndElement();
   }
 
@@ -267,8 +272,8 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
     if (tit.key().isEmpty() == false && tit.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmWriter().removeInvalidCharacters(tit.key()));
-      writer.writeAttribute("v", OsmWriter().removeInvalidCharacters(tit.value()));
+      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(tit.key()));
+      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(tit.value()));
       writer.writeEndElement();
     }
   }
@@ -277,7 +282,7 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
   {
     writer.writeStartElement("tag");
     writer.writeAttribute("k", "type");
-    writer.writeAttribute("v", OsmWriter().removeInvalidCharacters(r->getType()));
+    writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(r->getType()));
     writer.writeEndElement();
   }
 

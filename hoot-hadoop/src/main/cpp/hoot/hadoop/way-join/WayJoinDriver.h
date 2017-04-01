@@ -18,10 +18,9 @@
 #define WAYJOINDRIVER_H
 
 // Hoot
-#include <hoot/core/elements/Element.h>
-#include <hoot/core/util/HootException.h>
+#include <hoot/core/elements/Status.h>
 #include <hoot/hadoop/Driver.h>
-#include <hoot/hadoop/MapStats.h>
+#include <hoot/hadoop/stats/MapStats.h>
 
 // Qt
 #include <QString>

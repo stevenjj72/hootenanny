@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef APIDB_H
 #define APIDB_H
@@ -31,12 +31,8 @@
 #include <geos/geom/Envelope.h>
 
 // hoot
-#include <hoot/core/elements/ElementType.h>
-#include <hoot/core/elements/Relation.h>
-#include <hoot/core/elements/Node.h>
-#include <hoot/core/io/ElementCache.h>
-#include <hoot/core/algorithms/zindex/Range.h>
-#include <hoot/core/io/TableType.h>
+#include <hoot/core/elements/RelationData.h>
+#include <hoot/core/elements/Status.h>
 
 // Qt
 #include <QUrl>
@@ -44,6 +40,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
+#include <QMap>
 
 // Standard
 #include <vector>
@@ -69,6 +66,9 @@ class OsmMap;
 class Node;
 class Way;
 class Relation;
+class ElementType;
+class Range;
+class TableType;
 
 /**
  * This class abstracts out all SQL calls to interact with an API DB (either hoot or OSM). It also
@@ -105,7 +105,7 @@ public:
   /**
    * This value should be updated after the DB is upgraded and all tests run successfully.
    */
-  static QString expectedDbVersion() { return "17:jason.surratt"; }
+  static QString expectedDbVersion() { return "18:dmitriy.mylov"; }
   static int maximumChangeSetEdits() { return 50000; }
 
   static const Status DEFAULT_ELEMENT_STATUS;
@@ -192,7 +192,7 @@ public:
   /**
    * Returns database
    */
-  QSqlDatabase getDB() { return _db; }
+  QSqlDatabase& getDB() { return _db; }
 
   static long round(double x);
 
@@ -306,6 +306,9 @@ public:
   inline static QString getMapsSequenceName()                   { return getMapsTableName() + getSequenceId(); }
   inline static QString getUsersSequenceName()                  { return getUsersTableName() + getSequenceId(); }
 
+  static QMap<QString, QString> getDbUrlParts(const QString url);
+  static QString getPsqlString(const QString url);
+
 protected:
 
   //osm api db stores coords as integers and hoot api db as floating point
@@ -320,15 +323,8 @@ protected:
   shared_ptr<QSqlQuery> _insertUser;
   shared_ptr<QSqlQuery> _selectNodeIdsForWay;
 
-  virtual QSqlQuery _exec(const QString sql, QVariant v1 = QVariant(), QVariant v2 = QVariant(),
-                          QVariant v3 = QVariant()) const;
-
-  /**
-   * @brief Executes the provided SQL statement without calling prepare. This is handy when creating
-   * constraints, tables, etc.
-   * @param sql SQL to execute.
-   */
-  virtual QSqlQuery _execNoPrepare(const QString sql) const;
+  QSqlQuery _exec(const QString sql, QVariant v1 = QVariant(), QVariant v2 = QVariant(),
+                  QVariant v3 = QVariant()) const;
 
   static void _unescapeString(QString& s);
 

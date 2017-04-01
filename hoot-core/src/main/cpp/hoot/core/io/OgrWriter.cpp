@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -35,8 +35,8 @@
 #include <geos/geom/MultiPolygon.h>
 
 // hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/elements/ElementId.h>
 #include <hoot/core/elements/ElementProvider.h>
 #include <hoot/core/elements/RelationData.h>
@@ -60,11 +60,18 @@
 #include <hoot/core/util/ElementConverter.h>
 #include <hoot/core/util/MetadataTags.h>
 #include <hoot/core/util/Settings.h>
+#include <hoot/core/OsmMap.h>
+#include <hoot/core/io/ScriptTranslator.h>
+#include <hoot/core/io/ScriptToOgrTranslator.h>
+#include <hoot/core/io/ElementInputStream.h>
+#include <hoot/core/elements/ElementProvider.h>
 
 #include "OgrOptions.h"
 
 namespace hoot
 {
+
+unsigned int OgrWriter::logWarnCount = 0;
 
 HOOT_FACTORY_REGISTER(OsmMapWriter, OgrWriter)
 
@@ -225,8 +232,9 @@ void OgrWriter::_createLayer(shared_ptr<const Layer> layer)
   OgrOptions options;
   if (_ds->GetDriver())
   {
+    QString name = _ds->GetDriverName();
     // if this is a CSV file
-    if (_ds->GetDriver()->GetName() == QString("CSV"))
+    if (name == QString("CSV"))
     {
       // if we're exporting point data, then export with x/y at the front
       if (gtype == wkbPoint)
@@ -241,13 +249,13 @@ void OgrWriter::_createLayer(shared_ptr<const Layer> layer)
       options["CREATE_CSVT"] = "YES";
     }
 
-    if (_ds->GetDriver()->GetName() == QString("ESRI Shapefile"))
+    if (name == QString("ESRI Shapefile"))
     {
       options["ENCODING"] = "UTF-8";
     }
 
     // Add a Feature Dataset to a ESRI File GeoDatabase if requested
-    if (_ds->GetDriver()->GetName() == QString("FileGDB"))
+    if (name == QString("FileGDB"))
     {
       if (layer->getFdName() != "")
       {
@@ -277,8 +285,15 @@ void OgrWriter::_createLayer(shared_ptr<const Layer> layer)
 
       if (poFDefn->GetFieldIndex(f->getName().toAscii()) == -1)
       {
-        //        throw HootException(QString("Error: Unable to find output field: %1 in layer %2.").arg(f->getName()).arg(layerName));
-        LOG_WARN("Unable to find field: " << QString(f->getName()) << " in layer " << layerName);
+        if (logWarnCount < ConfigOptions().getLogWarnMessageLimit())
+        {
+          LOG_WARN("Unable to find field: " << QString(f->getName()) << " in layer " << layerName);
+        }
+        else if (logWarnCount == ConfigOptions().getLogWarnMessageLimit())
+        {
+          LOG_WARN(className() << ": " << Log::LOG_WARN_LIMIT_REACHED_MESSAGE);
+        }
+        logWarnCount++;
       }
     }
   }
@@ -500,7 +515,7 @@ void OgrWriter::write(shared_ptr<const OsmMap> map)
   ElementProviderPtr provider(boost::const_pointer_cast<ElementProvider>(
     boost::dynamic_pointer_cast<const ElementProvider>(map)));
 
-  const NodeMap& nm = map->getNodeMap();
+  const NodeMap& nm = map->getNodes();
   for (NodeMap::const_iterator it = nm.begin(); it != nm.end(); ++it)
   {
     _writePartial(provider, it->second);
@@ -515,7 +530,7 @@ void OgrWriter::write(shared_ptr<const OsmMap> map)
   _failOnSkipRelation = false;
   _unwrittenFirstPassRelationIds.clear();
   LOG_DEBUG("Writing first pass relations...");
-  const RelationMap& rm = map->getRelationMap();
+  const RelationMap& rm = map->getRelations();
   for (RelationMap::const_iterator it = rm.begin(); it != rm.end(); ++it)
   {
     _writePartial(provider, it->second);
@@ -553,12 +568,19 @@ void OgrWriter::_writePartial(ElementProviderPtr& provider, const ConstElementPt
     }
     catch (IllegalArgumentException& err)
     {
-      LOG_WARN("Error converting geometry: " << err.getWhat() << " (" << e->toString() << ")");
+      if (logWarnCount < ConfigOptions().getLogWarnMessageLimit())
+      {
+        LOG_WARN("Error converting geometry: " << err.getWhat() << " (" << e->toString() << ")");
+      }
+      else if (logWarnCount == ConfigOptions().getLogWarnMessageLimit())
+      {
+        LOG_WARN(className() << ": " << Log::LOG_WARN_LIMIT_REACHED_MESSAGE);
+      }
+      logWarnCount++;
       g.reset((GeometryFactory::getDefaultInstance()->createEmptyGeometry()));
     }
 
-    /*LOG_DEBUG("After conversion to geometry, element is now a " <<
-             g->getGeometryType() );*/
+    LOG_TRACE("After conversion to geometry, element is now a " << g->getGeometryType() );
 
     Tags t = e->getTags();
     t[MetadataTags::ErrorCircular()] = QString::number(e->getCircularError());
@@ -602,7 +624,7 @@ void OgrWriter::finalizePartial()
 
 void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Node>& newNode)
 {
-  LOG_DEBUG("Writing node " << newNode->getId());
+  LOG_TRACE("Writing node " << newNode->getId());
 
   // Add to the element cache
   ConstElementPtr myNode(newNode);
@@ -615,7 +637,7 @@ void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Node>& newNode)
 
 void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Way>& newWay)
 {
-  LOG_DEBUG("Writing way " << newWay->getId() );
+  LOG_TRACE("Writing way " << newWay->getId() );
 
   /*
    * Make sure this way has any hope of working (i.e., are there enough spots in the cache
@@ -644,7 +666,7 @@ void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Way>& newWay)
           "memory to support this number of nodes, you can increase the element.cache.size.node " +
           "setting above: " + QString::number(_elementCache->getNodeCacheSize()) + ".");
     }
-    LOG_DEBUG("Way " << newWay->getId() << " contains node " << *nodeIdIterator <<
+    LOG_TRACE("Way " << newWay->getId() << " contains node " << *nodeIdIterator <<
                  ": " << _elementCache->getNode(*nodeIdIterator)->getX() << ", " <<
                 _elementCache->getNode(*nodeIdIterator)->getY() );
   }
@@ -659,11 +681,11 @@ void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Way>& newWay)
 
 void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Relation>& newRelation)
 {
-  LOG_DEBUG("Writing relation " << newRelation->getId());
+  LOG_TRACE("Writing relation " << newRelation->getId());
 
   // Make sure all the elements in the relation are in the cache
   const std::vector<RelationData::Entry>& relationEntries = newRelation->getMembers();
-  LOG_VARD(relationEntries.size());
+  LOG_VART(relationEntries.size());
 
   unsigned long nodeCount = 0;
   unsigned long wayCount = 0;
@@ -716,7 +738,7 @@ void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Relation>& newR
         break;
     }
 
-    LOG_DEBUG("Checking to see if element with ID: " << relationElementIter->getElementId().getId() <<
+    LOG_TRACE("Checking to see if element with ID: " << relationElementIter->getElementId().getId() <<
               " and type: " << relationElementIter->getElementId().getType() <<
               " contained by relation " << newRelation->getId() << " is in the element cache...");
     if ( _elementCache->containsElement(relationElementIter->getElementId()) == false )
@@ -749,7 +771,7 @@ void OgrWriter::writePartial(const boost::shared_ptr<const hoot::Relation>& newR
       }
       else
       {
-        LOG_DEBUG(msg << "   Will attempt to write relation with ID: " + newRelation->getId() <<
+        LOG_TRACE(msg << "   Will attempt to write relation with ID: " + newRelation->getId() <<
                  " on a subsequent pass.");
         _unwrittenFirstPassRelationIds.append(newRelation->getId());
         return;
@@ -799,9 +821,9 @@ void OgrWriter::writeElement(ElementPtr &element, bool debug)
   // Now that all the empties are gone, update our element
   element->setTags(destTags);
 
-  if ( debug == true )
+  if (debug == true)
   {
-    LOG_DEBUG(element->toString());
+    LOG_TRACE(element->toString());
   }
 
   PartialOsmMapWriter::writePartial(element);

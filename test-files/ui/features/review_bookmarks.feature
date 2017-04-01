@@ -7,11 +7,11 @@ Feature: Review Bookmarks
         And I press "Add Reference Dataset"
         And I click the "AllDataTypesACucumber" Dataset
         And I press "Add Layer"
-        Then I wait 15 "seconds" to see "span.strong" element with text "AllDataTypesACucumber"
+        Then I wait 30 "seconds" to see "span.strong" element with text "AllDataTypesACucumber"
         And I press "Add Secondary Dataset"
         And I click the "AllDataTypesBCucumber" Dataset
         And I press "Add Layer"
-        Then I wait 15 "seconds" to see "span.strong" element with text "AllDataTypesBCucumber"
+        Then I wait 30 "seconds" to see "span.strong" element with text "AllDataTypesBCucumber"
         Then I wait 30 "seconds" to see "Conflate"
         And I press "Conflate"
         Then I fill "saveAs" input with "mergedBookmarkCucumberTest"
@@ -82,6 +82,7 @@ Feature: Review Bookmarks
         Then I click on the "Sort By" label
         And I wait 30 "seconds" to see "Created At (asc)"
         Then I choose "Created At (dsc)" radio button
+        Then I hover over "#utilReviewBookmarks"
         And I should see "Cucumber Bookmark 2" bookmark first and "Cucumber Bookmark 1" bookmark second
         Then I click on the "Filter By Creator" label
         And I wait 30 "seconds" to see "cucumber1@hootenanny.digitalglobe.com"

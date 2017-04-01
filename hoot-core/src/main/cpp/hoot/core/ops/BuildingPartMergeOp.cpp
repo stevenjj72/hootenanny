@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "BuildingPartMergeOp.h"
 
@@ -31,14 +31,15 @@
 #include <geos/util/TopologyException.h>
 
 // Hoot
-#include <hoot/core/Factory.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/index/OsmMapIndex.h>
 #include <hoot/core/conflate/NodeToWayMap.h>
 #include <hoot/core/ops/BuildingOutlineUpdateOp.h>
 #include <hoot/core/schema/TagComparator.h>
 #include <hoot/core/util/ElementConverter.h>
 #include <hoot/core/util/GeometryUtils.h>
+#include <hoot/core/schema/OsmSchema.h>
 
 // tgs
 #include <tgs/StreamUtils.h>
@@ -48,6 +49,8 @@ using namespace Tgs;
 
 namespace hoot
 {
+
+unsigned int BuildingPartMergeOp::logWarnCount = 0;
 
 HOOT_FACTORY_REGISTER(OsmMapOperation, BuildingPartMergeOp)
 
@@ -132,7 +135,15 @@ void BuildingPartMergeOp::_addNeighborsToGroup(const shared_ptr<Relation>& r)
     }
     if (members[i].getElementId().getType() == ElementType::Relation)
     {
-      LOG_WARN("Not expecting relations of relations: " << r->toString());
+      if (logWarnCount < ConfigOptions().getLogWarnMessageLimit())
+      {
+        LOG_WARN("Not expecting relations of relations: " << r->toString());
+      }
+      else if (logWarnCount == ConfigOptions().getLogWarnMessageLimit())
+      {
+        LOG_WARN(className() << ": " << Log::LOG_WARN_LIMIT_REACHED_MESSAGE);
+      }
+      logWarnCount++;
     }
   }
 }
@@ -176,7 +187,7 @@ void BuildingPartMergeOp::apply(shared_ptr<OsmMap>& map)
 
   i = 0;
   // go through all the relations
-  const RelationMap& relations = map->getRelationMap();
+  const RelationMap& relations = map->getRelations();
   for (RelationMap::const_iterator it = relations.begin(); it != relations.end(); it++)
   {
     if (Log::getInstance().getLevel() <= Log::Info /* && i % 100 == 0 */)

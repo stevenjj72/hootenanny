@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #ifndef LOG_H
@@ -61,6 +61,9 @@ class Log
 {
 
 public:
+
+  static QString LOG_WARN_LIMIT_REACHED_MESSAGE;
+
   enum WarningLevel
   {
     None = 0,
@@ -147,7 +150,7 @@ public:
   DisableLog(Log::WarningLevel tmpLevel = Log::Error)
   {
     _oldLevel = Log::getInstance().getLevel();
-    Log::getInstance().log(Log::Debug, "Disabling logging.");
+    Log::getInstance().log(Log::Trace, "Disabling logging.");
     Log::getInstance().setLevel(tmpLevel);
   }
 
@@ -159,7 +162,7 @@ public:
   void reset()
   {
     Log::getInstance().setLevel(_oldLevel);
-    Log::getInstance().log(Log::Debug, "Enabled logging.");
+    Log::getInstance().log(Log::Trace, "Enabled logging.");
   }
 
 private:
@@ -180,6 +183,7 @@ private:
   }}
 
 #define PROGRESS_INFO(str) { PROGRESS_LEVEL(hoot::Log::Info, str) }
+#define PROGRESS_DEBUG(str) { PROGRESS_LEVEL(hoot::Log::Debug, str) }
 
 /// print out a variable along w/ it's value. E.g. int a = 3; LOG_VAR(a); => logs "a: 3"
 #define LOG_VART(var) LOG_TRACE(#var << ": " << (var))

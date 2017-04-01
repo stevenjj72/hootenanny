@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #ifndef OSMAPIDBREADER_H
 #define OSMAPIDBREADER_H
@@ -37,10 +37,7 @@
 namespace hoot
 {
 
-class OsmApiDbReader :
-    public ApiDbReader,
-    public OsmMapReader,
-    public Configurable
+class OsmApiDbReader : public ApiDbReader, public OsmMapReader, public Configurable
 {
 public:
 
@@ -76,25 +73,22 @@ public:
 
   void setUserEmail(const QString email) { _email = email; }
 
-  void setBoundingBox(const QString bbox);
-
-  virtual boost::shared_ptr<OGRSpatialReference> getProjection() const;
-
 protected:
 
-  virtual shared_ptr<Node> _resultToNode(const QSqlQuery& resultIterator, OsmMap& map);
-  virtual shared_ptr<Way> _resultToWay(const QSqlQuery& resultIterator, OsmMap& map);
-  virtual shared_ptr<Relation> _resultToRelation(const QSqlQuery& resultIterator,
-                                                 const OsmMap& map);
+  virtual NodePtr _resultToNode(const QSqlQuery& resultIterator, OsmMap& map);
+  virtual WayPtr _resultToWay(const QSqlQuery& resultIterator, OsmMap& map);
+  virtual RelationPtr _resultToRelation(const QSqlQuery& resultIterator, const OsmMap& map);
 
   virtual shared_ptr<ApiDb> _getDatabase() const { return _database; }
 
 private:
 
+  //for white box testing
+  friend class ServiceOsmApiDbBulkWriterTest;
+
   shared_ptr<OsmApiDb> _database;
   shared_ptr<QSqlQuery> _elementResultIterator;
   QString _email;
-  Envelope _bounds;
 
   long _osmElemId;
   ElementType _osmElemType;

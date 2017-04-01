@@ -28,14 +28,8 @@ echo "Building Hoot... "
 echo "Will take several extra minutes to build the training data the initial time Hootenanny is installed only."
 make -s clean && make -sj$(nproc)
 
-
-# Make sure that these directories exist. This is done by VagrantProvision.sh but will be wiped out if the user
-# runs "VeryClean.sh"
-mkdir -p $HOOT_HOME/ingest/processed
-mkdir -p $HOOT_HOME/upload
-
 # vagrant will auto start the tomcat service for us, so just copy the web app files w/o manipulating the server
-sudo -u tomcat8 scripts/CopyWebAppsToTomcat.sh #&> /dev/null
+sudo -u tomcat8 scripts/tomcat/CopyWebAppsToTomcat.sh #&> /dev/null
 
 # docs build is always failing the first time during the npm install portion for an unknown reason, but then
 # always passes the second time its run...needs fixed, but this is the workaround for now

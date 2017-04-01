@@ -69,7 +69,7 @@ public:
   void runSplitTest()
   {
     shared_ptr<ChangeSetProvider> changesetProvider(new TestOsmChangesetProvider(false));
-    QDir().mkpath("test-output/io/OsmChangesetXmlFileWriterTest");
+    QDir().mkpath("test-output/io/OsmChangesetXmlWriterTest");
     OsmChangesetXmlFileWriter writer;
     Settings testSettings = conf();
     testSettings.set("changeset.max.size", "5");
@@ -86,7 +86,6 @@ public:
   }
 };
 
-//CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(OsmChangesetXmlFileWriterTest, "current");
 CPPUNIT_TEST_SUITE_NAMED_REGISTRATION(OsmChangesetXmlFileWriterTest, "quick");
 
 }

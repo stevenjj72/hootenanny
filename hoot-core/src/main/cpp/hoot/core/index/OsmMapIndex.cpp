@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #include "OsmMapIndex.h"
@@ -34,7 +34,7 @@
 
 // Hoot
 #include <hoot/core/OsmMap.h>
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/conflate/NodeToWayMap.h>
 #include <hoot/core/index/KnnWayIterator.h>
 #include <hoot/core/util/ElementConverter.h>
@@ -105,7 +105,7 @@ void OsmMapIndex::_buildNodeTree() const
   vector<Box> boxes;
   vector<int> ids;
 
-  const NodeMap& nodes = _map.getNodeMap();
+  const NodeMap& nodes = _map.getNodes();
 
   _treeIdToNid.resize(0);
   _treeIdToNid.reserve(nodes.size());
@@ -303,8 +303,8 @@ vector<long> OsmMapIndex::findWayNeighbors(const shared_ptr<const Way> &way, Met
     }
   }
 
-  //LOG_DEBUG("findWayNeighbors result size: " << result.size());
-  //LOG_DEBUG("distance count: " << it.getDistanceCount());
+  LOG_TRACE("findWayNeighbors result size: " << result.size());
+  LOG_TRACE("distance count: " << it.getDistanceCount());
 
   return result;
 }
@@ -429,7 +429,7 @@ const shared_ptr<ElementToRelationMap> &OsmMapIndex::getElementToRelationMap() c
   {
     _elementToRelationMap.reset(new ElementToRelationMap());
 
-    const RelationMap& relations = _map.getRelationMap();
+    const RelationMap& relations = _map.getRelations();
     for (RelationMap::const_iterator it = relations.begin(); it != relations.end(); ++it)
     {
       _elementToRelationMap->addRelation(_map, it->second);
@@ -618,7 +618,7 @@ void OsmMapIndex::removeNode(shared_ptr<const Node> n)
     _pendingNodeRemoval.insert(n->getId());
     _pendingNodeInsert.erase(n->getId());
 
-    if (_pendingNodeRemoval.size() > std::max((size_t)100, (size_t)_map.getNodeMap().size() / 8) &&
+    if (_pendingNodeRemoval.size() > std::max((size_t)100, (size_t)_map.getNodes().size() / 8) &&
         _nodeTree != 0)
     {
       LOG_DEBUG("pending removal size: " << _pendingNodeRemoval.size());

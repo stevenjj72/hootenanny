@@ -18,7 +18,8 @@
 
 // Hoot
 #include <hoot/core/util/HootException.h>
-#include <hoot/core/io/PbfReader.h>
+#include <hoot/core/io/OsmPbfReader.h>
+#include <hoot/core/OsmMap.h>
 
 // Pretty Pipes
 #include <pp/Factory.h>
@@ -44,7 +45,7 @@ void MapStatsMapper::_map(shared_ptr<OsmMap>& m, HadoopPipes::MapContext& contex
 {
   _context = &context;
 
-  const NodeMap& nm = m->getNodeMap();
+  const NodeMap& nm = m->getNodes();
   for (NodeMap::const_iterator it = nm.begin(); it != nm.end(); ++it)
   {
     const shared_ptr<const Node>& n = it->second;

@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "MapComparator.h"
 
@@ -30,6 +30,7 @@
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/util/Log.h>
 #include <hoot/core/visitors/ElementConstOsmMapVisitor.h>
+#include <hoot/core/OsmMap.h>
 
 // Standard
 #include <iomanip>
@@ -171,8 +172,11 @@ public:
 
     if (GeometryUtils::haversine(rn->toCoordinate(), n->toCoordinate()) > _threshold)
     {
-      LOG_WARN("rn: " << std::fixed << std::setprecision(15) << rn->getX() << ", " << rn->getY() <<
-               " n: " << n->getX() << ", " << n->getY());
+      if (_errorCount <= 10)
+      {
+        LOG_WARN("rn: " << std::fixed << std::setprecision(15) << rn->getX() << ", " << rn->getY() <<
+                 " n: " << n->getX() << ", " << n->getY());
+      }
       _matches = false;
       _errorCount++;
     }
@@ -231,9 +235,9 @@ MapComparator::MapComparator()
 
 bool MapComparator::isMatch(shared_ptr<OsmMap> ref, shared_ptr<OsmMap> test)
 {
-  if (ref->getNodeMap().size() != test->getNodeMap().size() ||
+  if (ref->getNodes().size() != test->getNodes().size() ||
       ref->getWays().size() != test->getWays().size() ||
-      ref->getRelationMap().size() != test->getRelationMap().size())
+      ref->getRelations().size() != test->getRelations().size())
   {
     LOG_WARN("Number of elements does not match.");
     return false;

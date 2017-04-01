@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "OsmApiDb.h"
 
@@ -34,9 +34,10 @@
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/HootException.h>
 #include <hoot/core/util/Log.h>
-#include <hoot/core/io/ElementCacheLRU.h>
 #include <hoot/core/util/OsmUtils.h>
 #include <hoot/core/util/GeometryUtils.h>
+#include <hoot/core/io/TableType.h>
+#include <hoot/core/util/DbUtils.h>
 
 // qt
 #include <QStringList>
@@ -58,6 +59,8 @@
 
 namespace hoot
 {
+
+unsigned int OsmApiDb::logWarnCount = 0;
 
 const QString OsmApiDb::TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.zzz";
 const QString OsmApiDb::TIMESTAMP_FUNCTION = "(now() at time zone 'utc')";
@@ -98,42 +101,61 @@ void OsmApiDb::close()
 void OsmApiDb::deleteData()
 {
   // delete ways data first
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentRelationMembersTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentRelationTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentRelationsTableName() + " CASCADE");
-  _execNoPrepare("ALTER SEQUENCE " + ApiDb::getCurrentRelationsSequenceName() + " RESTART WITH 1");
-  _execNoPrepare("DELETE FROM " + ApiDb::getRelationMembersTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getRelationTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getRelationsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db,
+    "DELETE FROM " + ApiDb::getCurrentRelationMembersTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentRelationTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentRelationsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "ALTER SEQUENCE " + ApiDb::getCurrentRelationsSequenceName() + " RESTART WITH 1");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getRelationMembersTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getRelationTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getRelationsTableName() + " CASCADE");
 
   // delete relations data 2nd
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentWayNodesTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentWayTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentWaysTableName() + " CASCADE");
-  _execNoPrepare("ALTER SEQUENCE " + ApiDb::getCurrentWaysSequenceName() + " RESTART WITH 1");
-  _execNoPrepare("DELETE FROM " + ApiDb::getWayNodesTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getWayTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getWaysTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentWayNodesTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentWayTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentWaysTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "ALTER SEQUENCE " + ApiDb::getCurrentWaysSequenceName() + " RESTART WITH 1");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getWayNodesTableName() + " CASCADE");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getWayTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getWaysTableName() + " CASCADE");
 
   // delete nodes data 3rd
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentNodeTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getCurrentNodesTableName() + " CASCADE");
-  _execNoPrepare("ALTER SEQUENCE " + ApiDb::getCurrentNodesSequenceName() + " RESTART WITH 1");
-  _execNoPrepare("DELETE FROM " + ApiDb::getNodeTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getNodesTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentNodeTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getCurrentNodesTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "ALTER SEQUENCE " + ApiDb::getCurrentNodesSequenceName() + " RESTART WITH 1");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getNodeTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getNodesTableName() + " CASCADE");
 
   // delete changesets
-  _execNoPrepare("DELETE FROM " + ApiDb::getChangesetsSubscribersTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getChangesetTagsTableName() + " CASCADE");
-  _execNoPrepare("DELETE FROM " + ApiDb::getChangesetsTableName() + " CASCADE");
-  _execNoPrepare("ALTER SEQUENCE " + ApiDb::getChangesetsSequenceName() + " RESTART WITH 1");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getChangesetsSubscribersTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getChangesetTagsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "DELETE FROM " + ApiDb::getChangesetsTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "ALTER SEQUENCE " + ApiDb::getChangesetsSequenceName() + " RESTART WITH 1");
 
   // delete users
-  _execNoPrepare("DELETE FROM " + ApiDb::getUsersTableName() + " CASCADE");
-  _execNoPrepare("ALTER SEQUENCE " + ApiDb::getUsersSequenceName() + " RESTART WITH 1");
+  DbUtils::execNoPrepare(_db, "DELETE FROM " + ApiDb::getUsersTableName() + " CASCADE");
+  DbUtils::execNoPrepare(
+    _db, "ALTER SEQUENCE " + ApiDb::getUsersSequenceName() + " RESTART WITH 1");
 }
 
-bool OsmApiDb::isSupported(QUrl url)
+bool OsmApiDb::isSupported(const QUrl& url)
 {
   bool valid = ApiDb::isSupported(url);
 
@@ -198,7 +220,6 @@ void OsmApiDb::rollback()
 
   if (!_db.rollback())
   {
-    LOG_WARN("Error rolling back transaction.");
     throw HootException("Error rolling back transaction: " + _db.lastError().text());
   }
   _inTransaction = false;
@@ -230,7 +251,6 @@ void OsmApiDb::commit()
   _resetQueries();
   if (!_db.commit())
   {
-    LOG_WARN("Error committing transaction.");
     throw HootException("Error committing transaction: " + _db.lastError().text());
   }
   _inTransaction = false;
@@ -264,8 +284,92 @@ QString OsmApiDb::tableTypeToTableName(const TableType& tableType) const
   }
 }
 
-//TODO: this needs to be better named
-QString OsmApiDb::_elementTypeToElementTableName(const ElementType& elementType) const
+QString OsmApiDb::elementTypeToElementTableName(const ElementType& elementType,
+                                                const bool historical, const bool tags)
+{
+  switch (elementType.getEnum())
+  {
+    case ElementType::Node:
+        if (historical)
+        {
+          if (tags)
+          {
+            return ApiDb::getNodeTagsTableName();
+          }
+          else
+          {
+            return ApiDb::getNodesTableName();
+          }
+        }
+        else
+        {
+          if (tags)
+          {
+            return ApiDb::getCurrentNodeTagsTableName();
+          }
+          else
+          {
+            return ApiDb::getCurrentNodesTableName();
+          }
+        }
+      break;
+
+    case ElementType::Way:
+      if (historical)
+      {
+        if (tags)
+        {
+          return ApiDb::getWayTagsTableName();
+        }
+        else
+        {
+          return ApiDb::getWaysTableName();
+        }
+      }
+      else
+      {
+        if (tags)
+        {
+          return ApiDb::getCurrentWayTagsTableName();
+        }
+        else
+        {
+          return ApiDb::getCurrentWaysTableName();
+        }
+      }
+      break;
+
+    case ElementType::Relation:
+      if (historical)
+      {
+        if (tags)
+        {
+          return ApiDb::getRelationTagsTableName();
+        }
+        else
+        {
+          return ApiDb::getRelationsTableName();
+        }
+      }
+      else
+      {
+        if (tags)
+        {
+          return ApiDb::getCurrentRelationTagsTableName();
+        }
+        else
+        {
+          return ApiDb::getCurrentRelationsTableName();
+        }
+      }
+      break;
+
+    default:
+      throw HootException("Unknown element type");
+  }
+}
+
+QString OsmApiDb::_elementTypeToElementTableNameStr(const ElementType& elementType) const
 {
   if (elementType == ElementType::Node)
   {
@@ -299,7 +403,6 @@ vector<long> OsmApiDb::selectNodeIdsForWay(long wayId)
   QString sql =  "SELECT node_id FROM " +
                   getCurrentWayNodesTableName() +
                  " WHERE way_id = :wayId ORDER BY sequence_id";
-
   return ApiDb::selectNodeIdsForWay(wayId, sql);
 }
 
@@ -328,24 +431,37 @@ vector<RelationData::Entry> OsmApiDb::selectMembersForRelation(long relationId)
   _selectMembersForRelation->bindValue(":relationId", (qlonglong)relationId);
   if (_selectMembersForRelation->exec() == false)
   {
-    throw HootException("Error selecting members for relation with ID: " +
-      QString::number(relationId) + " Error: " + _selectMembersForRelation->lastError().text());
+    throw HootException("Error selecting members for relation: " + QString::number(relationId) +
+      " Error: " + _selectMembersForRelation->lastError().text());
   }
+  LOG_VARD(_selectMembersForRelation->executedQuery());
+  LOG_VARD(_selectMembersForRelation->numRowsAffected());
 
   while (_selectMembersForRelation->next())
   {
     const QString memberType = _selectMembersForRelation->value(0).toString();
+    LOG_VART(memberType);
     if (ElementType::isValidTypeString(memberType))
     {
-      result.push_back(
+      RelationData::Entry member =
         RelationData::Entry(
           _selectMembersForRelation->value(2).toString(),
           ElementId(ElementType::fromString(memberType),
-          _selectMembersForRelation->value(1).toLongLong())));
+          _selectMembersForRelation->value(1).toLongLong()));
+      LOG_VART(member);
+      result.push_back(member);
     }
     else
     {
+      if (logWarnCount < ConfigOptions().getLogWarnMessageLimit())
+      {
         LOG_WARN("Invalid relation member type: " + memberType + ".  Skipping relation member.");
+      }
+      else if (logWarnCount == ConfigOptions().getLogWarnMessageLimit())
+      {
+        LOG_WARN(className() << ": " << Log::LOG_WARN_LIMIT_REACHED_MESSAGE);
+      }
+      logWarnCount++;
     }
   }
 
@@ -357,7 +473,7 @@ shared_ptr<QSqlQuery> OsmApiDb::selectNodeById(const long elementId)
   _selectNodeById.reset(new QSqlQuery(_db));
   _selectNodeById->setForwardOnly(true);
   QString sql =
-    "SELECT " + _elementTypeToElementTableName(ElementType::Node) +
+    "SELECT " + _elementTypeToElementTableNameStr(ElementType::Node) +
     " WHERE (id=:elementId) ORDER BY id DESC";
   _selectNodeById->prepare(sql);
   _selectNodeById->bindValue(":elementId", (qlonglong)elementId);
@@ -366,7 +482,6 @@ shared_ptr<QSqlQuery> OsmApiDb::selectNodeById(const long elementId)
   if (_selectNodeById->exec() == false)
   {
     QString err = _selectNodeById->lastError().text();
-    LOG_WARN(sql);
     throw HootException("Error selecting node by id: " + QString::number(elementId) +
       " Error: " + err);
   }
@@ -382,7 +497,7 @@ shared_ptr<QSqlQuery> OsmApiDb::selectElements(const ElementType& elementType)
   _selectElementsForMap->setForwardOnly(true);
 
   // setup base sql query string
-  QString sql =  "SELECT " + _elementTypeToElementTableName(elementType);
+  QString sql =  "SELECT " + _elementTypeToElementTableNameStr(elementType);
 
   // sort them in descending order, set limit and offset
   sql += " WHERE visible = true ORDER BY id DESC";
@@ -393,7 +508,6 @@ shared_ptr<QSqlQuery> OsmApiDb::selectElements(const ElementType& elementType)
   if (_selectElementsForMap->exec() == false)
   {
     QString err = _selectElementsForMap->lastError().text();
-    LOG_WARN(sql);
     throw HootException("Error selecting elements of type: " + elementType.toString() +
       " Error: " + err);
   }
@@ -476,42 +590,57 @@ QString OsmApiDb::extractTagFromRow(shared_ptr<QSqlQuery> row, const ElementType
 {
   QString tag = "";
   int pos = -1;
-  if(type==ElementType::Node) pos=OsmApiDb::NODES_TAGS;
-  else if(type==ElementType::Way) pos=OsmApiDb::WAYS_TAGS;
-  else if(type==ElementType::Relation) pos=OsmApiDb::RELATIONS_TAGS;
+  if (type == ElementType::Node) pos = OsmApiDb::NODES_TAGS;
+  else if (type == ElementType::Way) pos = OsmApiDb::WAYS_TAGS;
+  else if (type == ElementType::Relation) pos = OsmApiDb::RELATIONS_TAGS;
   else throw HootException("extractTagFromRow_OsmApi called with unknown Type");
 
   // test for blank tag
   QString val1 = row->value(pos).toString();
   QString val2 = row->value(pos+1).toString();
-  if(val1!="" || val2!="") tag = "\""+val1+"\"=>\""+val2+"\"";
+  if (val1 != "" || val2 != "") tag = "\"" + val1 + "\"=>\"" + val2 + "\"";
 
   return tag;
 }
 
-long OsmApiDb::getNextId(const ElementType& type)
+long OsmApiDb::getNextId(const ElementType& elementType)
 {
-  switch (type.getEnum())
+  return _getIdFromSequence(elementType, "next");
+}
+
+long OsmApiDb::getNextId(const QString tableName)
+{
+  return _getIdFromSequence(tableName, "next");
+}
+
+long OsmApiDb::_getIdFromSequence(const ElementType& elementType, const QString sequenceType)
+{
+  switch (elementType.getEnum())
   {
     case ElementType::Node:
     case ElementType::Way:
     case ElementType::Relation:
-      return getNextId("current_" + type.toString().toLower() + "s");
+      return _getIdFromSequence("current_" + elementType.toString().toLower() + "s", sequenceType);
     default:
       throw HootException("Unknown element type");
   }
 }
 
-long OsmApiDb::getNextId(const QString tableName)
+long OsmApiDb::_getIdFromSequence(const QString tableName, const QString sequenceType)
 {
   long result;
   if (_seqQueries[tableName].get() == 0)
   {
     _seqQueries[tableName].reset(new QSqlQuery(_db));
     _seqQueries[tableName]->setForwardOnly(true);
-    _seqQueries[tableName]->prepare(QString("SELECT NEXTVAL('%1%2')")
-                                    .arg(tableName.toLower())
-                                    .arg(ApiDb::getSequenceId()));
+    //valid sequence types are "next" and "current"
+    QString sql =
+      QString("SELECT NEXTVAL('%1%2')").arg(tableName.toLower()).arg(ApiDb::getSequenceId());
+    if (sequenceType.toLower() == "current")
+    {
+      sql = sql.replace("NEXTVAL", "CURRVAL");
+    }
+    _seqQueries[tableName]->prepare(sql);
   }
 
   shared_ptr<QSqlQuery> query = _seqQueries[tableName];
@@ -535,7 +664,6 @@ long OsmApiDb::getNextId(const QString tableName)
     throw HootException("Error retrieving sequence value. type: " +
       tableName + " Error: " + query->lastError().text());
   }
-
   query->finish();
 
   return result;

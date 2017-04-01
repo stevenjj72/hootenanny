@@ -29,7 +29,7 @@
 #include <geos/geom/LineString.h>
 
 // Hoot
-#include <hoot/core/MapProjector.h>
+#include <hoot/core/util/MapProjector.h>
 #include <hoot/core/OsmMap.h>
 #include <hoot/core/algorithms/MaximalSublineStringMatcher.h>
 #include <hoot/core/io/OsmMapReaderFactory.h>
@@ -358,7 +358,7 @@ public:
   ConstRelationPtr toRelation(OsmMapPtr map, QString note)
   {
     vector<ConstRelationPtr> result;
-    const RelationMap& relations = map->getRelationMap();
+    const RelationMap& relations = map->getRelations();
     for (RelationMap::const_iterator it = relations.begin(); it != relations.end(); ++it)
     {
       if (it->second->getTags().get("note") == note)

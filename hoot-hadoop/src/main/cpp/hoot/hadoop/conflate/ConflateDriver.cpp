@@ -20,9 +20,10 @@
 #include <hoot/core/util/Settings.h>
 #include <hoot/core/util/ConfPath.h>
 #include <hoot/core/util/GeometryUtils.h>
-#include <hoot/hadoop/MapStats.h>
-#include <hoot/hadoop/PbfInputFormat.h>
-#include <hoot/hadoop/PbfRecordReader.h>
+#include <hoot/hadoop/stats/MapStats.h>
+#include <hoot/hadoop/pbf/PbfInputFormat.h>
+#include <hoot/hadoop/pbf/PbfRecordReader.h>
+#include <hoot/hadoop/pbf/PbfRecordWriter.h>
 
 // Pretty Pipes
 #include <pp/mapreduce/Job.h>
@@ -61,7 +62,7 @@ void ConflateDriver::conflate(QString in, vector<Envelope> envelopes, double buf
   job.setOutput(fs.getAbsolutePath(out.toStdString()));
 
   job.getConfiguration().set(ConflateMapper::envelopesKey(), _toString(envelopes));
-  job.getConfiguration().set(ConflateMapper::replacementsKey(), 
+  job.getConfiguration().set(ConflateMapper::replacementsKey(),
     fs.getAbsolutePath(in.toStdString()));
   job.getConfiguration().setDouble(ConflateMapper::maxWaySizeKey(), buffer);
   job.getConfiguration().setDouble(ConflateMapper::bufferKey(), buffer);
@@ -104,7 +105,7 @@ void ConflateDriver::conflate(QString in, vector<Envelope> envelopes, double buf
       }
     }
   }
-  
+
 
   // This library will be used to provide mapper/reducer classes and anything else referenced
   // by the factory.

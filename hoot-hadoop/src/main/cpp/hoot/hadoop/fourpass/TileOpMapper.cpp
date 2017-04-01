@@ -26,6 +26,7 @@
 #include <hoot/hadoop/Debug.h>
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/util/Settings.h>
+#include <hoot/core/OsmMap.h>
 
 #include "TileOpDriver.h"
 
@@ -122,7 +123,7 @@ void TileOpMapper::_flush()
   key.resize(sizeof(int64_t));
   int64_t* k = (int64_t*)key.data();
   // emit all maps
-  for (QHash< int, shared_ptr<PbfWriter> >::iterator it = _writers.begin();
+  for (QHash< int, shared_ptr<OsmPbfWriter> >::iterator it = _writers.begin();
     it != _writers.end(); ++it)
   {
     *k = it.key();
@@ -163,7 +164,7 @@ void TileOpMapper::_init(HadoopPipes::MapContext& context)
   // create all the necessary OsmMaps for holding our results.
   for (size_t i = 0; i < _envelopes.size(); i++)
   {
-    _writers[i] = shared_ptr<PbfWriter>(new PbfWriter());
+    _writers[i] = shared_ptr<OsmPbfWriter>(new OsmPbfWriter());
     _buffers[i] = shared_ptr<stringstream>(new stringstream(stringstream::out));
     _writers[i]->intializePartial(_buffers[i].get());
     LOG_INFO("key: " << i << " envelope: " << _envelopes[i].toString());
@@ -171,7 +172,7 @@ void TileOpMapper::_init(HadoopPipes::MapContext& context)
   _reduceTaskCount = context.getJobConf()->getInt("mapred.reduce.tasks");
   for (int i = 0; i < _reduceTaskCount; i++)
   {
-    _writers[-1 - i] = shared_ptr<PbfWriter>(new PbfWriter());
+    _writers[-1 - i] = shared_ptr<OsmPbfWriter>(new OsmPbfWriter());
     _buffers[-1 - i] = shared_ptr<stringstream>(new stringstream(stringstream::out));
     _writers[-1 - i]->intializePartial(_buffers[-1 - i].get());
     LOG_INFO("key: " << -1 - i << " dregs");
@@ -192,7 +193,7 @@ void TileOpMapper::_map(shared_ptr<OsmMap>& m, HadoopPipes::MapContext& context)
   LOG_DEBUG("Troubled data after replace nodes:");
   Debug::printTroubled(m);
 
-  LOG_INFO("Node count: " << m->getNodeMap().size());
+  LOG_INFO("Node count: " << m->getNodes().size());
   LOG_INFO("Way count: " << m->getWays().size());
 
   // go through all ways
@@ -206,7 +207,7 @@ void TileOpMapper::_map(shared_ptr<OsmMap>& m, HadoopPipes::MapContext& context)
   }
 
   // go through all nodes
-  const NodeMap& nm = m->getNodeMap();
+  const NodeMap& nm = m->getNodes();
   for (NodeMap::const_iterator it = nm.begin(); it != nm.end(); ++it)
   {
     const shared_ptr<Node>& n = it->second;
