@@ -95,7 +95,6 @@ sudo /usr/bin/perl $HOOT_HOME/scripts/maven/SetMavenHttps.pl
 if ! grep --quiet "export HOOT_HOME" ~/.profile; then
     echo "Adding hoot home to profile..."
     echo "export HOOT_HOME=\$HOME/hoot" >> ~/.profile
-    echo "export PATH=\$PATH:\$HOOT_HOME/bin" >> ~/.profile
     source ~/.profile
 fi
 
@@ -110,7 +109,7 @@ fi
 if ! grep --quiet "export HADOOP_HOME" ~/.profile; then
     echo "Adding Hadoop home to profile..."
     echo "export HADOOP_HOME=\$HOME/hadoop" >> ~/.profile
-    echo "export PATH=\$PATH:\$HADOOP_HOME/bin" >> ~/.profile
+    echo "export PATH=\$PATH:\$HADOOP_HOME/bin:\$HADOOP_HOME/sbin" >> ~/.profile
     source ~/.profile
 fi
 
@@ -378,12 +377,17 @@ if [ -f $HOOT_HOME/hoot-services/src/main/resources/conf/local.conf ]; then
 fi
 
 cd ~
-# hoot has only been tested successfully with hadoop 0.20.2, which is not available from public repos,
-# so purposefully not installing hoot from the repos.
+
+# Set the version of Hadoop to install
+# NOTE: HADOOP_HOME is set in the environment setup earlier in the provisioning script
+#HADOOP_VERSION=0.20.2
+HADOOP_VERSION=2.8.0
+
 if ! hash hadoop >/dev/null 2>&1 ; then
-  echo "Installing Hadoop..."
-  if [ ! -f hadoop-0.20.2.tar.gz ]; then
-    wget --quiet https://archive.apache.org/dist/hadoop/core/hadoop-0.20.2/hadoop-0.20.2.tar.gz
+  echo "Installing Hadoop v$HADOOP_HOME..."
+
+  if [ ! -f hadoop-$HADOOP_VERSION.tar.gz ]; then
+    wget --quiet https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
   fi
 
   if [ ! -f $HOME/.ssh/id_rsa ]; then
@@ -395,18 +399,17 @@ if ! hash hadoop >/dev/null 2>&1 ; then
 
   #cd /usr/local
   cd ~
-  sudo tar -zxf $HOME/hadoop-0.20.2.tar.gz
-  sudo chown -R vagrant:vagrant hadoop-0.20.2
-  sudo ln -s hadoop-0.20.2 hadoop
+  sudo tar -zxf $HOME/hadoop-$HADOOP_VERSION.tar.gz
+  sudo chown -R vagrant:vagrant hadoop-$HADOOP_VERSION
+  sudo ln -s hadoop-$HADOOP_VERSION hadoop
   sudo chown -R vagrant:vagrant hadoop
   cd hadoop
   sudo find . -type d -exec chmod a+rwx {} \;
   sudo find . -type f -exec chmod a+rw {} \;
   cd ~
 
-#TODO: remove these home dir hardcodes
-sudo rm -f $HADOOP_HOME/conf/core-site.xml
-sudo bash -c "cat >> /home/vagrant/hadoop/conf/core-site.xml" <<EOT
+sudo rm -f $HADOOP_HOME/etc/hadoop/core-site.xml
+sudo bash -c "cat >> $HADOOP_HOME/etc/hadoop/core-site.xml" <<EOT
 
 <configuration>
   <property>
@@ -415,8 +418,8 @@ sudo bash -c "cat >> /home/vagrant/hadoop/conf/core-site.xml" <<EOT
   </property>
 </configuration>
 EOT
-sudo rm -f $HADOOP_HOME/conf/mapred-site.xml
-sudo bash -c "cat >> /home/vagrant/hadoop/conf/mapred-site.xml" <<EOT
+sudo rm -f $HADOOP_HOME/etc/hadoop/mapred-site.xml
+sudo bash -c "cat >> $HADOOP_HOME/etc/hadoop/mapred-site.xml" <<EOT
 
 <configuration>
   <property>
@@ -453,8 +456,8 @@ sudo bash -c "cat >> /home/vagrant/hadoop/conf/mapred-site.xml" <<EOT
   </property>
 </configuration>
 EOT
-sudo rm -f $HADOOP_HOME/conf/hdfs-site.xml
-sudo bash -c "cat >> /home/vagrant/hadoop/conf/hdfs-site.xml" <<EOT
+sudo rm -f $HADOOP_HOME/etc/hadoop/hdfs-site.xml
+sudo bash -c "cat >> $HADOOP_HOME/etc/hadoop/hdfs-site.xml" <<EOT
 
 <configuration>
   <property>
@@ -495,39 +498,40 @@ sudo bash -c "cat >> /home/vagrant/hadoop/conf/hdfs-site.xml" <<EOT
   </property>
   <property>
     <name>fs.checkpoint.dir</name>
-    <value>/home/vagrant/hadoop/dfs/namesecondary</value>
+    <value>$HADOOP_HOME/dfs/namesecondary</value>
   </property>
   <property>
     <name>dfs.name.dir</name>
-    <value>/home/vagrant/hadoop/dfs/name</value>
+    <value>$HADOOP_HOME/dfs/name</value>
   </property>
   <property>
     <name>dfs.data.dir</name>
-    <value>/home/vagrant/hadoop/dfs/data</value>
+    <value>$HADOOP_HOME/dfs/data</value>
   </property>
 </configuration>
 EOT
 
-  sudo sed -i.bak 's/# export JAVA_HOME=\/usr\/lib\/j2sdk1.5-sun/export JAVA_HOME=\/usr\/lib\/jvm\/oracle_jdk8/g' $HADOOP_HOME/conf/hadoop-env.sh
-  sudo sed -i.bak 's/#include <pthread.h>/#include <pthread.h>\n#include <unistd.h>/g' $HADOOP_HOME/src/c++/pipes/impl/HadoopPipes.cc
+  sudo sed -i.bak 's/# export JAVA_HOME=\$\{JAVA_HOME\} JAVA_HOME=\/usr\/lib\/jvm\/oracle_jdk8/g' $HADOOP_HOME/etc/hadoop/hadoop-env.sh
 
-  sudo mkdir -p $HOME/hadoop/dfs/name/current
+  sudo mkdir -p $HADOOP_HOME/dfs/name/current
   # this could perhaps be more strict
-  sudo chmod -R 777 $HOME/hadoop
-  sudo chmod go-w $HOME/hadoop/bin $HOME/hadoop
+  sudo chmod -R 777 $HADOOP_HOME
+  sudo chmod go-w $HADOOP_HOME/bin $HADOOP_HOME/hadoop
   echo 'Y' | hadoop namenode -format
 
-  cd /lib
-  sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
-  cd /lib64
-  sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
-  cd ~
+  # Not sure if we need this
+#   cd /lib
+#   sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
+#   cd /lib64
+#   sudo ln -s $JAVA_HOME/jre/lib/amd64/server/libjvm.so libjvm.so
+#   cd ~
 
   # test hadoop out
-  #stop-all.sh
-  #start-all.sh
+  #stop-yarn.sh && stop-dfs.sh
+  #start-dfs.sh && start-yarn.sh
   #hadoop fs -ls /
-  #hadoop jar ./hadoop-0.20.2-examples.jar pi 2 100
+  # NOTE: This assumes that you are in the $HADOOP_HOME directory
+  #hadoop jar ./share/hadoop/mapreduce/hadoop-mapreduce-examples-$HADOOP_VERSION.jar pi 2 100
 fi
 
 cd ~

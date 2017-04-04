@@ -112,10 +112,8 @@ AC_DEFUN([AX_LIB_HADOOP],
     if test "$hadoop_include_dirs" == ""; then
         # Looks for header files in specific paths, the first one found is kept.
         HADOOP_CHECK_HEADER([jni.h], [-I$JAVA_HOME/include -I$JAVA_HOME/include/linux])
-        HADOOP_CHECK_HEADER([hadoop/Pipes.hh], [-I$HADOOP_HOME/c++/Linux-amd64-64/include/])
-        HADOOP_CHECK_HEADER([hadoop/Pipes.hh], [-I/usr/src/hadoop-0.20/c++/])
-        HADOOP_CHECK_HEADER([hdfs.h], [-I$HADOOP_HOME/src/c++/libhdfs/])
-        HADOOP_CHECK_HEADER([hdfs.h], [-I/usr/src/hadoop-0.20/c++/libhdfs])
+        HADOOP_CHECK_HEADER([Pipes.hh], [-I$HADOOP_HOME/include])
+        HADOOP_CHECK_HEADER([hdfs.h], [-I$HADOOP_HOME/include])
         HADOOP_CHECK_HEADER([pipes/impl/HadoopPipes.cc], [-I$HADOOP_HOME/src/c++/])
         HADOOP_CHECK_HEADER([pipes/impl/HadoopPipes.cc], [-I/usr/src/hadoop-0.20/c++/])
     fi
@@ -129,10 +127,8 @@ AC_DEFUN([AX_LIB_HADOOP],
     # if the user _hasn't_ specified specific linker options
     if test "$hadoop_lib" == ""; then
         # Looks for libraries in specific paths, the first one found is kept.
-        HADOOP_CHECK_LIB([hdfs], [-lcrypto], [-L$HADOOP_HOME/lib/native/Linux-amd64-64])
-        HADOOP_CHECK_LIB([hdfs], [-lcrypto], [-L$HADOOP_HOME/c++/Linux-amd64-64/lib])
-        HADOOP_CHECK_LIB([hadooppipes], [-lcrypto], [-L$HADOOP_HOME/lib/native/Linux-amd64-64])
-        HADOOP_CHECK_LIB([hadooppipes], [-lcrypto], [-L$HADOOP_HOME/c++/Linux-amd64-64/lib])
+        HADOOP_CHECK_LIB([hdfs], [-lcrypto], [-L$HADOOP_HOME/lib/native])
+        HADOOP_CHECK_LIB([hadooppipes], [-lcrypto], [-L$HADOOP_HOME/lib/native])
         #assuming OpenJDK installation here; this assumption should probably not exist, and this logic
         #moved to its own m4
         HADOOP_CHECK_LIB([jvm], [], [-L${JAVA_HOME}/jre/lib/amd64/server/])

@@ -29,7 +29,7 @@
 #define CPPSEQFILE_H
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <hadoop/Pipes.hh>
+#include <Pipes.hh>
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 // Pretty Pipes

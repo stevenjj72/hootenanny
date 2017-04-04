@@ -85,7 +85,8 @@ public: // boost iostream concepts
   {
     if(_fp != NULL)
     {
-      if(_fp->type == OUTPUT)
+//       if(_fp->type == OUTPUT)
+      if(hdfsFileIsOpenForWrite(_fp))
       {
         if (hdfsFlush(_fs, _fp) == -1)
         {

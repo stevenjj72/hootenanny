@@ -79,7 +79,7 @@ bool Hdfs::deletePath(string path, bool recursive)
   {
     throw ios_base::failure("Unsupported.");
   }
-  if (hdfsDelete(_getFs(), path.data()) == -1)
+  if (hdfsDelete(_getFs(), path.data(), 0) == -1)
   {
     throw ios_base::failure("Error deleting specified path.");
   }
@@ -243,7 +243,7 @@ istream* Hdfs::open(std::string path)
 
 void Hdfs::remove(string path)
 {
-  if (hdfsDelete(_getFs(), path.data()) == -1)
+  if (hdfsDelete(_getFs(), path.data(),0) == -1)
   {
     throw ios_base::failure(QString("Error deleting file (%1)").
       arg(QString::fromStdString(path)).toStdString());

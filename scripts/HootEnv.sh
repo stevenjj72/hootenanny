@@ -28,21 +28,22 @@ if [ -d "$HADOOP_HOME" ]; then
     if [ "$HADOOP_IS_CLOUDERA" == "true" ]; then
         export HADOOP_CLASSPATH=$PRETTY_PIPES_HOME/lib/PrettyPipesLib-0.0.1.jar
         JAR_PATH=""
-    for jarf in $HADOOP_HOME/*.jar
-    do
+        for jarf in $HADOOP_HOME/*.jar
+        do
           JAR_PATH=$JAR_PATH":"$jarf
         done
         for jarf in $HADOOP_HOME/lib/*.jar
         do
-          JAR_PATH=$JAR_PATH":"$jarf
+            JAR_PATH=$JAR_PATH":"$jarf
         done
         export CLASSPATH=$HADOOP_HOME/conf:$JAVA_HOME/lib/tools.jar$JAR_PATH
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native/Linux-amd64-64:$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/server
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native:$JAVA_HOME/jre/lib/amd64:$JAVA_HOME/jre/lib/amd64/server
     else
         export HADOOP_CLASSPATH=""
-    export CLASSPATH=$HADOOP_HOME/conf:$HADOOP_HOME/lib/*:$HADOOP_HOME/*:$JAVA_HOME/lib/tools.jar
-        export CLASSPATH=$CLASSPATH:`ls $HADOOP_HOME/hadoop-*-core.jar`:`ls $HADOOP_HOME/lib/commons-logging-api-*.jar`
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/c++/Linux-amd64-64/lib/:$JAVA_HOME/jre/lib/amd64/:$JAVA_HOME/jre/lib/amd64/server
+        #export CLASSPATH=$HADOOP_HOME/share/hadoop:$HADOOP_HOME/lib/*:$HADOOP_HOME/*:$JAVA_HOME/lib/tools.jar
+        export CLASSPATH=$JAVA_HOME/lib/tools.jar
+        export CLASSPATH=$CLASSPATH:`ls $HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-*.jar`:`ls $HADOOP_HOME/share/hadoop/common/lib/commons-logging-*.jar`
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native:$JAVA_HOME/jre/lib/amd64/:$JAVA_HOME/jre/lib/amd64/server
     fi
 fi
 

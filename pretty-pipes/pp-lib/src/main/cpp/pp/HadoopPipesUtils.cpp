@@ -31,7 +31,11 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wformat-security"
 #define private public
-#include <pipes/impl/HadoopPipes.cc>
+
+// Not sure if this is a good replacement
+// #include <pipes/impl/HadoopPipes.cc>
+#include <Pipes.hh>
+
 #pragma GCC diagnostic warning "-Wunused-parameter"
 #pragma GCC diagnostic warning "-Wformat-security"
 
