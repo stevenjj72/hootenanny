@@ -69,7 +69,7 @@ sudo apt-get -q -y install texinfo g++ libicu-dev libqt4-dev git-core libboost-d
  w3m texlive-lang-cyrillic graphviz python-setuptools python python-pip git ccache distcc libogdi3.2-dev \
  gnuplot python-matplotlib libqt4-sql-sqlite ruby ruby-dev xvfb zlib1g-dev patch x11vnc openssh-server \
  htop unzip postgresql-9.6 postgresql-client-9.6 postgresql-9.6-postgis-scripts postgresql-9.6-postgis-2.3 \
- libpango-1.0-0 libappindicator1 >> Ubuntu_upgrade.txt 2>&1
+ libpango-1.0-0 libappindicator1 valgrind >> Ubuntu_upgrade.txt 2>&1
 
 if ! dpkg -l | grep --quiet dictionaries-common; then
     # See /usr/share/doc/dictionaries-common/README.problems for details
@@ -91,6 +91,7 @@ echo "### Configuring environment..."
 # Configure https alternative mirror for maven isntall, this can likely be removed once
 # we are using maven 3.2.3 or higher
 sudo /usr/bin/perl $HOOT_HOME/scripts/maven/SetMavenHttps.pl
+
 if ! grep --quiet "export HOOT_HOME" ~/.profile; then
     echo "Adding hoot home to profile..."
     echo "export HOOT_HOME=\$HOME/hoot" >> ~/.profile
@@ -132,6 +133,7 @@ if ! grep --quiet "DISTCC_TCP_CORK=0" ~/.profile; then
     echo "export DISTCC_TCP_CORK=0" >> ~/.profile
     source ~/.profile
 fi
+
 if ! ruby -v | grep --quiet 2.3.0; then
     # Ruby via rvm - from rvm.io
     gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 2>&1
@@ -232,6 +234,7 @@ if [ ! -f bin/osmosis ]; then
     ln -s $HOME/bin/osmosis_src/bin/osmosis $HOME/bin/osmosis
 fi
 
+
 # For convenience, set the version of GDAL to download and install
 GDAL_VERSION=2.1.3
 
@@ -281,14 +284,32 @@ if ! mocha --version &>/dev/null; then
     sudo rm -rf $HOME/tmp
 fi
 
+# Get the configuration for the Database
+source $HOOT_HOME/conf/database/DatabaseConfig.sh
 # NOTE: These have been changed to pg9.6
-if ! sudo -u postgres psql -lqt | grep -i --quiet hoot; then
+# See if we already have a dB user
+if ! sudo -u postgres psql -c "\du" | grep -iw --quiet $DB_USER; then
+    echo "### Adding a Services Database user..."
+    sudo -u postgres createuser --superuser $DB_USER
+    sudo -u postgres psql -c "alter user $DB_USER with password '$DB_PASSWORD';"
+fi
+
+# Check that the OsmApiDb user exists
+# NOTE:
+#  + The OsmAPI Db user _might_ be different to the Hoot Services Db user...
+#  + The SetupOsmApiDB.sh script expects that the DB_USER_OSMAPI account exists
+if ! sudo -u postgres psql -c "\du" | grep -iw --quiet $DB_USER_OSMAPI; then
+    sudo -u postgres createuser --superuser $DB_USER_OSMAPI
+    sudo -u postgres psql -c "alter user $DB_USER_OSMAPI with password '$DB_PASSWORD_OSMAPI';"
+fi
+
+
+# Check for a hoot Db
+if ! sudo -u postgres psql -lqt | grep -iw --quiet $DB_NAME; then
     echo "### Creating Services Database..."
-    sudo -u postgres createuser --superuser hoot
-    sudo -u postgres psql -c "alter user hoot with password 'hoottest';"
-    sudo -u postgres createdb hoot --owner=hoot
-    sudo -u postgres createdb wfsstoredb --owner=hoot
-    sudo -u postgres psql -d hoot -c 'create extension hstore;'
+    sudo -u postgres createdb $DB_NAME --owner=$DB_USER
+    sudo -u postgres createdb wfsstoredb --owner=$DB_USER
+    sudo -u postgres psql -d $DB_NAME -c 'create extension hstore;'
     sudo -u postgres psql -d postgres -c "UPDATE pg_database SET datistemplate='true' WHERE datname='wfsstoredb'" > /dev/null
     sudo -u postgres psql -d wfsstoredb -c 'create extension postgis;' > /dev/null
 fi
@@ -363,7 +384,6 @@ if ! grep --quiet TOMCAT8_HOME ~/.profile; then
     echo "export TOMCAT8_HOME=$TOMCAT_HOME" >> ~/.profile
     source ~/.profile
 fi
-
 
 if [ -f $HOOT_HOME/conf/LocalHoot.json ]; then
     echo "Removing LocalHoot.json..."
@@ -550,7 +570,6 @@ rm -rf $HOME/tmp
 
 cd $HOOT_HOME
 
-
 # Update marker file date now that dependency and config stuff has run
 # The make command will exit and provide a warning to run 'vagrant provision'
 # if the marker file is older than this file (VagrantProvision.sh)
@@ -560,6 +579,8 @@ touch Vagrant.marker
 # switch to auto mode and use the highest priority installed alternatives for Java.
 sudo update-alternatives --auto java
 sudo update-alternatives --auto javac
+
+
 if [ ! -d "$HOOT_HOME/userfiles/ingest/processed" ]; then
     mkdir -p $HOOT_HOME/userfiles/ingest/processed
 fi
