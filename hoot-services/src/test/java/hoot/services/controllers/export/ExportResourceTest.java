@@ -282,6 +282,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         assertEquals(parser.parse(expected), parser.parse(result));
     }
 
+
     @Test
     @Category(UnitTest.class)
     public void testGetExportedXmlFile() throws Exception {
@@ -293,12 +294,12 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         // write the contents of the dummy file to a new output file; mimic how
         // ExportJobResource::process would write it
         String jobId = UUID.randomUUID().toString();
-        File changesetFile = new File(HootProperties.TEMP_OUTPUT_PATH + "/" + jobId + "/" + jobId + ".osc");
+        File changesetFile = new File(HootProperties.TEMP_OUTPUT_PATH + "/" + jobId + "/changeset.osc");
         changesetFile.deleteOnExit(); //remove this if removeCache is enabled
         FileUtils.writeStringToFile(changesetFile, changesetText, "UTF-8");
 
         ExportResource spy = Mockito.spy(new ExportResource());
-        Response response = spy.getXmlOutput(jobId,  "osc");
+        Response response = spy.getXmlOutput(jobId, "changeset", "osc");
         DOMSource test = (DOMSource) response.getEntity();
 
         // parse out the returned xml and verify its what was originally written
@@ -320,7 +321,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         try {
             // try to retrieve a changeset file with a non-existent changeset
             // id; should fail with a 404
-            (new ExportResource()).getXmlOutput("blah", "osc");
+            (new ExportResource()).getXmlOutput("blah", "changeset", "osc");
         }
         catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
@@ -356,7 +357,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
             FileUtils.writeStringToFile(changesetFile2, changesetText, "UTF-8");
 
             ExportResource spy = Mockito.spy(new ExportResource());
-            /* Response response = */spy.getXmlOutput(jobId, "osc");
+            /* Response response = */spy.getXmlOutput(jobId, "changeset", "osc");
         }
         catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
