@@ -263,7 +263,7 @@ public class ExportResource {
         Response response;
 
         try {
-            out = getExportFile(JobIid, outputname, StringUtils.isEmpty(ext) ? "xml" : ext);
+            File out = getExportFile(jobIid, outputname, StringUtils.isEmpty(ext) ? "xml" : ext);
             response = Response.ok(new DOMSource(XmlDocumentBuilder.parse(FileUtils.readFileToString(out, "UTF-8")))).build();
         }
         catch (WebApplicationException e) {
