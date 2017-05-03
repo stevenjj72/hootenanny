@@ -563,10 +563,10 @@ public class MapResource {
                 // OSM API database data can't be displayed on a hoot map, due to differences
                 // between the display code, so we arbitrarily returning roughly a CONUS bounds
                 // here...not quite sure what else to return...
-                ret.put("minlon", -110);
-                ret.put("maxlon", -75);
-                ret.put("minlat", 20);
-                ret.put("maxlat", 50);
+                ret.put("minlon", -180);
+                ret.put("maxlon", 180);
+                ret.put("minlat", -90);
+                ret.put("maxlat", 90);
                 ret.put("firstlon", 0);
                 ret.put("firstlat", 0);
                 ret.put("nodescount", 0);
