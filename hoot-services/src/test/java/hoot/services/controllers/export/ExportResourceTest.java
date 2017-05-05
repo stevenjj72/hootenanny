@@ -297,12 +297,12 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         // write the contents of the dummy file to a new output file; mimic how
         // ExportJobResource::process would write it
         String jobId = UUID.randomUUID().toString();
-        File changesetFile = new File(HootProperties.TEMP_OUTPUT_PATH + "/" + jobId + "/changeset.osc");
+        File changesetFile = new File(HootProperties.TEMP_OUTPUT_PATH + "/" + jobId + "/" + jobId + ".osc");
         changesetFile.deleteOnExit(); //remove this if removeCache is enabled
         FileUtils.writeStringToFile(changesetFile, changesetText, "UTF-8");
 
         ExportResource spy = Mockito.spy(new ExportResource());
-        Response response = spy.getXmlOutput(jobId, "changeset", "osc");
+        Response response = spy.getXmlOutput(jobId, "osc");
         DOMSource test = (DOMSource) response.getEntity();
 
         // parse out the returned xml and verify its what was originally written
@@ -324,7 +324,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         try {
             // try to retrieve a changeset file with a non-existent changeset
             // id; should fail with a 404
-            (new ExportResource()).getXmlOutput("blah", "changeset", "osc");
+            (new ExportResource()).getXmlOutput("blah", "osc");
         }
         catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
@@ -334,7 +334,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     }
 
     // Choosing not to handle changesets here that go over the max allowed size for now, as they will be
-    // stored as separate changesets in multiple files.  The logic for it could be added in the future, 
+    // stored as separate changesets in multiple files.  The logic for it could be added in the future,
     // if necessary.  Regardless, a more specific error message could still be desired here right now anyway.
     @Test(expected = WebApplicationException.class)
     @Category(UnitTest.class)
@@ -360,7 +360,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
             FileUtils.writeStringToFile(changesetFile2, changesetText, "UTF-8");
 
             ExportResource spy = Mockito.spy(new ExportResource());
-            /* Response response = */spy.getXmlOutput(jobId, "changeset", "osc");
+            /* Response response = */spy.getXmlOutput(jobId, "osc");
         }
         catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
