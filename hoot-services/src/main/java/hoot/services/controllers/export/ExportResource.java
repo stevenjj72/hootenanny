@@ -134,33 +134,33 @@ public class ExportResource {
                 Command zipCommand = getZIPCommand(workDir, outputName, outputType);
                 if (zipCommand != null) {
                     workflow.add(zipCommand);
-                        }
-                        }
+                }
+            }
             else if (outputType.equalsIgnoreCase("osm.pbf")) {
                 ExternalCommand exportOSMCommand = exportCommandFactory.build(jobId, params, debugLevel,
                         ExportOSMCommand.class, this.getClass());
 
                 workflow.add(exportOSMCommand);
-                    }
+            }
             // As of 04/03/2017, OSC support is not fully implemented yet.  This REST controller might not
             // even be the right place to host it.
             else if (outputType.equalsIgnoreCase("osc")) {
-                ExternalCommand exportOSCCommand = exportCommandFactory.build(jobId, params,
-                        debugLevel, ExportOSCCommand.class, this.getClass());
+                ExternalCommand deriveChangesetCommand = exportCommandFactory.build(jobId, params,
+                        debugLevel, DeriveChangesetCommand.class, this.getClass());
 
-                workflow.add(exportOSCCommand);
+                workflow.add(deriveChangesetCommand);
             }
             //TODO outputtype=osm_api_db may end up being obsolete with the addition of osc
             else if (outputType.equalsIgnoreCase("osm_api_db")) {
-                ExternalCommand osmAPIDBDeriveChangesetCommand = exportCommandFactory.build(jobId, params,
-                        debugLevel, OSMAPIDBDeriveChangesetCommand.class, this.getClass());
+                ExternalCommand deriveChangesetCommand = exportCommandFactory.build(jobId, params,
+                        debugLevel, DeriveChangesetCommand.class, this.getClass());
 
-                ExternalCommand osmAPIDBApplyChangesetCommand = exportCommandFactory.build(jobId, params,
-                        debugLevel, OSMAPIDBApplyChangesetCommand.class, this.getClass());
+                ExternalCommand applyChangesetCommand = exportCommandFactory.build(jobId, params,
+                        debugLevel, ApplyChangesetCommand.class, this.getClass());
 
-                workflow.add(osmAPIDBDeriveChangesetCommand);
-                workflow.add(osmAPIDBApplyChangesetCommand);
-                    }
+                workflow.add(deriveChangesetCommand);
+                workflow.add(applyChangesetCommand);
+            }
             else { //else Shape/FGDB
                 ExternalCommand exportCommand = exportCommandFactory.build(jobId, params,
                         debugLevel, ExportCommand.class, this.getClass());
@@ -215,6 +215,7 @@ public class ExportResource {
                                @QueryParam("outputname") String outputname,
                                @QueryParam("ext") String ext) {
         Response response;
+
         try {
             String fileExt = StringUtils.isEmpty(ext) ? "zip" : ext;
             File exportFile = getExportFile(jobId, outputname, fileExt);
@@ -258,12 +259,12 @@ public class ExportResource {
     @GET
     @Path("/xml/{id}")
     @Produces(MediaType.TEXT_XML)
-    public Response getXmlOutput(@PathParam("id") String jobIid,  @QueryParam("outputname") String outputname,
-        						 @QueryParam("ext") String ext) {
+    public Response getXmlOutput(@PathParam("id") String jobId,
+                                 @QueryParam("ext") String ext) {
         Response response;
 
         try {
-            File out = getExportFile(jobIid, outputname, StringUtils.isEmpty(ext) ? "xml" : ext);
+            File out = getExportFile(jobId, jobId, StringUtils.isEmpty(ext) ? "xml" : ext);
             response = Response.ok(new DOMSource(XmlDocumentBuilder.parse(FileUtils.readFileToString(out, "UTF-8")))).build();
         }
         catch (WebApplicationException e) {
