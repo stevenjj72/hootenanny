@@ -101,6 +101,7 @@ void OsmApiDbBulkWriter::open(QString url)
   if (_destinationIsDatabase())
   {
     _database.open(_outputUrl);
+    LOG_DEBUG("Postgres database version: " << DbUtils::getPostgresDbVersion(_database.getDB()));
   }
   _verifyDependencies();
 }
@@ -723,7 +724,7 @@ void OsmApiDbBulkWriter::_reserveIdsInDb()
                                 _idMappings.currentNodeId + _writeStats.nodesWritten,
                                 _idMappings.currentWayId + _writeStats.waysWritten,
                                 _idMappings.currentRelationId + _writeStats.relationsWritten,
-                                 reserveElementIdsSql);
+                                reserveElementIdsSql);
   LOG_VART(reserveElementIdsSql);
 
   LOG_INFO("Writing sequence ID updates to database to reserve record IDs...");
@@ -788,7 +789,7 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
   }
   // Have to establish new mapping
   const unsigned long nodeDbId = _establishNewIdMapping(node->getElementId());
-  LOG_VART(nodeDbId);
+  LOG_VART(ElementId(ElementType::Node, nodeDbId));
 
   _writeNodeToStream(node, nodeDbId);
   _writeTagsToStream(node->getTags(), ElementType::Node, nodeDbId,
@@ -817,6 +818,8 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
     PROGRESS_INFO(
       "Parsed " << _formatPotentiallyLargeNumber(_writeStats.nodesWritten) << " nodes from input.");
   }
+
+  LOG_VART(node->getVersion());
 }
 
 QString OsmApiDbBulkWriter::_secondsToDhms(const qint64 durationInMilliseconds) const
@@ -858,7 +861,7 @@ void OsmApiDbBulkWriter::writePartial(const ConstWayPtr& way)
   }
   // Have to establish new mapping
   const unsigned long wayDbId = _establishNewIdMapping(way->getElementId());
-  LOG_VART(wayDbId);
+  LOG_VART(ElementId(ElementType::Way, wayDbId));
 
   _writeWayToStream(wayDbId);
   _writeWayNodesToStream(wayDbId, way->getNodeIds());
@@ -907,7 +910,7 @@ void OsmApiDbBulkWriter::writePartial(const ConstRelationPtr& relation)
   }
   // Have to establish new mapping
   const unsigned long relationDbId = _establishNewIdMapping(relation->getElementId());
-  LOG_VART(relationDbId);
+  LOG_VART(ElementId(ElementType::Relation, relationDbId));
 
   _writeRelationToStream(relationDbId);
   _writeRelationMembersToStream(relation, relationDbId);

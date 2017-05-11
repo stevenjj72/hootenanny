@@ -33,6 +33,8 @@
 #include <hoot/core/io/OsmChangesetXmlFileWriter.h>
 #include <hoot/core/io/OsmChangesetSqlFileWriter.h>
 #include <hoot/core/io/HootApiDb.h>
+#include <hoot/core/io/OsmMapWriterFactory.h>
+#include <hoot/core/util/MapProjector.h>
 
 // Qt
 #include <QUrl>

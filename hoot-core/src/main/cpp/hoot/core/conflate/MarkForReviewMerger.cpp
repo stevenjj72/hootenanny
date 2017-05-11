@@ -55,7 +55,7 @@ MarkForReviewMerger::MarkForReviewMerger(const set<ElementId>& eids, QString not
 }
 
 void MarkForReviewMerger::apply(const OsmMapPtr& map,
-  vector< pair<ElementId, ElementId> >& /*replaced*/) const
+                                vector< pair<ElementId, ElementId> >& /*replaced*/)
 {
   assert(!(_eids.size() >=1 && _pairs.size() >= 1));
 
@@ -144,7 +144,8 @@ void MarkForReviewMerger::replace(ElementId oldEid, ElementId newEid)
 
 QString MarkForReviewMerger::toString() const
 {
-  return QString("MarkForReviewMerger");
+  //return QString("MarkForReviewMerger");
+  return QString("MarkForReviewMerger, pairs: ") + hoot::toString(_pairs);
 }
 
 }

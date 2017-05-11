@@ -27,7 +27,6 @@
 #include "ChangesetDeriver.h"
 
 #include <hoot/core/elements/Node.h>
-#include <hoot/core/io/ElementComparer.h>
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/util/Log.h>
 
@@ -77,11 +76,13 @@ Change ChangesetDeriver::_nextChange()
   if (!_fromE.get() && _from->hasMoreElements())
   {
     _fromE = _from->readNextElement();
+    LOG_VART(_fromE->getElementId());
   }
 
   if (!_toE.get() && _to->hasMoreElements())
   {
     _toE = _to->readNextElement();
+    LOG_VART(_toE->getElementId());
   }
 
   // if we've run out of "from" elements, create all the remaining elements in "to"
@@ -92,7 +93,6 @@ Change ChangesetDeriver::_nextChange()
 
     LOG_TRACE("run out of from elements; 'from' element null; 'to' element not null: " <<
               _toE->getElementId() << "; creating 'to' element: ");
-    LOG_VART(result);
 
     _toE = _to->readNextElement();
   }
@@ -104,20 +104,17 @@ Change ChangesetDeriver::_nextChange()
 
     LOG_TRACE("run out of 'to' elements; to' element null; 'from' element not null: " <<
               _fromE->getElementId() << "; deleting 'from' element: ");
-    LOG_VART(result);
 
     _fromE = _from->readNextElement();
   }
   else
   {
-    // while the elements are exactly the same there is nothing to do.
+    // while the elements are exactly the same, there is nothing to do.
     while (_fromE.get() && _toE.get() && _fromE->getElementId() == _toE->getElementId() &&
-           ElementComparer().isSame(_fromE, _toE))
+           _elementComparer.isSame(_fromE, _toE))
     {
       LOG_TRACE("skipping identical elements - 'from' element: " << _fromE->getElementId() <<
                 " 'to' element: " << _toE->getElementId());
-      LOG_VART(_fromE);
-      LOG_VART(_toE);
 
       _toE = _to->readNextElement();
       _fromE = _from->readNextElement();
@@ -136,7 +133,6 @@ Change ChangesetDeriver::_nextChange()
 
       LOG_TRACE("run out of from elements; 'from' element null; 'to' element not null: " <<
                 _toE->getElementId() << "; creating 'to' element: ");
-      LOG_VART(result.e);
 
       _toE = _to->readNextElement();
     }
@@ -148,7 +144,6 @@ Change ChangesetDeriver::_nextChange()
 
       LOG_TRACE("run out of 'to' elements; to' element null; 'from' element not null: " <<
                 _fromE->getElementId() << "; deleting 'from' element: ");
-      LOG_VART(result.e);
 
       _fromE = _from->readNextElement();
     }
@@ -159,10 +154,9 @@ Change ChangesetDeriver::_nextChange()
 
       LOG_TRACE("'from' element id: " << _fromE->getElementId() << " equals 'to' element id: " <<
                 _toE->getElementId() << " modifying 'to' element: ");
-      //LOG_VART(_fromE);
-      LOG_VART(result.e);
 
       _toE = _to->readNextElement();
+      _fromE = _from->readNextElement(); //TODO: this line probably needs more testing
     }
     else if (_fromE->getElementId() < _toE->getElementId())
     {
@@ -171,8 +165,6 @@ Change ChangesetDeriver::_nextChange()
 
       LOG_TRACE("'from' element id: " << _fromE->getElementId() << " less than 'to' element id: " <<
                 _toE->getElementId() << " deleting 'from' element: ");
-      //LOG_VART(_toE);
-      LOG_VART(result.e);
 
       _fromE = _from->readNextElement();
     }
@@ -183,8 +175,6 @@ Change ChangesetDeriver::_nextChange()
 
       LOG_TRACE("'from' element id: " << _fromE->getElementId() << " greater than 'to' element id: " <<
                 _toE->getElementId() << " creating 'to' element: ");
-      //LOG_VART(_fromE));
-      LOG_VART(result.e);
 
       _toE = _to->readNextElement();
     }
