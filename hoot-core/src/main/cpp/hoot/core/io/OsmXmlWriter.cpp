@@ -48,6 +48,8 @@ using namespace boost;
 #include <QFile>
 #include <QXmlStreamWriter>
 
+using namespace std;
+
 namespace hoot
 {
 
@@ -69,6 +71,7 @@ _encodingErrorCount(0)
 
 }
 
+//TODO: refactor this
 QString OsmXmlWriter::removeInvalidCharacters(const QString& s)
 {
   // See #3553 for an explanation.

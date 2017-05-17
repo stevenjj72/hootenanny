@@ -38,14 +38,29 @@
 #include <QFileInfo>
 #include <QXmlStreamWriter>
 
+using namespace std;
+
 namespace hoot
 {
 
-OsmChangesetXmlFileWriter::OsmChangesetXmlFileWriter() :
-_precision(ConfigOptions().getWriterPrecision()),
-_changesetMaxSize(ConfigOptions().getChangesetMaxSize()),
-_multipleChangesetsWritten(false)
+OsmChangesetXmlFileWriter::OsmChangesetXmlFileWriter()
+  : _precision(ConfigOptions().getWriterPrecision()),
+    _changesetMaxSize(ConfigOptions().getChangesetMaxSize()),
+    _multipleChangesetsWritten(false)
 {
+}
+
+void OsmChangesetXmlFileWriter::_initIdCounters()
+{
+  _newElementIdCtrs.clear();
+  _newElementIdCtrs[ElementType::Node] = 1;
+  _newElementIdCtrs[ElementType::Way] = 1;
+  _newElementIdCtrs[ElementType::Relation] = 1;
+
+  _newElementIdMappings.clear();
+  _newElementIdMappings[ElementType::Node] = QMap<long, long>();
+  _newElementIdMappings[ElementType::Way] = QMap<long, long>();
+  _newElementIdMappings[ElementType::Relation] = QMap<long, long>();
 }
 
 void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
@@ -56,8 +71,9 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
   QString dir = info.path();
   QString ext = info.completeSuffix();
   int fileCount = 0;
-
   QString filepath = path;
+
+  _initIdCounters();
 
   while (cs->hasMoreChanges())
   {
@@ -93,6 +109,7 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
 
     while (cs->hasMoreChanges() && changesetProgress <= _changesetMaxSize)
     {
+      LOG_TRACE("Reading next XML change...");
       _change = cs->readNextChange();
       LOG_VART(_change.toString());
       if (_change.type != last)
@@ -128,13 +145,13 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
         switch (_change.e->getElementType().getEnum())
         {
           case ElementType::Node:
-            writeNode(writer, dynamic_pointer_cast<const Node>(_change.e));
+            _writeNode(writer, boost::dynamic_pointer_cast<const Node>(_change.e));
             break;
           case ElementType::Way:
-            writeWay(writer, dynamic_pointer_cast<const Way>(_change.e));
+            _writeWay(writer, boost::dynamic_pointer_cast<const Way>(_change.e));
             break;
           case ElementType::Relation:
-            writeRelation(writer, dynamic_pointer_cast<const Relation>(_change.e));
+            _writeRelation(writer, boost::dynamic_pointer_cast<const Relation>(_change.e));
             break;
           default:
             throw IllegalArgumentException("Unexpected element type.");
@@ -158,14 +175,20 @@ void OsmChangesetXmlFileWriter::write(QString path, ChangeSetProviderPtr cs)
 
 //TODO: consolidate redundant tag code in these element write methods
 
-void OsmChangesetXmlFileWriter::writeNode(QXmlStreamWriter& writer, ConstNodePtr n)
+void OsmChangesetXmlFileWriter::_writeNode(QXmlStreamWriter& writer, ConstNodePtr n)
 {
   writer.writeStartElement("node");
   long id = n->getId();
-  if (_change.type == Change::Create && id > 0) //assuming no ids = 0
+  if (_change.type == Change::Create)
   {
-    //rails port expects negative ids for new elements
-    id = id * -1;
+    //rails port expects negative ids for new elements; we're starting at -1 to match the convention
+    //of iD editor, but that's not absolutely necessary to write the changeset to rails port
+    id = _newElementIdCtrs[ElementType::Node] * -1; //assuming no id's = 0
+    LOG_TRACE(
+      "Converting new element with id: " << n->getElementId() << " to id: " <<
+      ElementId(ElementType::Node, id));
+    _newElementIdCtrs[ElementType::Node] = _newElementIdCtrs[ElementType::Node] + 1;
+    _newElementIdMappings[ElementType::Node].insert(n->getId(), id);
   }
   writer.writeAttribute("id", QString::number(id));
   long version = -1;
@@ -197,8 +220,8 @@ void OsmChangesetXmlFileWriter::writeNode(QXmlStreamWriter& writer, ConstNodePtr
     if (it.key().isEmpty() == false && it.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(it.key()));
-      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(it.value()));
+      writer.writeAttribute("k", _invalidCharacterRemover.removeInvalidCharacters(it.key()));
+      writer.writeAttribute("v", _invalidCharacterRemover.removeInvalidCharacters(it.value()));
       writer.writeEndElement();
     }
   }
@@ -215,14 +238,19 @@ void OsmChangesetXmlFileWriter::writeNode(QXmlStreamWriter& writer, ConstNodePtr
   writer.writeEndElement();
 }
 
-void OsmChangesetXmlFileWriter::writeWay(QXmlStreamWriter& writer, ConstWayPtr w)
+void OsmChangesetXmlFileWriter::_writeWay(QXmlStreamWriter& writer, ConstWayPtr w)
 {
   writer.writeStartElement("way");
   long id = w->getId();
-  if (_change.type == Change::Create && id > 0) //assuming no ids = 0
+  if (_change.type == Change::Create)
   {
-    //rails port expects negative ids for new elements
-    id = id * -1;
+    //see corresponding note in _writeNode
+    id = _newElementIdCtrs[ElementType::Way] * -1;
+    LOG_TRACE(
+      "Converting new element with id: " << w->getElementId() << " to id: " <<
+      ElementId(ElementType::Way, id));
+    _newElementIdCtrs[ElementType::Way] = _newElementIdCtrs[ElementType::Way] + 1;
+    _newElementIdMappings[ElementType::Way].insert(w->getId(), id);
   }
   writer.writeAttribute("id", QString::number(id));
   long version = -1;
@@ -243,7 +271,16 @@ void OsmChangesetXmlFileWriter::writeWay(QXmlStreamWriter& writer, ConstWayPtr w
   for (size_t j = 0; j < w->getNodeCount(); j++)
   {
     writer.writeStartElement("nd");
-    writer.writeAttribute("ref", QString::number(w->getNodeId(j)));
+    long nodeRefId = w->getNodeId(j);
+    if (_newElementIdMappings[ElementType::Node].contains(nodeRefId))
+    {
+      const long newNodeRefId = _newElementIdMappings[ElementType::Node][nodeRefId];
+      LOG_TRACE(
+        "Converting new node ref with id: " << nodeRefId << " to id: " <<
+        ElementId(ElementType::Node, newNodeRefId));
+      nodeRefId = newNodeRefId;
+    }
+    writer.writeAttribute("ref", QString::number(nodeRefId));
     writer.writeEndElement();
   }
 
@@ -257,8 +294,8 @@ void OsmChangesetXmlFileWriter::writeWay(QXmlStreamWriter& writer, ConstWayPtr w
     if (tit.key().isEmpty() == false && tit.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(tit.key()));
-      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(tit.value()));
+      writer.writeAttribute("k", _invalidCharacterRemover.removeInvalidCharacters(tit.key()));
+      writer.writeAttribute("v", _invalidCharacterRemover.removeInvalidCharacters(tit.value()));
       writer.writeEndElement();
     }
   }
@@ -274,14 +311,19 @@ void OsmChangesetXmlFileWriter::writeWay(QXmlStreamWriter& writer, ConstWayPtr w
   writer.writeEndElement();
 }
 
-void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRelationPtr r)
+void OsmChangesetXmlFileWriter::_writeRelation(QXmlStreamWriter& writer, ConstRelationPtr r)
 {
   writer.writeStartElement("relation");
   long id = r->getId();
-  if (_change.type == Change::Create && id > 0) //assuming no ids = 0
+  if (_change.type == Change::Create)
   {
-    //rails port expects negative ids for new elements
-    id = id * -1;
+    //see corresponding note in _writeNode
+    id = _newElementIdCtrs[ElementType::Relation] * -1;
+    LOG_TRACE(
+      "Converting new element with id: " << r->getElementId() << " to id: " <<
+      ElementId(ElementType::Relation, id));
+    _newElementIdCtrs[ElementType::Relation] = _newElementIdCtrs[ElementType::Relation] + 1;
+    _newElementIdMappings[ElementType::Relation].insert(r->getId(), id);
   }
   writer.writeAttribute("id", QString::number(id));
   long version = -1;
@@ -304,9 +346,19 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
   {
     const RelationData::Entry& e = members[j];
     writer.writeStartElement("member");
-    writer.writeAttribute("type", e.getElementId().getType().toString().toLower());
-    writer.writeAttribute("ref", QString::number(e.getElementId().getId()));
-    writer.writeAttribute("role", OsmXmlWriter().removeInvalidCharacters(e.role));
+    const ElementType elementType = e.getElementId().getType();
+    writer.writeAttribute("type", elementType.toString().toLower());
+    long memberId = e.getElementId().getId();
+    if (_newElementIdMappings[elementType.getEnum()].contains(memberId))
+    {
+      const long newMemberId = _newElementIdMappings[elementType.getEnum()][memberId];
+      LOG_TRACE(
+        "Converting new member with id: " << memberId << " to id: " <<
+        ElementId(elementType, newMemberId));
+      memberId = newMemberId;
+    }
+    writer.writeAttribute("ref", QString::number(memberId));
+    writer.writeAttribute("role", _invalidCharacterRemover.removeInvalidCharacters(e.role));
     writer.writeEndElement();
   }
 
@@ -320,8 +372,8 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
     if (tit.key().isEmpty() == false && tit.value().isEmpty() == false)
     {
       writer.writeStartElement("tag");
-      writer.writeAttribute("k", OsmXmlWriter().removeInvalidCharacters(tit.key()));
-      writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(tit.value()));
+      writer.writeAttribute("k", _invalidCharacterRemover.removeInvalidCharacters(tit.key()));
+      writer.writeAttribute("v", _invalidCharacterRemover.removeInvalidCharacters(tit.value()));
       writer.writeEndElement();
     }
   }
@@ -330,7 +382,7 @@ void OsmChangesetXmlFileWriter::writeRelation(QXmlStreamWriter& writer, ConstRel
   {
     writer.writeStartElement("tag");
     writer.writeAttribute("k", "type");
-    writer.writeAttribute("v", OsmXmlWriter().removeInvalidCharacters(r->getType()));
+    writer.writeAttribute("v", _invalidCharacterRemover.removeInvalidCharacters(r->getType()));
     writer.writeEndElement();
   }
 

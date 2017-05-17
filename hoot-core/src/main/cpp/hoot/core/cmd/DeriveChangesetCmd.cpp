@@ -45,6 +45,8 @@
 // Qt
 #include <QUrl>
 
+using namespace std;
+
 namespace hoot
 {
 
@@ -111,7 +113,7 @@ public:
     {
       //allow for calculating the changeset with a slightly larger AOI than the default specified
       //bounding box; useful in certain situations
-      Envelope convertBounds =
+      geos::geom::Envelope convertBounds =
         GeometryUtils::envelopeFromConfigString(ConfigOptions().getConvertBoundingBox());
       convertBounds.expandBy(changesetBuffer, changesetBuffer);
       conf().set(

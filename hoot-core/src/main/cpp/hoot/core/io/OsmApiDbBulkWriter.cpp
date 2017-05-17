@@ -41,10 +41,11 @@
 
 #include <tgs/System/SystemInfo.h>
 
+using namespace std;
+using namespace Tgs;
+
 namespace hoot
 {
-
-using namespace Tgs;
 
 unsigned int OsmApiDbBulkWriter::logWarnCount = 0;
 
@@ -791,6 +792,13 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
   const unsigned long nodeDbId = _establishNewIdMapping(node->getElementId());
   LOG_VART(ElementId(ElementType::Node, nodeDbId));
 
+  if (ConfigOptions().getWriterIncludeDebugTags())
+  {
+    Tags tags = node->getTags();
+    //keep the hoot:id tag in sync with what could be a newly assigned id
+    tags.set(MetadataTags::HootId(), QString::number(nodeDbId));
+  }
+
   _writeNodeToStream(node, nodeDbId);
   _writeTagsToStream(node->getTags(), ElementType::Node, nodeDbId,
     _outputSections[ApiDb::getCurrentNodeTagsTableName()].second,
@@ -863,6 +871,13 @@ void OsmApiDbBulkWriter::writePartial(const ConstWayPtr& way)
   const unsigned long wayDbId = _establishNewIdMapping(way->getElementId());
   LOG_VART(ElementId(ElementType::Way, wayDbId));
 
+  if (ConfigOptions().getWriterIncludeDebugTags())
+  {
+    Tags tags = way->getTags();
+    //keep the hoot:id tag in sync with what could be a newly assigned id
+    tags.set(MetadataTags::HootId(), QString::number(wayDbId));
+  }
+
   _writeWayToStream(wayDbId);
   _writeWayNodesToStream(wayDbId, way->getNodeIds());
   _writeTagsToStream(way->getTags(), ElementType::Way, wayDbId,
@@ -911,6 +926,13 @@ void OsmApiDbBulkWriter::writePartial(const ConstRelationPtr& relation)
   // Have to establish new mapping
   const unsigned long relationDbId = _establishNewIdMapping(relation->getElementId());
   LOG_VART(ElementId(ElementType::Relation, relationDbId));
+
+  if (ConfigOptions().getWriterIncludeDebugTags())
+  {
+    Tags tags = relation->getTags();
+    //keep the hoot:id tag in sync with what could be a newly assigned id
+    tags.set(MetadataTags::HootId(), QString::number(relationDbId));
+  }
 
   _writeRelationToStream(relationDbId);
   _writeRelationMembersToStream(relation, relationDbId);

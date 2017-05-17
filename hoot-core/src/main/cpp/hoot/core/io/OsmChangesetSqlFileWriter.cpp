@@ -36,14 +36,15 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
+using namespace std;
+
 namespace hoot
 {
 
 OsmChangesetSqlFileWriter::OsmChangesetSqlFileWriter(QUrl url) :
 _changesetId(0),
 _changesetMaxSize(ConfigOptions().getChangesetMaxSize()),
-_changesetUserId(ConfigOptions().getChangesetUserId()),
-_changesetGenerateNewIds(ConfigOptions().getOsmChangesetSqlFileWriterGenerateNewIds())
+_changesetUserId(ConfigOptions().getChangesetUserId())
 {
   _db.open(url);
 }
@@ -70,6 +71,7 @@ void OsmChangesetSqlFileWriter::write(const QString path, ChangeSetProviderPtr c
 
   while (changesetProvider->hasMoreChanges())
   {
+    LOG_TRACE("Reading next SQL change...");
     Change change = changesetProvider->readNextChange();
     switch (change.type)
     {
@@ -94,7 +96,7 @@ void OsmChangesetSqlFileWriter::write(const QString path, ChangeSetProviderPtr c
     {
       if (change.e->getElementType().getEnum() == ElementType::Node)
       {
-        ConstNodePtr node = dynamic_pointer_cast<const Node>(change.e);
+        ConstNodePtr node = boost::dynamic_pointer_cast<const Node>(change.e);
         _changesetBounds.expandToInclude(node->getX(), node->getY());
       }
       changes++;
@@ -165,13 +167,13 @@ ElementPtr OsmChangesetSqlFileWriter::_getChangeElement(ConstElementPtr element)
   switch (element->getElementType().getEnum())
   {
     case ElementType::Node:
-      changeElement.reset(new Node(*dynamic_pointer_cast<const Node>(element)));
+      changeElement.reset(new Node(*boost::dynamic_pointer_cast<const Node>(element)));
       break;
     case ElementType::Way:
-      changeElement.reset(new Way(*dynamic_pointer_cast<const Way>(element)));
+      changeElement.reset(new Way(*boost::dynamic_pointer_cast<const Way>(element)));
       break;
    case ElementType::Relation:
-      changeElement.reset(new Relation(*dynamic_pointer_cast<const Relation>(element)));
+      changeElement.reset(new Relation(*boost::dynamic_pointer_cast<const Relation>(element)));
       break;
     default:
       throw HootException("Unknown element type");
@@ -179,21 +181,28 @@ ElementPtr OsmChangesetSqlFileWriter::_getChangeElement(ConstElementPtr element)
   return changeElement;
 }
 
-// If osm.changeset.file.writer.generate.new.ids is false, then these create methods assume
-// you've already set the ID correctly in terms of the OSM API target db for the element to be
-// created.
-//TODO: Can we get rid of the generate new ID's option now?
+// These create methods assume you've already set the ID correctly in terms of preventing
+// conflicts with the OSM API target db for the element to be created.  The one exception is
+// for new elements with negative ids.
 
 void OsmChangesetSqlFileWriter::_createNewElement(ConstElementPtr element)
 {
   const QString elementTypeStr = element->getElementType().toString().toLower();
   ElementPtr changeElement = _getChangeElement(element);
 
+  //we only grab and assign a new id if we have a new element with a negative id, since we'll be
+  //writing this directly to the database and negative ids aren't allowed
+  LOG_TRACE("ID before: " << changeElement->getElementId());
   long id;
-  if (_changesetGenerateNewIds)
+  if (changeElement->getId() < 0)
+  {
     id = _db.getNextId(element->getElementType().getEnum());
+  }
   else
+  {
     id = changeElement->getId();
+  }
+  LOG_TRACE("ID after: " << ElementId(changeElement->getElementType(), id));
 
   changeElement->setId(id);
   changeElement->setVersion(1);
@@ -219,10 +228,10 @@ void OsmChangesetSqlFileWriter::_createNewElement(ConstElementPtr element)
   switch (changeElement->getElementType().getEnum())
   {
     case ElementType::Way:
-      _createWayNodes(dynamic_pointer_cast<const Way>(changeElement));
+      _createWayNodes(boost::dynamic_pointer_cast<const Way>(changeElement));
       break;
     case ElementType::Relation:
-      _createRelationMembers(dynamic_pointer_cast<const Relation>(changeElement));
+      _createRelationMembers(boost::dynamic_pointer_cast<const Relation>(changeElement));
       break;
     default:
       //node
@@ -235,7 +244,7 @@ QString OsmChangesetSqlFileWriter::_getUpdateValuesStr(ConstElementPtr element) 
   switch (element->getElementType().getEnum())
   {
     case ElementType::Node:
-      return _getUpdateValuesNodeStr(dynamic_pointer_cast<const Node>(element));
+      return _getUpdateValuesNodeStr(boost::dynamic_pointer_cast<const Node>(element));
     case ElementType::Way:
       return _getUpdateValuesWayOrRelationStr(element);
     case ElementType::Relation:
@@ -310,12 +319,12 @@ void OsmChangesetSqlFileWriter::_updateExistingElement(ConstElementPtr element)
     case ElementType::Way:
       _deleteAll(ApiDb::getCurrentWayNodesTableName(), "way_id", changeElement->getId());
       _deleteAll(ApiDb::getWayNodesTableName(), "way_id", changeElement->getId());
-      _createWayNodes(dynamic_pointer_cast<const Way>(changeElement));
+      _createWayNodes(boost::dynamic_pointer_cast<const Way>(changeElement));
       break;
     case ElementType::Relation:
       _deleteAll(ApiDb::getCurrentRelationMembersTableName(), "relation_id", changeElement->getId());
       _deleteAll(ApiDb::getRelationMembersTableName(), "relation_id", changeElement->getId());
-      _createRelationMembers(dynamic_pointer_cast<const Relation>(changeElement));
+      _createRelationMembers(boost::dynamic_pointer_cast<const Relation>(changeElement));
       break;
     default:
       //node
@@ -410,7 +419,7 @@ QString OsmChangesetSqlFileWriter::_getInsertValuesStr(ConstElementPtr element) 
   switch (element->getElementType().getEnum())
   {
     case ElementType::Node:
-      return _getInsertValuesNodeStr(dynamic_pointer_cast<const Node>(element));
+      return _getInsertValuesNodeStr(boost::dynamic_pointer_cast<const Node>(element));
     case ElementType::Way:
       return _getInsertValuesWayOrRelationStr(element);
     case ElementType::Relation:
@@ -461,7 +470,7 @@ void OsmChangesetSqlFileWriter::_createTags(ConstElementPtr element)
   LOG_VART(tags);
   if (element->getElementType().getEnum() == ElementType::Relation && !tags.contains("type"))
   {
-    ConstRelationPtr tmp = dynamic_pointer_cast<const Relation>(element);
+    ConstRelationPtr tmp = boost::dynamic_pointer_cast<const Relation>(element);
     tags.appendValue("type", tmp->getType());
   }
 
@@ -508,7 +517,7 @@ void OsmChangesetSqlFileWriter::_createWayNodes(ConstWayPtr way)
   for (size_t i = 0; i < nodeIds.size(); i++)
   {
     const long nodeId = nodeIds.at(i);
-    LOG_VART(nodeId);
+    LOG_VART(ElementId(ElementType::Node, nodeId));
 
     QString values =
       QString("(way_id, node_id, version, sequence_id) VALUES (%1, %2, 1, %3);\n")
@@ -534,7 +543,7 @@ void OsmChangesetSqlFileWriter::_createRelationMembers(ConstRelationPtr relation
   for (size_t i = 0; i < members.size(); i++)
   {
     const RelationData::Entry member = members[i];
-    LOG_VART(member.toString());
+    LOG_VART(member.getElementId());
 
     QString values =
       QString(

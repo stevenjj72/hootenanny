@@ -48,6 +48,8 @@
 #include "../TestUtils.h"
 #include "ServicesDbTestUtils.h"
 
+using namespace std;
+
 namespace hoot
 {
 
@@ -72,7 +74,7 @@ public:
     ////////////////////////////////////////
     // insert simple test data
     ////////////////////////////////////////
-    const QString scriptDir = "${HOOT_HOME}/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
     ApiDb::execSqlFile(
       ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/changesets.sql");
@@ -84,7 +86,7 @@ public:
 
   void insertDataForBoundTest()
   {
-    const QString scriptDir = "${HOOT_HOME}/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
     ApiDb::execSqlFile(
       ServicesDbTestUtils::getOsmApiDbUrl().toString(),

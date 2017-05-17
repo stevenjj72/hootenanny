@@ -40,6 +40,8 @@
 #include <QtSql/QSqlDatabase>
 #include <QUrl>
 
+using namespace std;
+
 namespace hoot
 {
 
@@ -208,6 +210,7 @@ void HootApiDbWriter::_overwriteMaps(const QString& mapName, const set<long>& ma
 
 long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
 {
+  LOG_VART(_remapIds);
   if (_remapIds == false)
   {
     return eid.getId();
@@ -221,6 +224,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
     if (_nodeRemap.count(eid.getId()) == 1)
     {
       retVal = _nodeRemap.at(eid.getId());
+      LOG_VART(retVal);
     }
     else
     {
@@ -230,6 +234,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
       {
         _sourceNodeIds.insert(eid.getId());
       }
+      LOG_VART(retVal);
     }
 
     break;
@@ -238,6 +243,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
     if (_wayRemap.count(eid.getId()) == 1)
     {
       retVal = _wayRemap.at(eid.getId());
+      LOG_VART(retVal);
     }
     else
     {
@@ -247,6 +253,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
       {
         _sourceWayIds.insert(eid.getId());
       }
+      LOG_VART(retVal);
     }
 
     break;
@@ -255,6 +262,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
     if (_relationRemap.count(eid.getId()) == 1)
     {
       retVal = _relationRemap.at(eid.getId());
+      LOG_VART(retVal);
     }
     else
     {
@@ -264,6 +272,7 @@ long HootApiDbWriter::_getRemappedElementId(const ElementId& eid)
       {
         _sourceRelationIds.insert(eid.getId());
       }
+      LOG_VART(retVal);
     }
 
     break;
@@ -326,21 +335,28 @@ void HootApiDbWriter::_startNewChangeSet()
 
 void HootApiDbWriter::writePartial(const ConstNodePtr& n)
 {
-  Tags t = n->getTags();
-  _addElementTags(n, t);
+  Tags tags = n->getTags();
+  _addElementTags(n, tags);
 
   if (_remapIds)
   {
     bool alreadyThere = _nodeRemap.count(n->getId()) != 0;
     long nodeId = _getRemappedElementId(n->getElementId());
+
+    if (ConfigOptions().getWriterIncludeDebugTags())
+    {
+      //keep the hoot:id tag in sync with what could be a newly assigned id
+      tags.set(MetadataTags::HootId(), QString::number(nodeId));
+    }
+
     LOG_VART(nodeId);
     if (alreadyThere)
     {
-      _hootdb.updateNode(nodeId, n->getY(), n->getX(), n->getVersion() + 1, t);
+      _hootdb.updateNode(nodeId, n->getY(), n->getX(), n->getVersion() + 1, tags);
     }
     else
     {
-      _hootdb.insertNode(nodeId, n->getY(), n->getX(), t);
+      _hootdb.insertNode(nodeId, n->getY(), n->getX(), tags);
     }
   }
   else
@@ -352,7 +368,7 @@ void HootApiDbWriter::writePartial(const ConstNodePtr& n)
     }
 
     LOG_VART(n->getId());
-    _hootdb.insertNode(n->getId(), n->getY(), n->getX(), t);
+    _hootdb.insertNode(n->getId(), n->getY(), n->getX(), tags);
   }
 
   LOG_VART(n->getVersion());
@@ -372,6 +388,13 @@ void HootApiDbWriter::writePartial(const ConstWayPtr& w)
   {
     bool alreadyThere = _wayRemap.count(w->getId()) != 0;
     wayId = _getRemappedElementId(w->getElementId());
+
+    if (ConfigOptions().getWriterIncludeDebugTags())
+    {
+      //keep the hoot:id tag in sync with what could be a newly assigned id
+      tags.set(MetadataTags::HootId(), QString::number(wayId));
+    }
+
     if (alreadyThere)
     {
       _hootdb.updateWay(wayId, w->getVersion() + 1, tags);
@@ -420,6 +443,13 @@ void HootApiDbWriter::writePartial(const ConstRelationPtr& r)
   if (_remapIds)
   {
     relationId = _getRemappedElementId(r->getElementId());
+
+    if (ConfigOptions().getWriterIncludeDebugTags())
+    {
+      //keep the hoot:id tag in sync with what could be a newly assigned id
+      tags.set(MetadataTags::HootId(), QString::number(relationId));
+    }
+
     _hootdb.insertRelation(relationId, tags);
   }
   else

@@ -64,7 +64,9 @@ bool ElementComparer::isSame(ElementPtr e1, ElementPtr e2) const
 
   if (e1->getElementId() != e2->getElementId() ||
       !(tags1 == tags2) ||
-      (ConfigOptions().getChangesetCompareStatus() && e1->getStatus() != e2->getStatus()) ||
+      //if only the status changed on the element and no other tags or geometries, there's no point
+      //in detecting a change
+      //e1->getStatus() != e2->getStatus() ||
       (e1->getVersion() != e2->getVersion()) ||
       fabs(e1->getCircularError() - e2->getCircularError()) > _threshold)
   {
@@ -74,10 +76,10 @@ bool ElementComparer::isSame(ElementPtr e1, ElementPtr e2) const
       {
         LOG_TRACE("compare failed on tags");
       }
-      else if (e1->getStatus() != e2->getStatus())
-      {
-        LOG_TRACE("compare failed on status");
-      }
+//      else if (e1->getStatus() != e2->getStatus())
+//      {
+//        LOG_TRACE("compare failed on status");
+//      }
       else if (e1->getVersion() != e2->getVersion())
       {
         LOG_TRACE("compare failed on version");
@@ -111,8 +113,8 @@ bool ElementComparer::isSame(ElementPtr e1, ElementPtr e2) const
 bool ElementComparer::_compareNode(const boost::shared_ptr<const Element>& re,
                                    const boost::shared_ptr<const Element>& e) const
 {
-  ConstNodePtr rn = dynamic_pointer_cast<const Node>(re);
-  ConstNodePtr n = dynamic_pointer_cast<const Node>(e);
+  ConstNodePtr rn = boost::dynamic_pointer_cast<const Node>(re);
+  ConstNodePtr n = boost::dynamic_pointer_cast<const Node>(e);
 
   LOG_VART(GeometryUtils::haversine(rn->toCoordinate(), n->toCoordinate()));
   return (GeometryUtils::haversine(rn->toCoordinate(), n->toCoordinate()) <= _threshold);
@@ -121,8 +123,8 @@ bool ElementComparer::_compareNode(const boost::shared_ptr<const Element>& re,
 bool ElementComparer::_compareWay(const boost::shared_ptr<const Element>& re,
                                   const boost::shared_ptr<const Element>& e) const
 {
-  ConstWayPtr rw = dynamic_pointer_cast<const Way>(re);
-  ConstWayPtr w = dynamic_pointer_cast<const Way>(e);
+  ConstWayPtr rw = boost::dynamic_pointer_cast<const Way>(re);
+  ConstWayPtr w = boost::dynamic_pointer_cast<const Way>(e);
 
   if (rw->getNodeIds().size() != w->getNodeIds().size())
   {
@@ -142,8 +144,8 @@ bool ElementComparer::_compareWay(const boost::shared_ptr<const Element>& re,
 bool ElementComparer::_compareRelation(const boost::shared_ptr<const Element>& re,
                                        const boost::shared_ptr<const Element>& e) const
 {
-  ConstRelationPtr rr = dynamic_pointer_cast<const Relation>(re);
-  ConstRelationPtr r = dynamic_pointer_cast<const Relation>(e);
+  ConstRelationPtr rr = boost::dynamic_pointer_cast<const Relation>(re);
+  ConstRelationPtr r = boost::dynamic_pointer_cast<const Relation>(e);
 
   if (rr->getType() != r->getType() ||
       rr->getMembers().size() != r->getMembers().size())
