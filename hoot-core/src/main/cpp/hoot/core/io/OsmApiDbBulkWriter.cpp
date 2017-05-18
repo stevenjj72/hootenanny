@@ -812,9 +812,11 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
   {
     throw NotImplementedException("Writer class does not support update operations.");
   }
-  LOG_INFO("# BulkWriter: About to set nodeDbId");
+  LOG_INFO("# BulkWriter: About to set nodeDbId for elementId:");
   // Have to establish new mapping
+  LOG_VARI(node->getElementId());
   const unsigned long nodeDbId = _establishNewIdMapping(node->getElementId());
+  LOG_INFO("NodeId:");
   LOG_VART(nodeDbId);
   LOG_INFO("# BulkWriter: End of nodeDbId");
 
@@ -1087,23 +1089,34 @@ unsigned long OsmApiDbBulkWriter::_establishNewIdMapping(const ElementId& source
 {
   //TODO: can probably reduce the current element id increment logic to just that of when
   //_validateData = false
-
+LOG_INFO("## Start of _establishNewIdMapping");
   unsigned long dbIdentifier;
 
+  LOG_INFO("## Switch type:");
+  LOG_VARI(sourceId.getType().getEnum());
   switch (sourceId.getType().getEnum())
   {
   case ElementType::Node:
+    LOG_INFO("## Node");
     if (_validateData)
     {
+      LOG_INFO("## Node:Validate");
       dbIdentifier = _idMappings.currentNodeId;
+      LOG_VARI(dbIdentifier);
+      LOG_INFO("## About to insert");
       _idMappings.nodeIdMap->insert(sourceId.getId(), dbIdentifier);
+      LOG_INFO("## About to increment");
       _idMappings.currentNodeId++;
+      LOG_INFO("## Done");
     }
     else
     {
+      LOG_INFO("## Node:NoValidate");
       dbIdentifier = abs(sourceId.getId());
+      LOG_VARI(dbIdentifier);
       if (dbIdentifier > _idMappings.currentNodeId)
       {
+        LOG_INFO("## Is greater");
         _idMappings.currentNodeId = dbIdentifier;
       }
     }
@@ -1113,15 +1126,22 @@ unsigned long OsmApiDbBulkWriter::_establishNewIdMapping(const ElementId& source
   case ElementType::Way:
       if (_validateData)
       {
+        LOG_INFO("## Way:Validate");
         dbIdentifier = _idMappings.currentWayId;
+        LOG_VARI(dbIdentifier);
+        LOG_INFO("## About to insert");
         _idMappings.wayIdMap->insert(sourceId.getId(), dbIdentifier);
+        LOG_INFO("## About to increment");
         _idMappings.currentWayId++;
       }
       else
       {
+        LOG_INFO("## Way:NoValidate");
         dbIdentifier = abs(sourceId.getId());
+        LOG_VARI(dbIdentifier);
         if (dbIdentifier > _idMappings.currentWayId)
         {
+          LOG_INFO("## Is greater");
           _idMappings.currentWayId = dbIdentifier;
         }
       }
@@ -1130,15 +1150,22 @@ unsigned long OsmApiDbBulkWriter::_establishNewIdMapping(const ElementId& source
   case ElementType::Relation:
       if (_validateData)
       {
+        LOG_INFO("## Relation:Validate");
         dbIdentifier = _idMappings.currentRelationId;
+        LOG_VARI(dbIdentifier);
+        LOG_INFO("## About to insert");
         _idMappings.relationIdMap->insert(sourceId.getId(), dbIdentifier);
+        LOG_INFO("## About to increment");
         _idMappings.currentRelationId++;
       }
       else
       {
+        LOG_INFO("## Relation:NoValidate");
         dbIdentifier = abs(sourceId.getId());
+        LOG_VARI(dbIdentifier);
         if (dbIdentifier > _idMappings.currentRelationId)
         {
+          LOG_INFO("## Is greater");
           _idMappings.currentRelationId = dbIdentifier;
         }
       }
@@ -1148,6 +1175,8 @@ unsigned long OsmApiDbBulkWriter::_establishNewIdMapping(const ElementId& source
     throw UnsupportedException("Unsupported element type.");
   }
 
+  LOG_INFO("## End of _establishNewIdMapping. Returning:");
+  LOG_VARI(dbIdentifier);
   return dbIdentifier;
 }
 
