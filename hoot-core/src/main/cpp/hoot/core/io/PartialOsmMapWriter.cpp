@@ -40,34 +40,52 @@ PartialOsmMapWriter::PartialOsmMapWriter()
 
 void PartialOsmMapWriter::write(ConstOsmMapPtr map)
 {
+  LOG_INFO("PartialOsmMapWriter: About to write map");
   writePartial(map);
+  LOG_INFO("PartialOsmMapWriter: About to finalise");
   finalizePartial();
+  LOG_INFO("PartialOsmMapWriter: About to return");
 }
 
 void PartialOsmMapWriter::writePartial(const ConstOsmMapPtr& map)
 {
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: set NodeMap");
   const NodeMap& nm = map->getNodes();
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: Loop through nodes");
   for (NodeMap::const_iterator it = nm.begin(); it != nm.end(); ++it)
   {
+    LOG_INFO("About to writepartial");
     writePartial(it->second);
+    LOG_INFO("Back from writepartial");
   }
 
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: set WayMap");
   const WayMap& wm = map->getWays();
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: loop through WayMap");
   for (WayMap::const_iterator it = wm.begin(); it != wm.end(); ++it)
   {
+    LOG_INFO("About to writepartial");
     writePartial(it->second);
+    LOG_INFO("Back from writepartial");
   }
 
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: set relationMap");
   const RelationMap& rm = map->getRelations();
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: loop through relationMap");
   for (RelationMap::const_iterator it = rm.begin(); it != rm.end(); ++it)
   {
+    LOG_INFO("About to writepartial");
     writePartial(it->second);
+    LOG_INFO("Back from writepartial");
   }
+  LOG_INFO("PartialOsmMapWriter: writePartial Const: About to return");
 }
 
 void PartialOsmMapWriter::writePartial(const OsmMapPtr& map)
 {
+  LOG_INFO("PartialOsmMapWriter: writePartial About to call writePartial Const");
   writePartial((const ConstOsmMapPtr)map);
+  LOG_INFO("PartialOsmMapWriter: writePartial Back from writePartial Const");
 }
 
 void PartialOsmMapWriter::writePartial(const boost::shared_ptr<const Element>& e)

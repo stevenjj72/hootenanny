@@ -356,18 +356,23 @@ void OsmApiDbBulkWriter::finalizePartial()
     _numberOfFileDataPasses() << ").  Time elapsed: " << _secondsToDhms(_timer->elapsed()));
 
   //go ahead and clear out some of the data structures we don't need anymore
+  LOG_INFO("# BulkWriter: finalise: About to clearIdCollections");
   _clearIdCollections();
 
+  LOG_INFO("# BulkWriter: finalise: About to check how many nodes written");
   if (_writeStats.nodesWritten == 0)
   {
     LOG_DEBUG("No input data was written to files.");
     return;
   }
 
+  LOG_INFO("# BulkWriter: finalise: About to check for unfinished changeset");
   // Do we have an unfinished changeset that needs flushing?
   if (_changesetData.changesInChangeset > 0)
   {
+    LOG_INFO("# BulkWriter: finalise: About to write changeset");
     _writeChangesetToStream();
+    LOG_INFO("# BulkWriter: finalise: Back from writing changeset");
   }
   //If there was only one changeset written total, this won't have yet been incremented, so do it
   //now.
@@ -375,9 +380,12 @@ void OsmApiDbBulkWriter::finalizePartial()
   {
     _changesetData.changesetsWritten++;
   }
+  LOG_INFO("# BulkWriter: finalise: About to flush streams");
   _flushStreams(true);
+  LOG_INFO("# BulkWriter: finalise: About to close output files");
   _closeOutputFiles();
 
+  LOG_INFO("# BulkWriter: finalise: About to reserve Ids");
   if (_destinationIsDatabase() && _reserveRecordIdsBeforeWritingData)
   {
     //Get the latest id sequences in case other writes have occurred while we were parsing the input
@@ -392,8 +400,12 @@ void OsmApiDbBulkWriter::finalizePartial()
     LOG_DEBUG("Skipping record ID reservation in database due to configuration or output type...");
   }
 
+  LOG_INFO("# BulkWriter: finalise: About to open output file");
   // Start initial section that holds nothing but UTF-8 byte-order mark (BOM)
   _createOutputFile("byte_order_mark", "\n", true);
+
+
+  LOG_INFO("# BulkWriter: finalise: About to write combinedSqlFile");
 
   //combine all the element/changeset files that were written during partial streaming into
   //one file and update the ids in the SQL file according to the id sequences previously reserved
@@ -405,6 +417,7 @@ void OsmApiDbBulkWriter::finalizePartial()
 
   if (_destinationIsDatabase())
   {
+    LOG_INFO("# BulkWriter: finalise: About to write to DB");
     _writeDataToDb();
     LOG_INFO("Final database write stats:");
   }
@@ -436,6 +449,10 @@ void OsmApiDbBulkWriter::_writeDataToDbPsql()
   //exec element sql against the db; Using psql here b/c it is doing buffered reads against the
   //sql file, so no need doing the extra work to handle buffering the sql read manually and
   //applying it to a QSqlQuery.
+  LOG_INFO("# BulkWriter: writeDataToDbPsql: About to write to DB");
+  LOG_VARI(_outputUrl);
+  LOG_VARI(_sqlOutputCombinedFile->fileName());
+
   ApiDb::execSqlFile(_outputUrl, _sqlOutputCombinedFile->fileName());
 
   LOG_INFO("SQL execution complete.  Time elapsed: " << _secondsToDhms(_timer->elapsed()));
@@ -766,6 +783,7 @@ void OsmApiDbBulkWriter::_incrementAndGetLatestIdsFromDb()
 
 void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
 {
+  LOG_INFO("# BulkWriter: Start writePartial Node");
   if (_writeStats.nodesWritten == 0)
   {
     _timer.reset(new QElapsedTimer());
@@ -778,7 +796,9 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
     _idMappings.nodeIdMap.reset(new BigMap<long, unsigned long>(_stxxlMapMinSize));
   }
 
+  LOG_INFO("# BulkWriter: Dump Node info");
   LOG_VART(node);
+  LOG_INFO("# BulkWriter: End of node info");
 
   //TODO: See #1451.  This changeset bounds calculation actually won't work when ways or relations
   //are written in separate changesets than the nodes they reference.  Since we're streaming the
@@ -792,20 +812,27 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
   {
     throw NotImplementedException("Writer class does not support update operations.");
   }
+  LOG_INFO("# BulkWriter: About to set nodeDbId");
   // Have to establish new mapping
   const unsigned long nodeDbId = _establishNewIdMapping(node->getElementId());
   LOG_VART(nodeDbId);
+  LOG_INFO("# BulkWriter: End of nodeDbId");
 
+  LOG_INFO("# BulkWriter: About to write node to node stream");
   _writeNodeToStream(node, nodeDbId);
+  LOG_INFO("# BulkWriter: About to write tags to node stream");
   _writeTagsToStream(node->getTags(), ElementType::Node, nodeDbId,
     _outputSections[ApiDb::getCurrentNodeTagsTableName()].second,
     _outputSections[ApiDb::getNodeTagsTableName()].second);
   _writeStats.nodesWritten++;
   _writeStats.nodeTagsWritten += node->getTags().size();
   _incrementChangesInChangeset();
+  LOG_INFO("# BulkWriter: About to check for validate");
   if (_validateData)
   {
+    LOG_INFO("# BulkWriter: about to validate");
     _checkUnresolvedReferences(node, nodeDbId);
+    LOG_INFO("# BulkWriter: Back from validate");
   }
 
   //we're never going to partially write a node (node without some of its tags), so we buffer on
@@ -823,6 +850,7 @@ void OsmApiDbBulkWriter::writePartial(const ConstNodePtr& node)
     PROGRESS_INFO(
       "Parsed " << _formatPotentiallyLargeNumber(_writeStats.nodesWritten) << " nodes from input.");
   }
+  LOG_INFO("# BulkWriter: End writePartial Node");
 }
 
 QString OsmApiDbBulkWriter::_secondsToDhms(const qint64 durationInMilliseconds) const
@@ -1378,6 +1406,7 @@ void OsmApiDbBulkWriter::_incrementChangesInChangeset()
 void OsmApiDbBulkWriter::_checkUnresolvedReferences(const ConstElementPtr& element,
                                                     const unsigned long elementDbId)
 {
+  LOG_INFO("# BulkWriter: start _checkUnresolvedReferences");
   // Regardless of type, may be referenced in relation
   if (_unresolvedRefs.unresolvedRelationRefs)
   {
@@ -1407,6 +1436,7 @@ void OsmApiDbBulkWriter::_checkUnresolvedReferences(const ConstElementPtr& eleme
       _unresolvedRefs.unresolvedRelationRefs->erase(relationRef);
     }
   }
+  LOG_INFO("# BulkWriter: End _checkUnresolvedReferences");
 }
 
 void OsmApiDbBulkWriter::_writeChangesetToStream()
