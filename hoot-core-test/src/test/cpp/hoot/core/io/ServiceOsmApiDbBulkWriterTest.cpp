@@ -70,9 +70,12 @@ public:
 
   void verifyDatabaseOutputOffline()
   {
+    LOG_INFO("## Verify: About to start");
     OsmApiDbReader reader;
     OsmMapPtr map(new OsmMap());
+    LOG_INFO("Verify: About to open");
     reader.open(ServicesDbTestUtils::getOsmApiDbUrl().toString());
+    LOG_INFO("## Verify: About to read");
     reader.read(map);
 
     //verify current elements
@@ -133,7 +136,9 @@ public:
 //    CPPUNIT_ASSERT_EQUAL((long)2, osmApiDb->getNextId(ElementType::Relation));
 //    CPPUNIT_ASSERT_EQUAL((long)5, osmApiDb->getNextId(ApiDb::getChangesetsTableName()));
 
+    LOG_INFO("## Verify: About to close");
     reader.close();
+    LOG_INFO("## Verify: Done");
   }
 
   void verifyDatabaseOutputOfflineValidateOff()
@@ -405,8 +410,10 @@ public:
     QDir().mkpath("test-output/io/OsmApiDbBulkWriterTest/");
 
     //init db
+    LOG_INFO("## About to init DB");
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
     const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    LOG_INFO("## About to exec users SQL");
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;
@@ -418,15 +425,22 @@ public:
     writer.setChangesetUserId(1);
     writer.setMaxChangesetSize(5);
     writer.setFileOutputElementBufferSize(3);
+    LOG_INFO("About to set STXXL");
     writer.setStxxlMapMinSize(3);
 
+    LOG_INFO("## About to Open file:");
     writer.open(ServicesDbTestUtils::getOsmApiDbUrl().toString());
+    LOG_INFO("## About to write file");
     writer.write(ServicesDbTestUtils::createTestMap1());
+    LOG_INFO("## About to close file");
     writer.close();
 
+    LOG_INFO("## About to set up verify");
     TestUtils::verifyStdMatchesOutputIgnoreDate(
       "test-files/io/OsmApiDbBulkWriterTest/OsmApiDbBulkWriter-psql-offline.sql", outFile);
+    LOG_INFO("## About to verify");
     verifyDatabaseOutputOffline();
+    LOG_INFO("## Finished");
   }
 
   void runPsqlDbOnlineTest()
