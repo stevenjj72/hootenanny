@@ -202,9 +202,13 @@ void OsmApiDbBulkWriter::close()
     _database.close();
   }
 
+  LOG_INFO("DbBulkWriter: About to reset");
   _reset();
+  LOG_INFO("DbBulkWriter: About to set section names");
   _sectionNames = _createSectionNameList();
+  LOG_INFO("DbBulkWriter: About to SetConfiguration");
   setConfiguration(conf());
+  LOG_INFO("DbBulkWriter: About to return");
 }
 
 void OsmApiDbBulkWriter::_closeOutputFiles()
@@ -976,6 +980,7 @@ void OsmApiDbBulkWriter::setConfiguration(const Settings& conf)
 
 QStringList OsmApiDbBulkWriter::_createSectionNameList()
 {
+  LOG_INFO("DbBulkWriter: About add sections");
   QStringList sections;
   sections.push_back("byte_order_mark");
   sections.push_back(ApiDb::getChangesetsTableName());
@@ -995,6 +1000,9 @@ QStringList OsmApiDbBulkWriter::_createSectionNameList()
   sections.push_back(ApiDb::getRelationsTableName());
   sections.push_back(ApiDb::getRelationMembersTableName());
   sections.push_back(ApiDb::getRelationTagsTableName());
+  LOG_INFO("DbBulkWriter: Sections:");
+  LOG_VARI(sections);
+  LOG_INFO("DbBulkWriter: About to return from createsections");
   return sections;
 }
 
