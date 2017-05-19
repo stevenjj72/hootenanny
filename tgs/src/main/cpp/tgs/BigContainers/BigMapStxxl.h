@@ -62,6 +62,7 @@ public:
       setenv("STXXLLOGFILE", "/tmp/stxxl_log", 0);
       setenv("STXXLERRLOGFILE", "/tmp/stxxl_err", 0);
       _map.reset(new MapType(nodeSize, leafSize));
+      std::cout << "## BigMapStxxl: After reset" << std::endl;
     }
     _bloom.reset(new BloomFilter());
     //_map.reset(new MapType(nodeSize, leafSize));

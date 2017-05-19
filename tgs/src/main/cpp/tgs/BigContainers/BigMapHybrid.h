@@ -85,13 +85,16 @@ public:
 
   V& operator[](const K& k)
   {
+    cout << "### BigMap: About to check size" << endl;
     _checkSize();
     if (_inMemory)
     {
+      cout << "### BigMap: smallMap" << endl;
       return _smallMap[k];
     }
     else
     {
+      cout << "### BigMap: BigMap" << endl;
       return (*_bigMap)[k];
     }
   }
@@ -120,13 +123,18 @@ private:
     if (_inMemory && _smallMap.size() > _maxEntriesInRam)
     {
       //std::cerr << "Creating stxxl" << std::endl;
+      std::cout << "## BigMapHybrid: Creating stxxl" << std::endl;
       _bigMap.reset(new BigMapStxxl<K,V>());
+      std::cout << "## BigMapHybrid: After reset" << std::endl;
+
       for (typename std::map<K, V>::const_iterator it = _smallMap.begin(); it != _smallMap.end();
            ++it)
       {
+        std::cout << "## BigMapHybrid: About to insert" << std::endl;
         _bigMap->insert(it->first, it->second);
       }
       //std::cerr << "Created stxxl" << std::endl;
+      std::cout << "## BigMapHybrid: About to clear" << std::endl;
       _smallMap.clear();
       _inMemory = false;
     }
