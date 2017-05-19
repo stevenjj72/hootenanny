@@ -56,11 +56,11 @@ public:
   {
     {
       // temporarily disable cout to avoid informational STXXL messages.
-      DisableCout d;
+      //DisableCout d;
       // default to disabling logging, if the environment variables are already set then they won't
       // be overwritting (that is the 0 at the end).
-      setenv("STXXLLOGFILE", "/dev/null", 0);
-      setenv("STXXLERRLOGFILE", "/dev/null", 0);
+      setenv("STXXLLOGFILE", "/tmp/stxxl_log", 0);
+      setenv("STXXLERRLOGFILE", "/tmp/stxxl_err", 0);
       _map.reset(new MapType(nodeSize, leafSize));
     }
     _bloom.reset(new BloomFilter());
