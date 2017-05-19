@@ -61,8 +61,11 @@ public:
       // be overwritting (that is the 0 at the end).
       setenv("STXXLLOGFILE", "/tmp/stxxl_log", 0);
       setenv("STXXLERRLOGFILE", "/tmp/stxxl_err", 0);
+
+      // Turn up the verbose output
+      setenv("STXXL_VERBOSE_LEVEL", "10", 0);
       _map.reset(new MapType(nodeSize, leafSize));
-      std::cout << "## BigMapStxxl: After reset" << std::endl;
+      STXXL_MSG("## BigMapStxxl: After reset");
     }
     _bloom.reset(new BloomFilter());
     //_map.reset(new MapType(nodeSize, leafSize));
