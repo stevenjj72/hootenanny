@@ -214,7 +214,7 @@ void OsmApiDbBulkWriter::close()
 void OsmApiDbBulkWriter::_closeOutputFiles()
 {
   for (QStringList::const_iterator sectionNamesItr = _sectionNames.begin();
-       sectionNamesItr != _sectionNames.end(); sectionNamesItr++)
+       sectionNamesItr != _sectionNames.end(); ++sectionNamesItr)
   {
       if (_outputSections.find(*sectionNamesItr) == _outputSections.end())
       {
@@ -623,11 +623,11 @@ void OsmApiDbBulkWriter::_writeCombinedSqlFile()
         throw HootException("Unable to open input file: " + tempInputFile.fileName());
       }
     }
-    catch (const Exception& e)
+    catch (const Exception&)
     {
       tempInputFile.close();
       _closeOutputFiles();
-      throw e;
+      throw;
     }
 
     LOG_DEBUG("Wrote contents of section " << *it);
