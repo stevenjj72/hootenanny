@@ -49,6 +49,9 @@ public class ExportParams {
     @JsonProperty("TASK_BBOX")
     private String bounds;
 
+    @JsonProperty("buffer")
+    private String buffer;
+
     @JsonProperty("USER_ID")
     private String userId;
 
@@ -128,6 +131,14 @@ public class ExportParams {
         this.bounds = bounds;
     }
 
+    public String getBuffer() {
+        return buffer;
+    }
+
+    public void setBuffer(String buffer) {
+        this.buffer = buffer;
+    }
+
     public String getUserId() {
         return userId;
     }
@@ -152,6 +163,7 @@ public class ExportParams {
                 ", textStatus=" + textStatus +
                 ", inputType='" + inputType + '\'' +
                 ", bounds='" + bounds + '\'' +
+                ", buffer='" + buffer + '\'' +
                 ", userId='" + userId + '\'' +
                 ", input='" + input + '\'' +
                 ", translation='" + translation + '\'' +

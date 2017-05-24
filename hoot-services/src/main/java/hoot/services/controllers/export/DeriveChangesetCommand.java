@@ -55,7 +55,8 @@ class DeriveChangesetCommand extends ExportCommand {
         options.add("reader.use.file.status=true");
         options.add("reader.keep.file.status=true");
         double changesetBufferSize = Double.parseDouble(CHANGESET_DERIVE_BUFFER); //in degrees
-        options.add("changeset.buffer=" + String.valueOf(changesetBufferSize));
+        String paramBuffer = params.getBuffer();
+        options.add("changeset.buffer=" + ((paramBuffer == null) ? String.valueOf(changesetBufferSize) : paramBuffer));
         options.add("changeset.allow.deleting.reference.features=false");
 
         String userId = params.getUserId();
