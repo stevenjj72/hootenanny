@@ -24,28 +24,15 @@
  *
  * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef FITNESSFUNCTION_H
-#define FITNESSFUNCTION_H
+package hoot.services.controllers.export;
 
-#include "State.h"
+import org.springframework.stereotype.Component;
 
-namespace Tgs
-{
 
-class FitnessFunction
-{
-public:
-  /**
-   * Calculates the fitness of the specified state. Lower values are better.
-   *
-   * While not required fitness functions that return values from [0, 1] may work better.
-   */
-  virtual double f(const ConstStatePtr& s) = 0;
-};
+@Component
+class CalculateTilesCommandFactory {
 
-typedef boost::shared_ptr<FitnessFunction> FitnessFunctionPtr;
-typedef boost::shared_ptr<const FitnessFunction> ConstFitnessFunctionPtr;
-
+	CalculateTilesCommand build(String jobId, CalculateTilesParams params, String debugLevel, Class<?> caller) {
+        return new CalculateTilesCommand(jobId, params, debugLevel, caller);
+    }
 }
-
-#endif // FITNESSFUNCTION_H

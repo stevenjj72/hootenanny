@@ -61,8 +61,10 @@ class PaintNodesCmd : public BaseCommand
 
     Envelope getEnvelope(boost::shared_ptr<OsmMapReader> reader)
     {
-      boost::shared_ptr<EnvelopeProvider> ep = boost::dynamic_pointer_cast<EnvelopeProvider>(reader);
-      boost::shared_ptr<PartialOsmMapReader> r = boost::dynamic_pointer_cast<PartialOsmMapReader>(reader);
+      boost::shared_ptr<EnvelopeProvider> ep =
+        boost::dynamic_pointer_cast<EnvelopeProvider>(reader);
+      boost::shared_ptr<PartialOsmMapReader> r =
+        boost::dynamic_pointer_cast<PartialOsmMapReader>(reader);
 
       if (ep)
       {
@@ -105,9 +107,11 @@ class PaintNodesCmd : public BaseCommand
       }
     }
 
-    cv::Mat calculateDensity(Envelope envelope, double pixelSize, boost::shared_ptr<OsmMapReader> reader)
+    cv::Mat calculateDensity(Envelope envelope, double pixelSize,
+                             boost::shared_ptr<OsmMapReader> reader)
     {
-      boost::shared_ptr<PartialOsmMapReader> r = boost::dynamic_pointer_cast<PartialOsmMapReader>(reader);
+      boost::shared_ptr<PartialOsmMapReader> r =
+        boost::dynamic_pointer_cast<PartialOsmMapReader>(reader);
       r->setUseDataSourceIds(true);
       //r->initializePartial();
 
@@ -204,12 +208,11 @@ class PaintNodesCmd : public BaseCommand
         colorMultiplier[3] = toColorPortion(bs[3]);
       }
 
-      boost::shared_ptr<OsmMapReader> reader = OsmMapReaderFactory::getInstance().createReader(input,
-        true);
+      boost::shared_ptr<OsmMapReader> reader =
+        OsmMapReaderFactory::getInstance().createReader(input, true);
       reader->open(input);
       Envelope e = getEnvelope(reader);
       LOG_INFO("Envelope: " << GeometryUtils::toString(e));
-
 
       double pixelSize;
       if (e.getWidth() > e.getHeight())
@@ -226,7 +229,6 @@ class PaintNodesCmd : public BaseCommand
       cv::Mat mat = calculateDensity(e, pixelSize, reader);
       Envelope imageEnvelope(e.getMinX(), e.getMinX() + pixelSize * mat.size().width,
                              e.getMinY(), e.getMinY() + pixelSize * mat.size().height);
-
 
       QImage qImage(mat.size().width, mat.size().height, QImage::Format_ARGB32);
 

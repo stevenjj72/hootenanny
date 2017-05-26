@@ -22,30 +22,43 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef FITNESSFUNCTION_H
-#define FITNESSFUNCTION_H
+package hoot.services.controllers.export;
 
-#include "State.h"
 
-namespace Tgs
-{
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-class FitnessFunction
-{
-public:
-  /**
-   * Calculates the fitness of the specified state. Lower values are better.
-   *
-   * While not required fitness functions that return values from [0, 1] may work better.
-   */
-  virtual double f(const ConstStatePtr& s) = 0;
-};
 
-typedef boost::shared_ptr<FitnessFunction> FitnessFunctionPtr;
-typedef boost::shared_ptr<const FitnessFunction> ConstFitnessFunctionPtr;
+public class CalculateTilesParams extends ExportParams {
 
+    @JsonProperty("MAX_NODE_COUNT_PER_TILE")
+    private long maxNodeCountPerTile;
+    
+    @JsonProperty("PIXEL_SIZE")
+    private double pixelSize;
+    
+    public long getMaxNodeCountPerTile() {
+        return maxNodeCountPerTile;
+    }
+
+    public void setMaxNodeCountPerTile(long maxNodeCountPerTile) {
+        this.maxNodeCountPerTile = maxNodeCountPerTile;
+    }
+    
+    public double getPixelSize() {
+        return pixelSize;
+    }
+
+    public void setPixelSize(double pixelSize) {
+        this.pixelSize = pixelSize;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " ConflateParams{" +
+                ", maxNodeCountPerTile='" + maxNodeCountPerTile + '\'' +
+                ", pixelSize='" + pixelSize + '\'' +
+                '}';
+    }
 }
-
-#endif // FITNESSFUNCTION_H
