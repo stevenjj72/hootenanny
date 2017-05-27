@@ -35,6 +35,8 @@
 #include <hoot/core/util/OpenCv.h>
 #include <hoot/core/conflate/TileBoundsCalculator.h>
 #include <hoot/core/util/FileUtils.h>
+#include <hoot/core/visitors/CalculateMapBoundsVisitor.h>
+#include <hoot/core/io/ApiDbReader.h>
 
 // Qt
 #include <QTemporaryFile>
@@ -55,10 +57,10 @@ class CalculateTilesCmd : public BaseCommand
 
     virtual int runSimple(QStringList args)
     {
-      if (args.size() < 2 || args.size() > 4)
+      if (args.size() != 2 && args.size() != 4)
       {
         cout << getHelp() << endl << endl;
-        throw HootException(QString("%1 takes two to four parameters.").arg(getName()));
+        throw HootException(QString("%1 takes either two or four parameters.").arg(getName()));
       }
 
       QStringList inputs;
@@ -82,6 +84,8 @@ class CalculateTilesCmd : public BaseCommand
       }
       LOG_VARD(output);
 
+      //if either of max nodes per tile or pixel size is specified, then both must be specified
+
       long maxNodesPerTile = 1000;
       if (args.size() > 2)
       {
@@ -95,7 +99,7 @@ class CalculateTilesCmd : public BaseCommand
       LOG_VARD(maxNodesPerTile);
 
       double pixelSize = 0.001; //.1km?
-      if (args.size() > 3)
+      if (args.size() > 2)
       {
         bool parseSuccess = false;
         pixelSize = args[3].toDouble(&parseSuccess);
@@ -111,7 +115,7 @@ class CalculateTilesCmd : public BaseCommand
       const std::vector< std::vector<geos::geom::Envelope> > tiles =
         _calculateTiles(maxNodesPerTile, pixelSize, inputMap);
 
-      if (output.endsWith(".osm"))
+      if (output.toLower().endsWith(".osm"))
       {
         _writeOutputAsOsm(tiles, output);
       }
@@ -126,16 +130,51 @@ class CalculateTilesCmd : public BaseCommand
   private:
 
     OsmMapPtr _readInputs(const QStringList inputs)
-    {
+    { 
+      const bool bboxSpecified =
+        !ConfigOptions().getConvertBoundingBox().trimmed().isEmpty() ||
+        !ConfigOptions().getConvertBoundingBoxHootApiDatabase().trimmed().isEmpty() ||
+        !ConfigOptions().getConvertBoundingBoxOsmApiDatabase().trimmed().isEmpty();
+
       OsmMapPtr map(new OsmMap());
       for (int i = 0; i < inputs.size(); i++)
       {
         boost::shared_ptr<OsmMapReader> reader =
           OsmMapReaderFactory::getInstance().createReader(inputs.at(i), true, Status::Unknown1);
+
+        boost::shared_ptr<ApiDbReader> apiDbReader =
+          boost::dynamic_pointer_cast<ApiDbReader>(reader);
+        if (apiDbReader)
+        {
+          //the tiles calculation is only concerned with nodes, and the only readers capable of
+          //filtering down to nodes up front right now are the api db readers; more importantly,
+          //setting this to true also prevents any features from being returned outside of
+          //convert.bounding.box, if it was specified (ways partially inside the bounds, etc.)
+          apiDbReader->setReturnNodesOnly(true);
+        }
+        if (bboxSpecified && !apiDbReader)
+        {
+          //non api db readers don't support convert.bounding.box right now and are just going to
+          //generate confusing output with its specified, so let's throw
+          throw HootException(
+            "convert.bounding.box configuration option specified for a non API DB reader");
+        }
+
         reader->open(inputs.at(i));
         reader->read(map);
       }
       LOG_VARD(map->getNodeCount());
+
+      if (Log::getInstance().getLevel() <= Log::Debug)
+      {
+        OGREnvelope envelope = CalculateMapBoundsVisitor::getBounds(map);
+        boost::shared_ptr<geos::geom::Envelope> tempEnv(GeometryUtils::toEnvelope(envelope));
+        LOG_VARD(tempEnv->toString());
+        const QString debugMapPath = "tmp/calc-tiles-combined-map-debug.osm";
+        LOG_DEBUG("writing debug output to " << debugMapPath)
+        OsmMapWriterFactory::getInstance().write(map, debugMapPath);
+      }
+
       return map;
     }
 
@@ -153,25 +192,6 @@ class CalculateTilesCmd : public BaseCommand
       tileBoundsCalculator.setImages(r1, zeros);
       return tileBoundsCalculator.calculateTiles();
     }
-
-//    void _writeOutputAsString(const std::vector< std::vector<geos::geom::Envelope> >& tiles,
-//                              const QString outputPath)
-//    {
-//      //write a semi-colon delimited string of bounds obj's to output
-//      QString outputTilesStr;
-//      LOG_VARD(tiles.size());
-//      for (size_t tx = 0; tx < tiles.size(); tx++)
-//      {
-//        LOG_VART(tiles[tx].size());
-//        for (size_t ty = 0; ty < tiles[tx].size(); ty++)
-//        {
-//          outputTilesStr += GeometryUtils::envelopeToConfigString(tiles[tx][ty]) + ";";
-//        }
-//      }
-//      outputTilesStr.chop(1);
-//      LOG_VARD(outputTilesStr);
-//      FileUtils::writeFully(outputPath, outputTilesStr);
-//    }
 
     //This is kind of a shortcut way to get geojson output.  Its probably worth either figuring
     //out a way to use osm2ogr without a translation (or with a simple one) to do this OR adding
@@ -191,9 +211,11 @@ class CalculateTilesCmd : public BaseCommand
       LOG_VARD(osmTempFile.fileName());
       _writeOutputAsOsm(tiles, osmTempFile.fileName());
 
+      //The "lines" part at the end is necessary to prevent a conversion error from osm to geojson.  Not
+      //fully clear on what that's doing yet.
       const QString cmd =
         "ogr2ogr -f GeoJSON " + outputPath + " " + osmTempFile.fileName() + " lines";
-      LOG_DEBUG("Writing output to " << outputPath);
+      LOG_INFO("Writing output to " << outputPath);
       const int retval = std::system(cmd.toStdString().c_str());
       if (retval != 0)
       {
