@@ -34,7 +34,6 @@
 #include <hoot/core/util/GeometryUtils.h>
 #include <hoot/core/util/OpenCv.h>
 #include <hoot/core/conflate/TileBoundsCalculator.h>
-#include <hoot/core/util/FileUtils.h>
 #include <hoot/core/visitors/CalculateMapBoundsVisitor.h>
 #include <hoot/core/io/ApiDbReader.h>
 
@@ -49,7 +48,7 @@ class CalculateTilesCmd : public BaseCommand
 
   public:
 
-    static string className() { return "hoot::CalculateTilesCmd"; }
+    static std::string className() { return "hoot::CalculateTilesCmd"; }
 
     CalculateTilesCmd() { }
 
@@ -59,7 +58,7 @@ class CalculateTilesCmd : public BaseCommand
     {
       if (args.size() != 2 && args.size() != 4)
       {
-        cout << getHelp() << endl << endl;
+        std::cout << getHelp() << std::endl << std::endl;
         throw HootException(QString("%1 takes either two or four parameters.").arg(getName()));
       }
 
@@ -78,9 +77,11 @@ class CalculateTilesCmd : public BaseCommand
       LOG_VARD(inputs);
 
       const QString output = args[1];
-      if (!output.toLower().endsWith(".osm") && !output.toLower().endsWith(".geojson"))
+      if (!output.toLower().endsWith(".geojson"))
       {
-        throw HootException("Invalid output file format: " + output);
+        throw HootException(
+          "Invalid output file format: " + output + ".  Only the GeoJSON output format is " +
+          "supported.");
       }
       LOG_VARD(output);
 
@@ -110,19 +111,12 @@ class CalculateTilesCmd : public BaseCommand
       }
       LOG_VARD(pixelSize);
 
-      OsmMapPtr inputMap = _readInputs(inputs);
+      conf().set(ConfigOptions().getIdGeneratorKey(), "hoot::PositiveIdGenerator");
 
+      OsmMapPtr inputMap = _readInputs(inputs);
       const std::vector< std::vector<geos::geom::Envelope> > tiles =
         _calculateTiles(maxNodesPerTile, pixelSize, inputMap);
-
-      if (output.toLower().endsWith(".osm"))
-      {
-        _writeOutputAsOsm(tiles, output);
-      }
-      else
-      {
-        _writeOutputAsGeoJson(tiles, output);
-      }
+      _writeOutputAsGeoJson(tiles, output);
 
       return 0;
     }
@@ -193,15 +187,15 @@ class CalculateTilesCmd : public BaseCommand
       return tileBoundsCalculator.calculateTiles();
     }
 
-    //This is kind of a shortcut way to get geojson output.  Its probably worth either figuring
-    //out a way to use osm2ogr without a translation (or with a simple one) to do this OR adding
-    //an OsmWriter class that can do this same thing, so the convert command can take advantage of
-    //it.
+    /*write out to temp osm and then use ogr2ogr to convert to geojson
+
+    This is kind of a shortcut way to get geojson output.  Its probably worth either figuring
+    out a way to use 'hoot osm2ogr' without a translation (or just with a simple one) to do this
+    OR adding an GeoJsonWriter class that can do this same thing using the GDAL API, so the
+    'hoot convert' command can call it.*/
     void _writeOutputAsGeoJson(const std::vector< std::vector<geos::geom::Envelope> >& tiles,
                                const QString outputPath)
     {
-      //write out to temp osm and then use ogr2ogr to convert to geojson
-
       QTemporaryFile osmTempFile("calculate-tiles-temp-XXXXXX.osm");
       if (!osmTempFile.open())
       {
@@ -211,10 +205,22 @@ class CalculateTilesCmd : public BaseCommand
       LOG_VARD(osmTempFile.fileName());
       _writeOutputAsOsm(tiles, osmTempFile.fileName());
 
-      //The "lines" part at the end is necessary to prevent a conversion error from osm to geojson.  Not
-      //fully clear on what that's doing yet.
+      QFile outFile(outputPath);
+      if (outFile.exists() && !outFile.remove())
+      {
+        throw HootException("Unable to open GeoJSON file: " + outputPath + " for writing.");
+      }
+      LOG_VARD(outputPath);
+
+      //exporting as multipolygons, as that's what the Tasking Manager expects
+//      const QString cmd =
+//        "ogr2ogr -f GeoJSON -t_srs EPSG:4326 -sql \"select name, boundary from " +
+//        osmTempFile.fileName() + " \" " + outputPath + " " + osmTempFile.fileName() +
+//        " multipolygons";
       const QString cmd =
-        "ogr2ogr -f GeoJSON " + outputPath + " " + osmTempFile.fileName() + " lines";
+        "ogr2ogr -f GeoJSON -select \"name,boundary,osm_way_id\" " + outputPath + " " +
+        osmTempFile.fileName() + " multipolygons";
+      LOG_VARD(cmd);
       LOG_INFO("Writing output to " << outputPath);
       const int retval = std::system(cmd.toStdString().c_str());
       if (retval != 0)
@@ -228,8 +234,10 @@ class CalculateTilesCmd : public BaseCommand
     void _writeOutputAsOsm(const std::vector< std::vector<geos::geom::Envelope> >& tiles,
                            const QString outputPath)
     {
-      //write out a viewable version of the boundaries for debugging purposes
+      LOG_VARD(outputPath);
+
       OsmMapPtr boundaryMap(new OsmMap());
+      int bboxCtr = 1;
       for (size_t tx = 0; tx < tiles.size(); tx++)
       {
         for (size_t ty = 0; ty < tiles[tx].size(); ty++)
@@ -266,26 +274,34 @@ class CalculateTilesCmd : public BaseCommand
               circularError));
           boundaryMap->addNode(lowerRight);
 
-          WayPtr left(new Way(Status::Unknown1, boundaryMap->createNextWayId(), circularError));
-          left->addNode(lowerLeft->getId());
-          left->addNode(upperLeft->getId());
-          boundaryMap->addWay(left);
-          WayPtr top(new Way(Status::Unknown1, boundaryMap->createNextWayId(), circularError));
-          top->addNode(upperLeft->getId());
-          top->addNode(upperRight->getId());
-          boundaryMap->addWay(top);
-          WayPtr right(new Way(Status::Unknown1, boundaryMap->createNextWayId(), circularError));
-          right->addNode(upperRight->getId());
-          right->addNode(lowerRight->getId());
-          boundaryMap->addWay(right);
-          WayPtr bottom(new Way(Status::Unknown1, boundaryMap->createNextWayId(), circularError));
-          bottom->addNode(lowerRight->getId());
-          bottom->addNode(lowerLeft->getId());
-          boundaryMap->addWay(bottom);
+          WayPtr bbox(new Way(Status::Unknown1, boundaryMap->createNextWayId(), circularError));
+          bbox->addNode(lowerLeft->getId());
+          bbox->addNode(upperLeft->getId());
+          bbox->addNode(upperLeft->getId());
+          bbox->addNode(upperRight->getId());
+          bbox->addNode(upperRight->getId());
+          bbox->addNode(lowerRight->getId());
+          bbox->addNode(lowerRight->getId());
+          bbox->addNode(lowerLeft->getId());
+          //gdal will recognize any closed way with the boundary tag as a polygon (tags
+          //for features recognized as polys configurable in osmconf.ini), which is the type of
+          //output we want
+          bbox->setTag("boundary", "task_grid_cell");
+          bbox->setTag("name", "Task Grid Cell #" + QString::number(bboxCtr));
+          boundaryMap->addWay(bbox);
+          bboxCtr++;
         }
       }
 
       OsmMapWriterFactory::getInstance().write(boundaryMap, outputPath);
+
+      if (Log::getInstance().getLevel() <= Log::Debug)
+      {
+        const QString debugOutputPath = "tmp/calc-tiles-osm-debug.osm";
+        QFile outFile(outputPath);
+        LOG_DEBUG("writing debug output to " << debugOutputPath);
+        outFile.copy(debugOutputPath);
+      }
     }
 };
 
