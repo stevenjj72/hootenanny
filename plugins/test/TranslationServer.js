@@ -359,6 +359,104 @@ describe('TranslationServer', function () {
             });
         });
 
+        it('should translate bridge/road feature to MGCP English', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="highway" v="primary"/><tag k="bridge" v="yes"/></way></osm>',
+                method: 'POST',
+                translation: 'MGCP',
+                path: '/osmtotds'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "Feature Code");
+                assert.equal(result.osm.way[0].tag[0].$.v, "AQ040:Bridge");
+            });
+        });
+
+        it('should translate bridge/road feature to MGCP', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="highway" v="primary"/><tag k="bridge" v="yes"/></way></osm>',
+                method: 'POST',
+                translation: 'MGCP',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[1].$.k, "FCODE");
+                assert.equal(result.osm.way[0].tag[1].$.v, "AQ040");
+            });
+        });
+
+        it('should translate bridge/road feature from MGCP', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="FCODE" v="AQ040"/></way></osm>',
+                method: 'POST',
+                translation: 'MGCP',
+                path: '/translateFrom'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "bridge");
+                assert.equal(result.osm.way[0].tag[0].$.v, "yes");
+            });
+        });
+
+        it('should translate bridge/road feature to TDSv61', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="highway" v="primary"/><tag k="bridge" v="yes"/></way></osm>',
+                method: 'POST',
+                translation: 'TDSv61',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "ZI016_WTC");
+                assert.equal(result.osm.way[0].tag[0].$.v, "1");
+                assert.equal(result.osm.way[0].tag[1].$.k, "RTY");
+                assert.equal(result.osm.way[0].tag[1].$.v, "3");
+                assert.equal(result.osm.way[0].tag[2].$.k, "UFI");
+                //assert.equal(result.osm.way[0].tag[2].$.v, "");
+                assert.equal(result.osm.way[0].tag[3].$.k, "F_CODE");
+                assert.equal(result.osm.way[0].tag[3].$.v, "AP030");
+                assert.equal(result.osm.way[0].tag[4].$.k, "RLE");
+                assert.equal(result.osm.way[0].tag[4].$.v, "1");
+                assert.equal(result.osm.way[0].tag[5].$.k, "LOC");
+                assert.equal(result.osm.way[0].tag[5].$.v, "44");
+                assert.equal(result.osm.way[0].tag[6].$.k, "SBB");
+                assert.equal(result.osm.way[0].tag[6].$.v, "1001");
+                assert.equal(result.osm.way[0].tag[7].$.k, "RIN_ROI");
+                assert.equal(result.osm.way[0].tag[7].$.v, "3");
+            });
+        });
+
+        it('should translate bridge/road feature from TDSv61', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" generator="hootenanny" srs="+epsg:4326" schema="TDSv61"><way visible="true" id="-7" timestamp="1970-01-01T00:00:00Z" version="1"><tag k="ZI016_WTC" v="1"/><tag k="RTY" v="3"/><tag k="UFI" v="4373db4e-9535-47c3-a88a-560325d5b404"/><tag k="F_CODE" v="AP030"/><tag k="RLE" v="1"/><tag k="LOC" v="44"/><tag k="SBB" v="1001"/><tag k="RIN_ROI" v="3"/></way></osm>',
+                method: 'POST',
+                translation: 'TDSv61',
+                path: '/translateFrom'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "ref:road:type");
+                assert.equal(result.osm.way[0].tag[0].$.v, "road");
+                assert.equal(result.osm.way[0].tag[1].$.k, "ref:road:class");
+                assert.equal(result.osm.way[0].tag[1].$.v, "primary");
+                assert.equal(result.osm.way[0].tag[2].$.k, "location");
+                assert.equal(result.osm.way[0].tag[2].$.v, "surface");
+                assert.equal(result.osm.way[0].tag[3].$.k, "seasonal");
+                assert.equal(result.osm.way[0].tag[3].$.v, "no");
+                assert.equal(result.osm.way[0].tag[4].$.k, "layer");
+                assert.equal(result.osm.way[0].tag[4].$.v, "1");
+                assert.equal(result.osm.way[0].tag[5].$.k, "bridge");
+                assert.equal(result.osm.way[0].tag[5].$.v, "yes");
+                assert.equal(result.osm.way[0].tag[6].$.k, "uuid");
+                // assert.equal(result.osm.way[0].tag[6].$.v, "");
+                assert.equal(result.osm.way[0].tag[7].$.k, "highway");
+                assert.equal(result.osm.way[0].tag[7].$.v, "primary");
+            });
+        });
+
         // it('should return error message for invalide F_CODE/geom combination in osmtotds POST', function() {
         //     var osm2trans = server.handleInputs({
         //         osm: '<osm version="0.6" upload="true" generator="hootenanny"><node id="72" lon="-104.878690508945" lat="38.8618557942463" version="1"><tag k="poi" v="yes"/><tag k="hoot:status" v="1"/><tag k="name" v="Garden of the Gods"/><tag k="leisure" v="park"/><tag k="error:circular" v="1000"/><tag k="hoot" v="AllDataTypesACucumber"/></node></osm>',
