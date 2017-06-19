@@ -323,6 +323,74 @@ describe('TranslationServer', function () {
             });
         });
 
+        it('should translate building multipolygon feature to MGCP', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><relation id="-1" version="0"><member type="way" role="outer" ref="-4"/><member type="way" role="outer" ref="-9"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation></osm>',
+                method: 'POST',
+                translation: 'MGCP',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.relation[0].tag[0].$.k, "UID");
+                // assert.equal(result.osm.relation[0].tag[0].$.v, "fee4529b-5ecc-4e5c-b06d-1b26a8e830e6");
+                assert.equal(result.osm.relation[0].tag[1].$.k, "FCODE");
+                assert.equal(result.osm.relation[0].tag[1].$.v, "AL015");
+                assert.equal(result.osm.relation[0].tag[2].$.k, "type");
+                assert.equal(result.osm.relation[0].tag[2].$.v, "multipolygon");
+            });
+        });
+
+        it('should translate building multipolygon feature to TDSv61', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><relation id="-1" version="0"><member type="way" role="outer" ref="-4"/><member type="way" role="outer" ref="-9"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation></osm>',
+                method: 'POST',
+                translation: 'TDSv61',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.relation[0].tag[0].$.k, "UFI");
+                // assert.equal(result.osm.relation[0].tag[0].$.v, "fee4529b-5ecc-4e5c-b06d-1b26a8e830e6");
+                assert.equal(result.osm.relation[0].tag[1].$.k, "F_CODE");
+                assert.equal(result.osm.relation[0].tag[1].$.v, "AL013");
+                assert.equal(result.osm.relation[0].tag[2].$.k, "type");
+                assert.equal(result.osm.relation[0].tag[2].$.v, "multipolygon");
+            });
+        });
+
+        it('should translate building:part feature to MGCP', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-4" version="0"><nd ref="-7"/><nd ref="-10"/><nd ref="-13"/><nd ref="-16"/><nd ref="-7"/><tag k="building:part" v="yes"/><tag k="amenity" v="bar"/></way></osm>',
+                method: 'POST',
+                translation: 'MGCP',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "amenity");
+                assert.equal(result.osm.way[0].tag[0].$.v, "bar");
+                assert.equal(result.osm.way[0].tag[1].$.k, "building:part");
+                assert.equal(result.osm.way[0].tag[1].$.v, "yes");
+            });
+        });
+
+        it('should translate building:part feature to TDSv61', function() {
+            var osm2trans = server.handleInputs({
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-4" version="0"><nd ref="-7"/><nd ref="-10"/><nd ref="-13"/><nd ref="-16"/><nd ref="-7"/><tag k="building:part" v="yes"/><tag k="amenity" v="bar"/></way></osm>',
+                method: 'POST',
+                translation: 'TDSv61',
+                path: '/translateTo'
+            });
+            xml2js.parseString(osm2trans, function(err, result) {
+                if (err) console.error(err);
+                assert.equal(result.osm.way[0].tag[0].$.k, "amenity");
+                assert.equal(result.osm.way[0].tag[0].$.v, "bar");
+                assert.equal(result.osm.way[0].tag[1].$.k, "building:part");
+                assert.equal(result.osm.way[0].tag[1].$.v, "yes");
+            });
+        });
+
         it('should handle osmtotds POST of facility area feature', function() {
             var osm2trans = server.handleInputs({
                 osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><nd ref="-7"/><nd ref="-10"/><nd ref="-1"/><tag k="facility" v="yes"/><tag k="uuid" v="{fee4529b-5ecc-4e5c-b06d-1b26a8e830e6}"/><tag k="area" v="yes"/></way></osm>',
