@@ -29,17 +29,18 @@
 // hoot
 #include <hoot/core/conflate/ReviewMarker.h>
 #include <hoot/core/filters/BaseFilter.h>
+#include <hoot/core/filters/ElementTypeCriterion.h>
 #include <hoot/core/ops/BuildingPartMergeOp.h>
 #include <hoot/core/ops/RecursiveElementRemover.h>
 #include <hoot/core/ops/ReplaceElementOp.h>
+#include <hoot/core/schema/OsmSchema.h>
+#include <hoot/core/schema/OverwriteTagMerger.h>
 #include <hoot/core/schema/TagComparator.h>
 #include <hoot/core/schema/TagMergerFactory.h>
-#include <hoot/core/schema/OverwriteTagMerger.h>
+#include <hoot/core/util/Log.h>
 #include <hoot/core/util/MetadataTags.h>
-#include <hoot/core/schema/OsmSchema.h>
 #include <hoot/core/visitors/FilteredVisitor.h>
 #include <hoot/core/visitors/ElementCountVisitor.h>
-#include <hoot/core/filters/ElementTypeCriterion.h>
 
 using namespace std;
 
@@ -80,8 +81,7 @@ BuildingMerger::BuildingMerger(const set< pair<ElementId, ElementId> >& pairs) :
 {
 }
 
-void BuildingMerger::apply(const OsmMapPtr& map,
-  vector< pair<ElementId, ElementId> >& replaced) const
+void BuildingMerger::apply(const OsmMapPtr& map, vector< pair<ElementId, ElementId> >& replaced)
 {
   //check if it is many to many
   set<ElementId> firstPairs;
@@ -161,7 +161,7 @@ void BuildingMerger::apply(const OsmMapPtr& map,
 
     set< pair<ElementId, ElementId> > replacedSet;
     for (set< pair<ElementId, ElementId> >::const_iterator it = _pairs.begin();
-      it != _pairs.end(); ++it)
+         it != _pairs.end(); ++it)
     {
       // if we replaced the second group of buildings
       if (it->second != keeper->getElementId())

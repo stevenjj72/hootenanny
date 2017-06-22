@@ -36,6 +36,7 @@
 #include <hoot/core/io/OsmApiDbChangesetSqlWriter.h>
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/GeometryUtils.h>
+#include <hoot/core/util/Log.h>
 
 // Qt
 #include <QDateTime>
@@ -132,7 +133,7 @@ public:
     OsmApiDb database;
     database.open(ServicesDbTestUtils::getOsmApiDbUrl());
     database.deleteData();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
     ApiDb::execSqlFile(
       ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/changesets.sql");
@@ -190,7 +191,7 @@ public:
     OsmApiDb database;
     database.open(ServicesDbTestUtils::getOsmApiDbUrl());
     database.deleteData();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     //grab the current time
@@ -214,7 +215,7 @@ public:
     OsmApiDb database;
     database.open(ServicesDbTestUtils::getOsmApiDbUrl());
     database.deleteData();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     //grab the current time
@@ -237,7 +238,7 @@ public:
     OsmApiDb database;
     database.open(ServicesDbTestUtils::getOsmApiDbUrl());
     database.deleteData();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     //define an aoi

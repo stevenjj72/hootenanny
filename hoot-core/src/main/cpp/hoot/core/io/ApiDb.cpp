@@ -721,7 +721,7 @@ void ApiDb::execSqlFile(const QString dbUrl, const QString sqlFile)
   LOG_INFO("### About to try PGSQL command");
   LOG_VARD(cmd);
   LOG_INFO("### PGSQL File");
-  LOG_VART(FileUtils::fileToString(sqlFile));
+  LOG_VART(FileUtils::readFully(sqlFile));
   const int retval = system(cmd.toStdString().c_str());
   if (retval != 0)
   {

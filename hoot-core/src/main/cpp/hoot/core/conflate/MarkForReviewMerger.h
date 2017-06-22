@@ -54,9 +54,12 @@ public:
   MarkForReviewMerger(const std::set<ElementId>& eids, QString note,
                       QString reviewType, double score);
 
-  virtual void apply(const OsmMapPtr& map, std::vector< std::pair<ElementId, ElementId> >& replaced) const;
+  virtual void apply(const OsmMapPtr& map, std::vector< std::pair<ElementId, ElementId> >& replaced);
 
   virtual std::set<ElementId> getImpactedElementIds() const;
+
+  virtual std::set< std::pair<ElementId, ElementId> > getImpactedUnknown1ElementIds() const
+  { return std::set< std::pair<ElementId, ElementId> >(); }
 
   virtual bool isValid(const ConstOsmMapPtr& map) const;
 

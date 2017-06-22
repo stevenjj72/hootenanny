@@ -350,7 +350,7 @@ public:
 
     //init db
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;
@@ -379,7 +379,7 @@ public:
 
     //init db
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;
@@ -449,7 +449,7 @@ public:
 
     //init db
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;
@@ -488,7 +488,7 @@ public:
 
     //init db
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;
@@ -521,7 +521,7 @@ public:
 
     //init db
     ServicesDbTestUtils::deleteDataFromOsmApiTestDatabase();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
 
     OsmApiDbBulkWriter writer;

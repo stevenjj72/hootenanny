@@ -34,10 +34,10 @@
 // Hoot
 #include <hoot/core/io/OsmApiDb.h>
 #include <hoot/core/util/ConfigOptions.h>
+#include <hoot/core/util/Log.h>
 
 // Qt
 #include <QFile>
-#include <QTextStream>
 #include <QDir>
 
 #include "../TestUtils.h"
@@ -106,7 +106,7 @@ public:
     OsmApiDb database;
     database.open(ServicesDbTestUtils::getOsmApiDbUrl());
     database.deleteData();
-    const QString scriptDir = QString(getenv("HOOT_HOME")) + "/test-files/servicesdb";
+    const QString scriptDir = "test-files/servicesdb";
     ApiDb::execSqlFile(ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/users.sql");
     ApiDb::execSqlFile(
       ServicesDbTestUtils::getOsmApiDbUrl().toString(), scriptDir + "/changesets.sql");
