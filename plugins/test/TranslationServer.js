@@ -389,15 +389,18 @@ describe('TranslationServer', function () {
 
         it('should translate bridge/road feature from MGCP', function() {
             var osm2trans = server.handleInputs({
-                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="FCODE" v="AQ040"/></way></osm>',
+                osm: '<osm version="0.6" upload="true" generator="hootenanny"><way id="-1" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="FCODE" v="AQ040"/></way><way id="-2" version="0"><nd ref="-1"/><nd ref="-4"/><tag k="FCODE" v="AP030"/></way></osm>',
                 method: 'POST',
                 translation: 'MGCP',
                 path: '/translateFrom'
             });
+            //console.log(osm2trans);
             xml2js.parseString(osm2trans, function(err, result) {
                 if (err) console.error(err);
-                assert.equal(result.osm.way[0].tag[0].$.k, "bridge");
-                assert.equal(result.osm.way[0].tag[0].$.v, "yes");
+                assert.equal(result.osm.way[0].tag[1].$.k, "highway");
+                assert.equal(result.osm.way[0].tag[1].$.v, "road");
+                assert.equal(result.osm.way[1].tag[0].$.k, "bridge");
+                assert.equal(result.osm.way[1].tag[0].$.v, "yes");
             });
         });
 
@@ -431,29 +434,32 @@ describe('TranslationServer', function () {
 
         it('should translate bridge/road feature from TDSv61', function() {
             var osm2trans = server.handleInputs({
-                osm: '<osm version="0.6" generator="hootenanny" srs="+epsg:4326" schema="TDSv61"><way visible="true" id="-7" timestamp="1970-01-01T00:00:00Z" version="1"><tag k="ZI016_WTC" v="1"/><tag k="RTY" v="3"/><tag k="UFI" v="4373db4e-9535-47c3-a88a-560325d5b404"/><tag k="F_CODE" v="AP030"/><tag k="RLE" v="1"/><tag k="LOC" v="44"/><tag k="SBB" v="1001"/><tag k="RIN_ROI" v="3"/></way></osm>',
+                osm: '<osm version="0.6" generator="hootenanny" srs="+epsg:4326" schema="TDSv61"><way visible="true" id="-7" timestamp="1970-01-01T00:00:00Z" version="1"><tag k="ZI016_WTC" v="1"/><tag k="RTY" v="3"/><tag k="UFI" v="4373db4e-9535-47c3-a88a-560325d5b404"/><tag k="F_CODE" v="AP030"/><tag k="RLE" v="1"/><tag k="LOC" v="44"/><tag k="SBB" v="1001"/><tag k="RIN_ROI" v="3"/></way><way visible="true" id="-8" timestamp="1970-01-01T00:00:00Z" version="1"><tag k="F_CODE" v="AQ040"/></way></osm>',
                 method: 'POST',
                 translation: 'TDSv61',
                 path: '/translateFrom'
             });
+            //console.log(osm2trans);
             xml2js.parseString(osm2trans, function(err, result) {
                 if (err) console.error(err);
-                assert.equal(result.osm.way[0].tag[0].$.k, "ref:road:type");
-                assert.equal(result.osm.way[0].tag[0].$.v, "road");
-                assert.equal(result.osm.way[0].tag[1].$.k, "ref:road:class");
-                assert.equal(result.osm.way[0].tag[1].$.v, "primary");
-                assert.equal(result.osm.way[0].tag[2].$.k, "location");
-                assert.equal(result.osm.way[0].tag[2].$.v, "surface");
-                assert.equal(result.osm.way[0].tag[3].$.k, "seasonal");
-                assert.equal(result.osm.way[0].tag[3].$.v, "no");
-                assert.equal(result.osm.way[0].tag[4].$.k, "layer");
-                assert.equal(result.osm.way[0].tag[4].$.v, "1");
-                assert.equal(result.osm.way[0].tag[5].$.k, "bridge");
-                assert.equal(result.osm.way[0].tag[5].$.v, "yes");
-                assert.equal(result.osm.way[0].tag[6].$.k, "uuid");
-                // assert.equal(result.osm.way[0].tag[6].$.v, "");
-                assert.equal(result.osm.way[0].tag[7].$.k, "highway");
-                assert.equal(result.osm.way[0].tag[7].$.v, "primary");
+                assert.equal(result.osm.way[0].tag[0].$.k, "bridge");
+                assert.equal(result.osm.way[0].tag[0].$.v, "yes");
+                assert.equal(result.osm.way[1].tag[0].$.k, "ref:road:type");
+                assert.equal(result.osm.way[1].tag[0].$.v, "road");
+                assert.equal(result.osm.way[1].tag[1].$.k, "ref:road:class");
+                assert.equal(result.osm.way[1].tag[1].$.v, "primary");
+                assert.equal(result.osm.way[1].tag[2].$.k, "location");
+                assert.equal(result.osm.way[1].tag[2].$.v, "surface");
+                assert.equal(result.osm.way[1].tag[3].$.k, "seasonal");
+                assert.equal(result.osm.way[1].tag[3].$.v, "no");
+                assert.equal(result.osm.way[1].tag[4].$.k, "layer");
+                assert.equal(result.osm.way[1].tag[4].$.v, "1");
+                assert.equal(result.osm.way[1].tag[5].$.k, "bridge");
+                assert.equal(result.osm.way[1].tag[5].$.v, "yes");
+                assert.equal(result.osm.way[1].tag[6].$.k, "uuid");
+                // assert.equal(result.osm.way[1].tag[6].$.v, "");
+                assert.equal(result.osm.way[1].tag[7].$.k, "highway");
+                assert.equal(result.osm.way[1].tag[7].$.v, "primary");
             });
         });
 
