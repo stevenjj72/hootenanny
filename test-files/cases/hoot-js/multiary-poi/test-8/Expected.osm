@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="hootenanny" srs="+epsg:4326">
+    <bounds minlat="12.79023741625" minlon="44.98390404059" maxlat="12.79025985545" maxlon="44.98433181046"/>
+    <node visible="true" id="-2" timestamp="1970-01-01T00:00:00Z" version="1" lat="12.7902374162500010" lon="44.9843318104599987">
+        <tag k="is_in:place" v="Aden"/>
+        <tag k="hoot:hash" v="sha1sum:812e6ff65d7f5b62242cf7155339500224b9cf53"/>
+        <tag k="is_in:city" v="مدينة عـدن"/>
+        <tag k="is_in:state" v="Aden"/>
+        <tag k="rawWmCategory" v="TV"/>
+        <tag k="studio" v="television"/>
+        <tag k="REVIEW" v="none"/>
+        <tag k="is_in:country" v="Yemen"/>
+        <tag k="ID" v="3-00144"/>
+        <tag k="source" v="fill in imagery source name"/>
+        <tag k="uuid" v="wikimapia:1310698"/>
+        <tag k="name" v="مبنى الاداعة و التلفزيون- القناة 2"/>
+        <tag k="source:url" v="http://wikimapia.org/1310698/ar/%D9%85%D8%A8%D9%86%D9%89-%D8%A7%D9%84%D8%A7%D8%AF%D8%A7%D8%B9%D8%A9-%D9%88-%D8%A7%D9%84%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86-%D8%A7%D9%84%D9%82%D9%86%D8%A7%D8%A9-2"/>
+        <tag k="amenity" v="studio"/>
+        <tag k="MATCH" v="1-00073"/>
+        <tag k="name:en" v="Al Adaya &amp; TV Building - Channel 2"/>
+        <tag k="error:circular" v="15"/>
+    </node>
+    <node visible="true" id="-1" timestamp="1970-01-01T00:00:00Z" version="1" lat="12.7902598554499978" lon="44.9839040405899979">
+        <tag k="name:ar" v="مبنى قناة عدن الفضائية"/>
+        <tag k="hoot:hash" v="sha1sum:9d4f1342b5efc4ca42e13e0ee12ae749cbfc4311"/>
+        <tag k="license" v="This data is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/."/>
+        <tag k="opening_hours" v="24/7"/>
+        <tag k="REVIEW" v="none"/>
+        <tag k="ID" v="1-00073"/>
+        <tag k="source" v="fill in imagery source name"/>
+        <tag k="uuid" v="{e07ab387-3908-426f-87d1-e49ba6b86b88}"/>
+        <tag k="name" v="مبنى قناة عدن الفضائية"/>
+        <tag k="office" v="government"/>
+        <tag k="attribution" v="osm"/>
+        <tag k="source:datetime" v="2017-03-04T07:51:51.000Z"/>
+        <tag k="MATCH" v="1-00073"/>
+        <tag k="addr:postcode" v="00967"/>
+        <tag k="name:en" v="Aden TV Building"/>
+        <tag k="error:circular" v="15"/>
+    </node>
+    <relation visible="true" id="-1" timestamp="1970-01-01T00:00:00Z" version="1">
+        <member type="node" ref="-1" role="reviewee"/>
+        <member type="node" ref="-2" role="reviewee"/>
+        <tag k="hoot:review:needs" v="yes"/>
+        <tag k="hoot:review:type" v="POI"/>
+        <tag k="hoot:review:members" v="2"/>
+        <tag k="hoot:review:score" v="-1"/>
+        <tag k="hoot:review:note" v="Somewhat similar (47m) - similar names, similar POI type"/>
+        <tag k="hoot:review:sort_order" v="0"/>
+        <tag k="type" v="review"/>
+    </relation>
+</osm>

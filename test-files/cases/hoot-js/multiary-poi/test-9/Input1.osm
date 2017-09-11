@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-42236' action='modify' lat='12.78583034246' lon='44.97444378156'>
+    <tag k='ID' v='1-00096;1-00097;3-00125' />
+    <tag k='MATCH' v='1-00096' />
+    <tag k='REVIEW' v='none' />
+    <tag k='alt_name' v='Head of Stud;Ras Marbut;Ra’s Marbūţ, Steamer Point, Streamer Point, Ras Marbut, Steamer Point, Streamer Point;رأس مربط;رأس مربوط' />
+    <tag k='attribution' v='osm' />
+    <tag k='error:circular' v='15' />
+    <tag k='historic' v='castle' />
+    <tag k='hoot:id' v='-106' />
+    <tag k='hoot:status' v='3' />
+    <tag k='hoot:wrong' v='matchMiss;missMatch;matchMiss;missMatch;matchMiss;missMatch' />
+    <tag k='int_name' v='Fort Marbūţ, Fort Marbut' />
+    <tag k='is_in' v='Republic of Yemen , جمهورية اليمن' />
+    <tag k='is_in:city' v='مدينة عـدن' />
+    <tag k='is_in:country' v='Yemen' />
+    <tag k='is_in:place' v='Aden' />
+    <tag k='is_in:state' v='Aden' />
+    <tag k='license' v='This data is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/.' />
+    <tag k='name' v='قلعة مربوط' />
+    <tag k='name:ar' v='قلعة مربوط' />
+    <tag k='name:ar1' v='قلعة مربوط' />
+    <tag k='name:de' v='Fort Marbut' />
+    <tag k='name:en' v='Fort Marbut' />
+    <tag k='name:fr' v='Fort Marbut' />
+    <tag k='place' v='locality' />
+    <tag k='source' v='fill in imagery source name;DigitalGlobe' />
+    <tag k='source:datetime' v='2012-05-11T00:45:57.000Z;2011-03-25T22:41:08.000Z' />
+    <tag k='source:hash' v='sha1sum:c3b4d683635cef016f3a69f3d016add22f4a5991;sha1sum:86ed47f24b4119176853ae8788747aa228a7d553;sha1sum:9f65a48e6b1875762f10fa9ce670f5cd434322e3' />
+    <tag k='source:url' v='http://wikimapia.org/1315217/ar/%D8%B1%D8%A3%D8%B3-%D9%85%D8%B1%D8%A8%D8%B7' />
+    <tag k='uuid' v='{73301b4e-b5bd-43b5-b8bf-4e83d4b4aef8};{85103109-8a6c-4fb6-9849-7fc728a56ebe};wikimapia:1315217' />
+    <tag k='wheelchair' v='unknown' />
+    <tag k='wm_No_Category' v='yes' />
+  </node>
+</osm>

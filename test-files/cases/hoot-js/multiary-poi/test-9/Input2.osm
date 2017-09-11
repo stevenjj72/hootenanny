@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-42239' action='modify' lat='12.78538931804' lon='44.97474973551'>
+    <tag k='ID' v='2-00055' />
+    <tag k='MATCH' v='1-00096' />
+    <tag k='REVIEW' v='none' />
+    <tag k='alt_name' v='Fort Marbut;Fort Marbūţ' />
+    <tag k='building' v='fort' />
+    <tag k='ele' v='27' />
+    <tag k='error:circular' v='15' />
+    <tag k='hoot:hash' v='sha1sum:43920af9b1586e7462800ee35b25a6a156adea7a' />
+    <tag k='hoot:id' v='-202' />
+    <tag k='hoot:status' v='2' />
+    <tag k='hoot:wrong' v='missMatch' />
+    <tag k='is_in:country_code' v='YE' />
+    <tag k='name' v='Fort Marbūţ' />
+    <tag k='source' v='fill in imagery source name' />
+    <tag k='uuid' v='GeoNames.org:415162' />
+  </node>
+</osm>
