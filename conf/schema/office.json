@@ -3,9 +3,15 @@
         "isA": "hgispoi",
         "name": "office=*",
         "objectType": "tag",
-        "similarTo": {
-            "name": "amenity",
-            "weight": 0.1
-        }
+        "similarTo": [
+            {
+                "name": "amenity",
+                "weight": 0.1
+            },
+            {
+                "name": "amenity=studio",
+                "weight": 0.6
+            }
+        ]
     }
 ]

@@ -213,10 +213,16 @@
         "isA": "place",
         "name": "place=island",
         "objectType": "tag",
-        "similarTo": {
-            "name": "place=archipelago",
-            "weight": 0.7
-        }
+        "similarTo": [
+            {
+                "name": "place=archipelago",
+                "weight": 0.7
+            },
+            {
+                "name": "natural=island",
+                "weight": 0.9
+            }
+        ]
     },
     {
         "isA": "place",

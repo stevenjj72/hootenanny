@@ -67,6 +67,14 @@
             "node"
         ],
         "isA": "natural",
+        "name": "natural=island",
+        "objectType": "tag"
+    },
+    {
+        "geometries": [
+            "node"
+        ],
+        "isA": "natural",
         "name": "natural=mountain",
         "objectType": "tag"
     },

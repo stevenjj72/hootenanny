@@ -74,21 +74,22 @@ exports.matchScore = function(map, e1, e2) {
         classification = 'match';
     }
 
-    hoot.trace("***POI MATCH DETAIL***");
-    hoot.trace("e1: " + e1.getId() + ", " + e1.getTags().get("name"));
-    if (e1.getTags().get("note"))
-    {
-      hoot.trace("e1 note: " + e1.getTags().get("note"));
-    }
-    hoot.trace("e2: " + e2.getId() + ", " + e2.getTags().get("name"));
-    if (e2.getTags().get("note"))
-    {
-      hoot.trace("e2 note: " + e2.getTags().get("note"));
-    }
-    hoot.trace("score: " + score);
-    hoot.trace("explanation: " + matchScore.explain);
-    hoot.trace("classification: " + classification);
-    hoot.trace("***END POI MATCH DETAIL***");
+    hoot.log(matchScore.explain);
+//    hoot.trace("***POI MATCH DETAIL***");
+//    hoot.trace("e1: " + e1.getId() + ", " + e1.getTags().get("name"));
+//    if (e1.getTags().get("note"))
+//    {
+//      hoot.trace("e1 note: " + e1.getTags().get("note"));
+//    }
+//    hoot.trace("e2: " + e2.getId() + ", " + e2.getTags().get("name"));
+//    if (e2.getTags().get("note"))
+//    {
+//      hoot.trace("e2 note: " + e2.getTags().get("note"));
+//    }
+//    hoot.trace("score: " + score);
+//    hoot.trace("explanation: " + matchScore.explain);
+//    hoot.trace("classification: " + classification);
+//    hoot.trace("***END POI MATCH DETAIL***");
 
     return matchScore;
 };

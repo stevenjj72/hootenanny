@@ -496,7 +496,7 @@ geonames.rules = {
         'RCH':{'poi':'reach'}, //  reach: a straight section of a navigable stream or channel between two bends
         'RDA':{'historic':'road'}, //  ancient road: the remains of a road used by ancient cultures
         'RDB':{'poi':'road_bend'}, //  road bend: a conspicuously curved or bent section of a road
-        'RDCR':{'juction':'roundabout'}, //  traffic circle: a road junction formed around a central circle about which traffic moves in one direction only
+        'RDCR':{'junction':'roundabout'}, //  traffic circle: a road junction formed around a central circle about which traffic moves in one direction only
         'RDCUT':{'cutting':'yes'}, //  road cut: an excavation cut through a hill or ridge for a road
         'RDGB':{'natural':'ridge','ridge:type':'beach'}, //  beach ridge: a ridge of sand just inland and parallel to the beach, usually in series
         'RDGE':{'natural':'ridge'}, //  ridge(s): a long narrow elevation with steep sides, and a more or less continuous crest
