@@ -99,7 +99,7 @@ public:
    */
   void setScriptText(QString text) { close(); _scriptText = text; _scriptPath = QString(); }
 
-  virtual std::vector<TranslatedFeature> translateToOgr(Tags& tags, ElementType elementType,
+  virtual std::vector<TranslatedFeature> translateToOgr(const Tags& tags, ElementType elementType,
     geos::geom::GeometryTypeId geometryType);
 
   virtual std::vector<Tags> translateToOgrTags(Tags& tags, ElementType elementType,
@@ -114,7 +114,7 @@ protected:
   bool _error;
   boost::shared_ptr<Schema> _schema;
   QString _scriptText;
-  Tags* _tags;
+  const Tags* _tags;
   std::vector<double> _timing;
   QHash<QString, int> _logs;
   v8::Handle<v8::Value> _empty[0]; // For function calls
@@ -152,7 +152,7 @@ protected:
 
   qint64 _toInt64(const QVariant& v) const;
 
-  QVariantList _translateToOgrVariants(Tags& tags,
+  QVariantList _translateToOgrVariants(const Tags& tags,
     ElementType elementType, geos::geom::GeometryTypeId geometryType);
 
   virtual void _translateToOsm(Tags& t, const char *layerName, const char* geomType);

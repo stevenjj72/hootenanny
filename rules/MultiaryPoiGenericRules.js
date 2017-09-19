@@ -46,6 +46,7 @@ var weightedWordDistance = new hoot.NameExtractor(
 
 var distances = [
 
+    {k:'aeroway',                             match:2500,     review:4000},
     {k:'amenity',                             match:100,      review:200},
     {k:'amenity',  v:'grave_yard',            match:500,      review:1000},
     {k:'cemetery',                            match:500,      review:1000},

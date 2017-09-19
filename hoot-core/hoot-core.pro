@@ -34,7 +34,9 @@ OTHER_FILES = \
     $$files(../translations-local/*.py, true) \
     $$files(../rules/*.js, true) \
     $$files(../conf/schema/*.json, true) \
+    $$files(../scripts/core/*, true) \
     ../conf/core/ConfigOptions.asciidoc \
+    ../scripts/core/QuickTranslationCheck.js
 
 include(../Configure.pri)
 

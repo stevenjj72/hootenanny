@@ -24,3 +24,41 @@
  *
  * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
+
+#ifndef TOOGRTRANSLATIONDEBUGOP_H
+#define TOOGRTRANSLATIONDEBUGOP_H
+
+// hoot
+#include <hoot/core/util/Configurable.h>
+
+#include "OsmMapOperation.h"
+
+namespace hoot
+{
+
+class TranslationDebugOp : public OsmMapOperation, public Configurable
+{
+public:
+  static std::string className() { return "hoot::TranslationDebugOp"; }
+
+  TranslationDebugOp();
+
+  /**
+   * Traverse the supplied OSM Map and translate all features currently in the map to a debug
+   * marked up equivalent.
+   *
+   * This honors the one to many feature translation and
+   */
+  virtual void apply(boost::shared_ptr<OsmMap>& map);
+
+  virtual void setConfiguration(const Settings& conf);
+
+  void setScriptPath(QString pathIn, QString pathOut) { _pathIn = pathIn; _pathOut = pathOut; }
+
+private:
+  QString _pathIn, _pathOut;
+};
+
+}
+
+#endif // TOOGRTRANSLATIONDEBUGOP_H
