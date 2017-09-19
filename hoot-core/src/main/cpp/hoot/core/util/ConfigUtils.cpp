@@ -22,34 +22,23 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "PartialOsmMapReader.h"
 
+#include "ConfigUtils.h"
+
+// Hoot
+#include <hoot/core/util/ConfigOptions.h>
 
 namespace hoot
 {
 
-PartialOsmMapReader::PartialOsmMapReader()
+bool ConfigUtils::boundsOptionEnabled()
 {
-  setMaxElementsPerMap(ConfigOptions().getMaxElementsPerPartialMap());
-  _elementsRead = 0;
-}
-
-void PartialOsmMapReader::read(OsmMapPtr map)
-{
-  readPartial(map);
-  finalizePartial();
-}
-
-void PartialOsmMapReader::readPartial(OsmMapPtr map)
-{
-  _partialMap = map;
-  while (hasMoreElements() && (_elementsRead < _maxElementsPerMap))
-  {
-    _partialMap->addElement(readNextElement());
-  }
-  _elementsRead = 0;
+  return
+    !conf().get(ConfigOptions::getConvertBoundingBoxKey()).toString().trimmed().isEmpty() ||
+    !conf().get(ConfigOptions::getConvertBoundingBoxHootApiDatabaseKey()).toString().trimmed().isEmpty() ||
+    !conf().get(ConfigOptions::getConvertBoundingBoxOsmApiDatabaseKey()).toString().trimmed().isEmpty();
 }
 
 }

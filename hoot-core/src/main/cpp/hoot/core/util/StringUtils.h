@@ -22,34 +22,43 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "PartialOsmMapReader.h"
 
+#ifndef STRINGUTILS_H
+#define STRINGUTILS_H
+
+// Qt
+#include <QString>
 
 namespace hoot
 {
 
-PartialOsmMapReader::PartialOsmMapReader()
+/**
+ * General utilities needed when working with strings
+ */
+class StringUtils
 {
-  setMaxElementsPerMap(ConfigOptions().getMaxElementsPerPartialMap());
-  _elementsRead = 0;
+
+public:
+
+  /**
+   * Converts seconds to DD:MM:SS
+   *
+   * @param durationInMilliseconds seconds to convert
+   * @return a DD:MM:SS string
+   */
+  static QString secondsToDhms(const qint64 durationInMilliseconds);
+
+  /**
+   * Converts a large number to a more human readable format
+   *
+   * @param number the number to format
+   * @return a formatted number string
+   */
+  static QString formatLargeNumber(const unsigned long number);
+};
+
 }
 
-void PartialOsmMapReader::read(OsmMapPtr map)
-{
-  readPartial(map);
-  finalizePartial();
-}
-
-void PartialOsmMapReader::readPartial(OsmMapPtr map)
-{
-  _partialMap = map;
-  while (hasMoreElements() && (_elementsRead < _maxElementsPerMap))
-  {
-    _partialMap->addElement(readNextElement());
-  }
-  _elementsRead = 0;
-}
-
-}
+#endif // STRINGUTILS_H

@@ -22,34 +22,56 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "PartialOsmMapReader.h"
 
+#ifndef CORNERSPLITTER_H
+#define CORNERSPLITTER_H
+
+// Hoot
+#include <hoot/core/ops/OsmMapOperation.h>
+
+// Qt
+#include <QMultiHash>
+#include <QSet>
+#include <QMap>
+#include <vector>
 
 namespace hoot
 {
 
-PartialOsmMapReader::PartialOsmMapReader()
+class OsmMap;
+class Way;
+
+/**
+ * Given an OsmMap, ways are split at sharp corners. This can help when conflating data
+ * that is mostly major roads with data that contains a lot of neighborhood - level data.
+ *
+ */
+class CornerSplitter : public OsmMapOperation
 {
-  setMaxElementsPerMap(ConfigOptions().getMaxElementsPerPartialMap());
-  _elementsRead = 0;
+public:
+
+  static std::string className() { return "hoot::CornerSplitter"; }
+
+  CornerSplitter();
+
+  CornerSplitter(boost::shared_ptr<OsmMap> map);
+
+  void apply(boost::shared_ptr<OsmMap>& map);
+
+  static void splitCorners(boost::shared_ptr<OsmMap> map);
+
+  void splitCorners();
+
+private:
+  boost::shared_ptr<OsmMap> _map;
+  std::vector<long> _todoWays;
+
+  // Split the way at the given node, using the WaySplitter, then process the results
+  void _splitWay(long wayId, long nodeIdx, long nodeId);
+};
+
 }
 
-void PartialOsmMapReader::read(OsmMapPtr map)
-{
-  readPartial(map);
-  finalizePartial();
-}
-
-void PartialOsmMapReader::readPartial(OsmMapPtr map)
-{
-  _partialMap = map;
-  while (hasMoreElements() && (_elementsRead < _maxElementsPerMap))
-  {
-    _partialMap->addElement(readNextElement());
-  }
-  _elementsRead = 0;
-}
-
-}
+#endif // CORNERSPLITTER_H
