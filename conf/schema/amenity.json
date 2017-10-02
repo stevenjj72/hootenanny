@@ -364,6 +364,26 @@
 	]
     },
     {
+        "isA": "amenity",
+        "name": "amenity=events_venue",
+        "description": "A stand-alone facility, used to hosting a variety of events, such as formal dinners, dinner-dances, weddings or other celebrations. Sometimes will be associated with another amenity, such as a hotel or restaurant, but has a separate entrance.",
+        "objectType": "tag",
+        "similarTo": [
+            {
+                 "name": "amenity=exhibition_hall",
+                 "weight": 0.6
+            },
+            {
+                 "name": "amenity=conference_centre",
+                 "weight": 0.8
+            },
+            {
+                 "name": "amenity=hall",
+                 "weight": 0.8
+            }
+        ]
+    },
+    {
         "isA": "amenity=place_of_worship",
         "name": "amenity=chapel",
         "objectType": "tag",
