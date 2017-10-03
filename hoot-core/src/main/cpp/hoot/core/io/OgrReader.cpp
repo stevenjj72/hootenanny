@@ -597,6 +597,9 @@ void OgrReaderInternal::_addFeature(OGRFeature* f)
 
   _translate(t);
 
+  // If the translation does not return anything then don't try to add the feature
+  if (t.size() == 0) return;
+
   if (_addSourceDateTime)
   {
     // Add an ingest datetime tag
@@ -604,10 +607,8 @@ void OgrReaderInternal::_addFeature(OGRFeature* f)
                   QDateTime::currentDateTime().toUTC().toString("yyyy-MM-ddThh:mm:ss.zzzZ"));
   }
 
-  if (t.size() != 0)
-  {
-    _addGeometry(f->GetGeometryRef(), t);
-  }
+  // Add the feature
+  _addGeometry(f->GetGeometryRef(), t);
 }
 
 void OgrReaderInternal::_addGeometry(OGRGeometry* g, Tags& t)
@@ -708,6 +709,7 @@ void OgrReaderInternal::_addPoint(OGRPoint* p, Tags& t)
 
   double x = p->getX();
   double y = p->getY();
+
   _reproject(x, y);
   long id;
   if (_nodeIdFieldName.isEmpty())

@@ -83,6 +83,7 @@ ScriptTranslator* ScriptTranslatorFactory::createTranslator(QString scriptPath)
       if (result == 0 && st[i]->isValidScript())
       {
         result = st[i];
+        break; // If we find a working translation, no need to continue looking - MJ
       }
       else
       {
