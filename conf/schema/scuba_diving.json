@@ -1,0 +1,24 @@
+[
+    {
+        "description": "What kind of a diving place it is",
+        "dataType": "enumeration",
+        "geometries": [
+            "node",
+            "way",
+            "relation"
+        ],
+        "influence": 1,
+        "name": "scuba_diving:type",
+        "objectType": "tag"
+    },
+    {
+        "isA": "scuba_diving:type",
+        "name": "scuba_diving:type=*",
+        "objectType": "tag"
+    },
+    {
+        "isA": "scuba_diving:type",
+        "name": "scuba_diving:type=wreck",
+        "objectType": "tag"
+    }
+]

@@ -1,7 +1,17 @@
 [
     {
         "isA": "hgispoi",
+        "name": "industrial",
+        "objectType": "tag"
+    },
+    {
+        "isA": "industrial",
         "name": "industrial=*",
+        "objectType": "tag"
+    },
+    {
+        "isA": "industrial",
+        "name": "industrial=yes",
         "objectType": "tag"
     }
 ]

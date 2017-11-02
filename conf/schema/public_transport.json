@@ -91,6 +91,20 @@
             "node"
         ],
         "isA": "public_transport",
+        "name": "public_transport=stop_area",
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "public_transport=stop_position",
+                "weight": 0.9
+            }
+        ]
+    },
+    {
+        "geometries": [
+            "node"
+        ],
+        "isA": "public_transport",
         "name": "public_transport=stop_position",
         "objectType": "tag",
         "similarTo": [

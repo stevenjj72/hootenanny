@@ -37,6 +37,12 @@
         "objectType": "tag"
     },
     {
+        "dataType": "text",
+        "isA": "source",
+        "name": "source:data:geodetic",
+        "objectType": "tag"
+    },
+    {
         "description": "Use the source:geometry=* tag to indicate the source of the geometry of an object added to OpenStreetMap.",
         "isA": "source",
         "name": "source:geometry",
@@ -72,6 +78,12 @@
         "description": "DigitalGlobe WorldView 2",
         "isA": "source:geometry:sensor",
         "name": "source:geometry:sensor=WV02",
+        "objectType": "tag"
+    },
+    {
+        "description": "The source imagery used to derive the feature.",
+        "isA": "source",
+        "name": "source:imagery",
         "objectType": "tag"
     },
     {

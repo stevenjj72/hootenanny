@@ -1,0 +1,31 @@
+[
+    {
+        "description": "An infrequently used tag that should be avoided, but sometimes contains useful information. https://taginfo.openstreetmap.org/keys/wpt_symbol",
+        "dataType": "enumeration",
+        "influence": 1,
+        "geometries": [
+            "node",
+            "way",
+            "relation"
+        ],
+        "influence": 1,
+        "name": "wpt_symbol",
+        "objectType": "tag"
+    },
+    {
+        "name": "wpt_symbol=*",
+        "isA": "wpt_symbol",
+        "objectType": "tag"
+    },
+    {
+        "name": "wpt_symbol=Shopping Center",
+        "isA": "wpt_symbol",
+        "similarTo": [
+            {
+                "name": "shop=mall",
+                "weight": 0.9
+            }
+        ],
+        "objectType": "tag"
+    }
+]

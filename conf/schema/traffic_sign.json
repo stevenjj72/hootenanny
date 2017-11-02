@@ -1,0 +1,26 @@
+[
+    {
+        "description": "The traffic_sign=* tag is used to map traffic signs such as city-limit signs or any other traffic signs.",
+        "dataType": "enumeration",
+        "influence": 1,
+        "geometries": [
+            "node",
+            "way",
+            "relation"
+        ],
+        "influence": 1,
+        "name": "traffic_sign",
+        "objectType": "tag"
+    },
+    {
+        "name": "traffic_sign=*",
+        "isA": "traffic_sign",
+        "objectType": "tag"
+    },
+    {
+        "description": "City or village sign.",
+        "name": "traffic_sign=city-limit",
+        "isA": "traffic_sign",
+        "objectType": "tag"
+    }
+]

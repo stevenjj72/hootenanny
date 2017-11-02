@@ -99,6 +99,9 @@
         "import": "error.json"
     },
     {
+        "import": "exit_to.json"
+    },
+    {
         "import": "facility.json"
     },
     {
@@ -235,6 +238,9 @@
         "import": "roof.json"
     },
     {
+        "import": "scuba_diving.json"
+    },
+    {
         "import": "seamark.json"
     },
     {
@@ -242,6 +248,9 @@
     },
     {
         "import": "shop.json"
+    },
+    {
+        "import": "shrine.json"
     },
     {
         "import": "slope.json"
@@ -265,7 +274,13 @@
         "import": "survey.json"
     },
     {
+        "import": "townhall.json"
+    },
+    {
         "import": "tourism.json"
+    },
+    {
+        "import": "traffic_sign.json"
     },
     {
         "import": "transport.json"
@@ -286,6 +301,9 @@
         "import": "uuid.json"
     },
     {
+        "import": "water.json"
+    },
+    {
         "import": "waterway.json"
     },
     {
@@ -296,6 +314,9 @@
     },
     {
         "import": "width.json"
+    },
+    {
+        "import": "wpt_symbol.json"
     },
     {
         "import": "divider.json"

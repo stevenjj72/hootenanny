@@ -67,6 +67,7 @@ void OsmSchemaJs::Init(Handle<Object> exports)
   schema->Set(String::NewSymbol("isMetaData"), FunctionTemplate::New(isMetaData)->GetFunction());
   schema->Set(String::NewSymbol("isPoi"), FunctionTemplate::New(isPoi)->GetFunction());
   schema->Set(String::NewSymbol("isLinearHighway"), FunctionTemplate::New(isLinearHighway)->GetFunction());
+  schema->Set(String::NewSymbol("isTextTag"), FunctionTemplate::New(isTextTag)->GetFunction());
   schema->Set(String::NewSymbol("score"), FunctionTemplate::New(score)->GetFunction());
   schema->Set(String::NewSymbol("scoreOneWay"), FunctionTemplate::New(scoreOneWay)->GetFunction());
   schema->Set(String::NewSymbol("hasName"), FunctionTemplate::New(hasName)->GetFunction());
@@ -185,6 +186,14 @@ Handle<Value> OsmSchemaJs::isPoi(const Arguments& args) {
   ConstElementPtr e = ObjectWrap::Unwrap<ElementJs>(args[0]->ToObject())->getConstElement();
 
   return scope.Close(Boolean::New(OsmSchema::getInstance().isPoi(*e)));
+}
+
+Handle<Value> OsmSchemaJs::isTextTag(const Arguments& args) {
+  HandleScope scope;
+
+  QString key = toCpp<QString>(args[0]);
+
+  return scope.Close(Boolean::New(OsmSchema::getInstance().isTextTag(key)));
 }
 
 Handle<Value> OsmSchemaJs::hasName(const Arguments& args) {

@@ -341,6 +341,9 @@
     {
         "isA": "cuisine",
         "name": "cuisine=chicken",
+        "aliases": [
+            "cuisine=roasted chicken"
+        ],
         "objectType": "tag",
         "similarTo": {
             "name": "cuisine=fried_chicken",

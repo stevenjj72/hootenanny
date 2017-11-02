@@ -1,11 +1,35 @@
 [
     {
         "isA": "hgispoi",
+        "name": "office",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "amenity",
+            "weight": 0.1
+        }
+    },
+    {
+        "isA": "office",
         "name": "office=*",
         "objectType": "tag",
         "similarTo": {
             "name": "amenity",
             "weight": 0.1
         }
+    },
+    {
+        "isA": "office",
+        "name": "office=government",
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "amenity=government",
+                "weight": 0.8
+            },
+            {
+                "name": "amenity=government_administration_building",
+                "weight": 0.9
+            }
+        ]
     }
 ]

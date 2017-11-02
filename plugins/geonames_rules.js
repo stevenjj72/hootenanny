@@ -37,6 +37,19 @@ geonames.rules = {
 
     // The mapping between the GeoNames feature code and OSM+
     one2one : {
+        /** Same as below, but using political entity
+        'ADM1H':{'place':'political_entity','historical':'yes','note':'A former first-order administrative division'}, //  historical first-order administrative division: a former first-order administrative division
+        'ADM1':{'place':'political_entity','note':'A primary administrative division of a country, such as a state in the United States'}, //  first-order administrative division: a primary administrative division of a country, such as a state in the United States
+        'ADM2H':{'place':'political_entity','historical':'yes','note':'A former second-order administrative division'}, //  historical second-order administrative division: a former second-order administrative division
+        'ADM2':{'place':'political_entity','note':'A subdivision of a first-order administrative division'}, //  second-order administrative division: a subdivision of a first-order administrative division
+        'ADM3H':{'place':'political_entity','historical':'yes','note':'A former third-order administrative division'}, //  historical third-order administrative division: a former third-order administrative division
+        'ADM3':{'place':'political_entity','note':'A subdivision of a second-order administrative division'}, //  third-order administrative division: a subdivision of a second-order administrative division
+        'ADM4H':{'place':'political_entity','historical':'yes','note':'A former fourth-order administrative division'}, //  historical fourth-order administrative division: a former fourth-order administrative division
+        'ADM4':{'place':'political_entity','note':'A subdivision of a third-order administrative division'}, //  fourth-order administrative division: a subdivision of a third-order administrative division
+        'ADM5':{'place':'political_entity','note':'A subdivision of a fourth-order administrative division'}, //  fifth-order administrative division: a subdivision of a fourth-order administrative division
+        'ADMDH':{'place':'political_entity','historical':'yes','note':'A former administrative division of a political entity, undifferentiated as to administrative level'}, //  historical administrative division : a former administrative division of a political entity, undifferentiated as to administrative level
+        */
+
         'ADM1H':{'poi':'historical_first-order_administrative_division'}, //  historical first-order administrative division: a former first-order administrative division
         'ADM1':{'poi':'first-order_administrative_division'}, //  first-order administrative division: a primary administrative division of a country, such as a state in the United States
         'ADM2H':{'poi':'historical_second-order_administrative_division'}, //  historical second-order administrative division: a former second-order administrative division

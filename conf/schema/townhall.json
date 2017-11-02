@@ -1,0 +1,45 @@
+[
+    {
+        "description": "Used with amenity=townhall -- Please also specify the type, townhall:type=village for a municipial office of a village or townhall:type=city for the town hall of a town.",
+        "dataType": "enumeration",
+        "categories": [
+            "poi",
+            "hgispoi"
+        ],
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "influence": 1,
+        "name": "townhall:type",
+        "objectType": "tag"
+    },
+    {
+        "isA": "townhall:type",
+        "name": "townhall:type=*",
+        "objectType": "tag"
+    },
+    {
+        "isA": "townhall:type",
+        "name": "townhall:type=city",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "townhall:type=town",
+            "weight": 0.8
+        }
+    },
+    {
+        "isA": "townhall:type",
+        "name": "townhall:type=town",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "townhall:type=village",
+            "weight": 0.8
+        }
+    },
+    {
+        "isA": "townhall:type",
+        "name": "townhall:type=village",
+        "objectType": "tag"
+    }
+]

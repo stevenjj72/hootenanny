@@ -60,11 +60,37 @@
         }
     },
     {
+        "description": "A Wikipedia-16px.png boundary marker, boundary stone or border stone is a robust physical marker that identifies the start of a land boundary or the change in a boundary, especially a change in a direction of a boundary. They have often been used to mark critical points on boundaries between countries or local administrations but have also been used to mark out the limits of private land-holdings especially in areas where fences or walls are impractical or unnecessary.",
+        "isA": "historic",
+        "name": "historic=boundary_stone",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "historic=monument",
+            "weight": 0.5
+        }
+    },
+    {
         "isA": "historic",
         "name": "historic=building",
         "objectType": "tag",
         "similarTo": {
             "name": "historic=monument",
+            "weight": 0.8
+        }
+    },
+    {
+        "description": "A Wikipedia-16px.png wayside cross is a historical (usually christian) cross. Frequently found along the way in most Europe: Germany, Austria, France, Italy, Poland, Ukraine and other predominantly catholic and orthodox cristian countries. If the cross is 'in use', maybe consider using man_made=cross.",
+        "isA": "historic",
+        "name": "historic=wayside_cross",
+        "objectType": "tag"
+    },
+    {
+        "description": "A historical shrine often showing a religious depiction. Frequently found along the way in Germany, Austria, Italy, Czech Republic, Slovakia and probably elsewhere.",
+        "isA": "historic",
+        "name": "historic=wayside_shrine",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "historic=wayside_cross",
             "weight": 0.8
         }
     }

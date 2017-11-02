@@ -263,6 +263,22 @@
         "objectType": "tag"
     },
     {
+        "geometries": [
+            "area",
+            "node"
+        ],
+        "categories": [
+            "poi"
+        ],
+        "isA": "man_made",
+        "name": "man_made=water_well",
+        "aliases": [
+            "man_made=water-well",
+            "man_made=well"
+        ],
+        "objectType": "tag"
+    },
+    {
         "isA": "man_made",
         "name": "man_made=surveillance",
         "objectType": "tag"

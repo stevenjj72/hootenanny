@@ -1,0 +1,34 @@
+[
+    {
+        "categories": [
+            "poi"
+        ],
+        "dataType": "enumeration",
+        "geometries": [
+            "area"
+        ],
+        "influence": 1,
+        "isA": "hgispoi",
+        "name": "water",
+        "objectType": "tag"
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "water",
+        "name": "water=*",
+        "objectType": "tag"
+    },
+    {
+        "description": "A lake: a body of relatively still fresh or salt water of considerable size, localized in a basin that is surrounded by land. Artificially created lakes are ponds or reservoirs. Intermittent lakes (which disappear seasonally) should be tagged with intermittent=yes; salt lakes — with salt=yes.",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "water",
+        "name": "water=lake",
+        "objectType": "tag"
+    }
+]

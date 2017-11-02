@@ -1,0 +1,18 @@
+[
+    {
+        "dataType": "enumeration",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "influence": 1,
+        "isA": "hgispoi",
+        "name": "shrine",
+        "objectType": "tag"
+    },
+    {
+        "isA": "shrine",
+        "name": "shrine=yes",
+        "objectType": "tag"
+    }
+]

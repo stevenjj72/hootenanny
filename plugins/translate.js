@@ -25,10 +25,20 @@
  * @copyright Copyright (C) 2013, 2014 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
+if (typeof hoot === 'undefined')
+{
+    var HOOT_HOME = process.env.HOOT_HOME;
+    var hoot = require(HOOT_HOME + '/lib/HootJs');
+}
+
 //
 // Set of core translation routines
 //
 translate = {
+    configIn: {
+        ogrDebugLookupclash: hoot.Settings.get("ogr.debug.lookupclash"),
+        ogrDebugLookupcolumn: hoot.Settings.get("ogr.debug.lookupcolumn")
+    },
    
     // Build Lookup tables
     createLookup : function(one2one)
@@ -50,7 +60,7 @@ translate = {
             }
             else
             {
-                if (config.getOgrDebugLookupclash() == 'true') print('Fwd Clash: ' + row[0] + ' ' + row[1] + '  is ' + lookup[row[0]][row[1]] + '  tried to change to ' + [row[2], row[3]]);
+                if (translate.configIn.ogrDebugLookupclash == 'true') print('Fwd Clash: ' + row[0] + ' ' + row[1] + '  is ' + lookup[row[0]][row[1]] + '  tried to change to ' + [row[2], row[3]]);
             }
         }
     
@@ -148,7 +158,7 @@ translate = {
                 }
                 else
                 {
-                    if (config.getOgrDebugLookupclash() == 'true') print('Bkwd Clash: ' + row[2] + ' ' + row[3] + '  is ' + lookup[row[2]][row[3]] + '  tried to change to ' + [row[0], row[1]]);
+                    if (translate.configIn.ogrDebugLookupclash == 'true') print('Bkwd Clash: ' + row[2] + ' ' + row[3] + '  is ' + lookup[row[2]][row[3]] + '  tried to change to ' + [row[0], row[1]]);
                 }
             }
         }
@@ -241,7 +251,7 @@ translate = {
                 else
                 {
                     // Removing the var test for a while.
-                    // if (config.getOgrDebugLookupcolumn() == 'true') hoot.logTrace('Column not found:: (' + col + '=' + value + ')');
+                    // if (translate.configIn.ogrDebugLookupcolumn == 'true') hoot.logTrace('Column not found:: (' + col + '=' + value + ')');
                     hoot.logTrace('Column not found:: (' + col + '=' + value + ')');
                 }
             } // End !col in lookup
@@ -371,7 +381,7 @@ translate = {
                 }
                 else
                 {
-                    if (config.getOgrDebugLookupcolumn() == 'true') hoot.logTrace('Column not found:: (' + col + '=' + value + ')');
+                    if (translate.configIn.ogrDebugLookupcolumn == 'true') hoot.logTrace('Column not found:: (' + col + '=' + value + ')');
                 }
             } // End !col in lookup
         } // End for col in inList
@@ -1444,3 +1454,10 @@ translate = {
         return values;
     } // End overrideValues
 } // End of translate
+
+if (typeof exports !== 'undefined') {
+    for (var k in translate) {
+        exports[k] = translate[k];
+    }
+}
+

@@ -1,0 +1,18 @@
+[
+    {
+        "description": "In the United States exit_to=* on the highway=motorway_junction node has traditionally been used to detail the destinations where a motorway junction exits to.",
+        "dataType": "text",
+        "geometries": [
+            "node",
+            "linestring"
+        ],
+        "influence": 1,
+        "name": "exit_to",
+        "objectType": "tag"
+    },
+    {
+        "isA": "exit_to",
+        "name": "exit_to=*",
+        "objectType": "tag"
+    }
+]

@@ -83,4 +83,39 @@ describe('schema', function() {
             {"amenity":{"convention_centre":["FFN",579,0.7],"conference_centre":["FFN",579,0.7]}});
     });
 
+    it('translate many OSM to many OGR should generate expected record', function() {
+    
+        // wildcard should match convention_centre and conference_centre
+        var many2many = [
+            {ogr:["commercial$TYPE1=Service", 
+                  "commercial$TYPE2=Other",
+                  "commercial$COMMENTS<=Fitness Center"], 
+             osm:[st.isSimilar('leisure=fitness_centre', .9, .1, .5)]}];
+
+        var rules = st.generateManyToOgrTable(many2many);
+
+        var attrs = {};
+        st.applyManyToOgrTable(rules, {"leisure": "fitness-center", "name": "foo"}, attrs);
+        assert.deepEqual({"commercial$COMMENTS":"Fitness Center","commercial$TYPE1":"Service","commercial$TYPE2":"Other"}, attrs);
+
+        var attrs = {"commercial$COMMENTS":"My comment"};
+        st.applyManyToOgrTable(rules, {"leisure": "fitness-center", "name": "foo"}, attrs);
+        assert.deepEqual({"commercial$COMMENTS":"My comment;Fitness Center","commercial$TYPE1":"Service","commercial$TYPE2":"Other"}, attrs);
+
+    });
+
+    it('translate many OSM to many OGR should work with isA rules', function() {
+    
+        // wildcard should match convention_centre and conference_centre
+        var many2many = [
+            {ogr:["commercial$TYPE1=Service", "commercial$TYPE2=Restaurant"], 
+             osm:[st.isA('cuisine', .9, .1)]}];
+
+        var rules = st.generateManyToOgrTable(many2many);
+        var attrs = {};
+        st.applyManyToOgrTable(rules, {"cuisine": "chicken", "name": "foo"}, attrs);
+        assert.deepEqual({"commercial$TYPE1":"Service","commercial$TYPE2":"Restaurant"}, attrs);
+
+    });
+
 });

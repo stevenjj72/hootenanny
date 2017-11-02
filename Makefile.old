@@ -145,6 +145,13 @@ else
 	@echo Skipping mocha tests
 endif
 
+plugins-local-test:
+ifneq ($(shell which mocha),)
+	cd plugins-local; npm install && npm test
+else
+	@echo Skipping plugins-local mocha tests
+endif
+
 pp-test-all:
 ifneq ($(HADOOP_HOME),)
 	cd pretty-pipes/pp-lib/ ; $(MAKE) -f Makefile.mvn test-all

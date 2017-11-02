@@ -60,6 +60,7 @@ private:
   static v8::Handle<v8::Value> isMetaData(const v8::Arguments& args);
   static v8::Handle<v8::Value> isPoi(const v8::Arguments& args);
   static v8::Handle<v8::Value> isLinearHighway(const v8::Arguments& args);
+  static v8::Handle<v8::Value> isTextTag(const v8::Arguments& args);
   static v8::Handle<v8::Value> score(const v8::Arguments& args);
   static v8::Handle<v8::Value> scoreOneWay(const v8::Arguments& args);
   static v8::Handle<v8::Value> hasName(const v8::Arguments& args);

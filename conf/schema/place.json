@@ -90,7 +90,7 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=municipality",
         "name": "place=city",
         "objectType": "tag",
         "similarTo": [
@@ -127,7 +127,7 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=county",
         "objectType": "tag",
         "similarTo": [
@@ -160,7 +160,7 @@
     },
     {
         "isA": "place=political_entity",
-        "name": "place=dependent_political_entity",
+        "name": "place=dependent_",
         "objectType": "tag"
     },
     {
@@ -185,7 +185,7 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=municipality",
         "name": "place=hamlet",
         "objectType": "tag",
         "similarTo": [
@@ -213,10 +213,12 @@
         "isA": "place",
         "name": "place=island",
         "objectType": "tag",
-        "similarTo": {
-            "name": "place=archipelago",
-            "weight": 0.7
-        }
+        "similarTo": [
+            {
+                "name": "place=archipelago",
+                "weight": 0.7
+            }
+        ]
     },
     {
         "isA": "place",
@@ -253,7 +255,7 @@
         }
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=municipality",
         "objectType": "tag"
     },
@@ -308,26 +310,27 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=political_entity",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=populated",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=province",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=quarter",
         "objectType": "tag"
     },
     {
+        "description": "A poorly defined place that can be applied to many different types from hamlet to country. This should be avoided when possible, but is sometimes necessary when an incoming spec is vague.",
         "isA": "place",
         "name": "place=region",
         "objectType": "tag"
@@ -357,12 +360,12 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=settlement",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=shanty_town",
         "objectType": "tag"
     },
@@ -386,7 +389,7 @@
         ]
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=subdistrict",
         "objectType": "tag",
         "similarTo": {
@@ -395,12 +398,12 @@
         }
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=subdivision",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=suburb",
         "objectType": "tag",
         "similarTo": [
@@ -419,17 +422,17 @@
         ]
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=territory",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=municipality",
         "name": "place=town",
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=municipality",
         "name": "place=township",
         "objectType": "tag",
         "similarTo": [
@@ -444,7 +447,7 @@
         ]
     },
     {
-        "isA": "place",
+        "isA": "place=region",
         "name": "place=tribal_area",
         "objectType": "tag"
     },
@@ -454,7 +457,7 @@
         "objectType": "tag"
     },
     {
-        "isA": "place",
+        "isA": "place=municipality",
         "name": "place=village",
         "objectType": "tag",
         "similarTo": [

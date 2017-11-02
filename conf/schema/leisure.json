@@ -20,6 +20,95 @@
         "objectType": "tag"
     },
     {
+        "description": "A managed beach, including within the boundary any associated facilities. Entry may also require payment of a fee.",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "aliases": [
+            "leisure=beach-resort"
+        ],
+        "isA": "leisure",
+        "name": "leisure=beach_resort",
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "leisure=resort",
+                "weight": 0.8
+            },
+            {
+                "name": "natural=beach",
+                "weight": 0.7
+            }
+        ]
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "isA": "leisure",
+        "name": "leisure=fitness_centre",
+        "aliases": [
+            "leisure=fitness_center",
+            "leisure=fitness-center",
+            "leisure=fitness-centre"
+        ],
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "amenity=fitness_centre",
+                "weight": 0.95
+            },
+            {
+                "name": "leisure=fitness_station",
+                "weight": 0.8
+            },
+            {
+                "name": "leisure=sports_centre",
+                "weight": 0.7
+            },
+            {
+                "name": "sport=fitness",
+                "weight": 0.8
+            }
+        ]
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "isA": "leisure",
+        "name": "leisure=fitness_station",
+        "aliases": [
+            "leisure=fitness-station"
+        ],
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "amenity=fitness_centre",
+                "weight": 0.9
+            },
+            {
+                "name": "sport=fitness",
+                "weight": 0.8
+            }
+        ]
+    },
+    {
         "geometries": [
             "node",
             "area"
@@ -47,6 +136,20 @@
         ]
     },
     {
+        "description": "Tag leisure=pitch is used for a Wikipedia-16px.png pitch, an area designed for playing a particular sport, normally designated with appropriate markings. Examples include: tennis court, basketball court, ball park, riding arena.",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "isA": "leisure",
+        "name": "leisure=pitch",
+        "objectType": "tag"
+    },
+    {
         "geometries": [
             "node",
             "area"
@@ -57,6 +160,35 @@
         ],
         "isA": "leisure",
         "name": "leisure=playground",
+        "objectType": "tag"
+    },
+    {
+        "description": "A place used for relaxation or recreation, attracting visitors for vacations, tourism and/or going swimming in a pool and/or a nearby body of water.",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "isA": "leisure",
+        "name": "leisure=resort",
+        "objectType": "tag",
+        "similarTo": [
+            {
+                "name": "amenity=hotel",
+                "weight": 0.8
+            }
+        ]
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "leisure",
+        "name": "leisure=sauna",
         "objectType": "tag"
     },
     {

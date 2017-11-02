@@ -41,6 +41,16 @@
         "objectType": "tag"
     },
     {
+        "description": "From GeoNames: delta: a flat plain formed by alluvial deposits at the mouth of a stream",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=delta",
+        "objectType": "tag"
+    },
+    {
         "geometries": [
             "node",
             "area"
@@ -56,10 +66,29 @@
     },
     {
         "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=headland",
+        "objectType": "tag"
+    },
+    {
+        "geometries": [
             "node"
         ],
         "isA": "natural",
         "name": "natural=hill",
+        "objectType": "tag"
+    },
+    {
+        "description": "From GeoNames: inlet: a narrow waterway extending into the land, or connecting a bay or lagoon with a larger body of water",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=inlet",
         "objectType": "tag"
     },
     {
@@ -90,6 +119,37 @@
         "isA": "natural",
         "name": "natural=scrub",
         "objectType": "tag"
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=shoal",
+        "objectType": "tag"
+    },
+    {
+        "description": "From GeoNames: spit: a narrow, straight or curved continuation of a beach into a waterbody",
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=spit",
+        "objectType": "tag"
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "isA": "natural",
+        "name": "natural=tree",
+        "objectType": "tag",
+        "similarTo": [
+            { "name": "natural=wood", "weight": 0.7 }
+        ]
     },
     {
         "geometries": [

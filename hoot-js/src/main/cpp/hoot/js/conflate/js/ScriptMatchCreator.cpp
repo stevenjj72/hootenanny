@@ -413,7 +413,7 @@ public:
     _elementsVisited++;
     if (_elementsVisited % 10 == 0 && Log::getInstance().getLevel() <= Log::Info)
     {
-      cout << "Progress: " << _elementsVisited <<
+      cout << "Progress: " << _elementsVisited << "/" << getMap()->getElementCount() <<
               " _neighborCountSum: " << _neighborCountSum << "          \r";
       cout << flush;
     }
