@@ -62,21 +62,6 @@ unsigned int OsmJsonReader::logWarnCount = 0;
 
 HOOT_FACTORY_REGISTER(OsmMapReader, OsmJsonReader)
 
-namespace // anonymous
-{
-  // Used for debug
-  void writeString(QString fileName, QString str)
-  {
-    QFile file(fileName);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-    {
-        QTextStream stream(&file);
-        stream << str;
-        file.close();
-    }
-  }
-}
-
 // Default constructor
 OsmJsonReader::OsmJsonReader():
   _defaultStatus(Status::Invalid),
@@ -440,7 +425,7 @@ void OsmJsonReader::scrubQuotes(QString &jsonStr)
   // test strings into c++. Single quotes within string literals
   // should be escaped as \'
   // Detect if they are using single quotes or doubles
-  if (jsonStr.indexOf("\"node\"", Qt::CaseInsensitive) > -1)
+  if (jsonStr.indexOf("\"features\"", Qt::CaseInsensitive) > -1)
     return; // No need to scrub
   else
   {
