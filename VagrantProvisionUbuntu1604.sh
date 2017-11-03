@@ -12,9 +12,22 @@ echo HOOT_HOME: $HOOT_HOME
 source $HOOT_HOME/VagrantProvisionVars.sh
 
 # Can be used on commands that have a tendency to fail due to network or similar
-# issues.
+# issues. This will only print the output on failure.
 function retry {
-    $* || $*
+    OUTPUT=/tmp/out-`date +%N`.log
+    $* &> $OUTPUT
+    RESULT=$?
+    if [ $RESULT != 0 ]; then
+        echo "Retrying: " $*
+        $* &> $OUTPUT
+        RESULT=$?
+        if [ $RESULT != 0 ]; then
+            echo "Error: " $RESULT
+            cat $OUTPUT
+        fi
+    fi
+    rm $OUTPUT
+    return $RESULT
 }
 
 #
@@ -36,12 +49,12 @@ if [ -f /etc/apt/apt.conf.d/70debconf ]; then
 fi
 
 echo "Updating OS..."
-sudo apt-get -qq update > Ubuntu_upgrade.txt 2>&1
-sudo apt-get -q -y upgrade >> Ubuntu_upgrade.txt 2>&1
-sudo apt-get -q -y dist-upgrade >> Ubuntu_upgrade.txt 2>&1
+retry sudo apt-get -qq update
+retry sudo apt-get -q -y upgrade
+retry sudo apt-get -q -y dist-upgrade
 
 echo "### Setup NTP..."
-sudo apt-get -q -y install ntp
+retry sudo apt-get -q -y install ntp
 sudo service ntp stop
 sudo ntpd -gq
 sudo service ntp start
