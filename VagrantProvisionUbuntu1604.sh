@@ -12,7 +12,8 @@ echo HOOT_HOME: $HOOT_HOME
 source $HOOT_HOME/VagrantProvisionVars.sh
 
 # Can be used on commands that have a tendency to fail due to network or similar
-# issues. This will only print the output on failure.
+# issues. This will try twice and only print the output if it fails the second
+# time.
 function retry {
     OUTPUT=/tmp/out-`date +%N`.log
     $* &> $OUTPUT
@@ -255,7 +256,7 @@ fi
 
 if ! gem list --local | grep -q capybara-webkit; then
     echo "Gem Install: capybara-webkit"
-   sudo apt-get install -y qt5-default libqt5webkit5-dev gstreamer1.0-plugins-base gstreamer1.0-tools gstreamer1.0-x
+   retry sudo apt-get install -y qt5-default libqt5webkit5-dev gstreamer1.0-plugins-base gstreamer1.0-tools gstreamer1.0-x
    #sudo gem install capybara-webkit
    gem install capybara-webkit
 fi
@@ -292,9 +293,9 @@ if  ! dpkg -l | grep --quiet google-chrome-stable; then
     if [ ! -f google-chrome-stable_current_amd64.deb ]; then
       wget --quiet https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     fi
-    sudo apt-get -f -y -q install || echo ignore failure
+    retry sudo apt-get -f -y -q install || echo ignore failure
     sudo dpkg -i google-chrome-stable_current_amd64.deb  || echo ignore failure
-    sudo apt-get -f -y -q install
+    retry sudo apt-get -f -y -q install
     sudo dpkg -i google-chrome-stable_current_amd64.deb
 fi
 
@@ -317,7 +318,7 @@ else
   fi
 fi
 
-sudo apt-get autoremove -y
+retry sudo apt-get autoremove -y
 
 if [ ! -f bin/osmosis ]; then
     echo "### Installing Osmosis"
