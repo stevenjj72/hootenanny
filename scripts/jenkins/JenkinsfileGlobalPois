@@ -32,6 +32,8 @@ pipeline {
                 // remove any files from previous builds
                 sh 'git clean -f -x'
                 sh 'cp -R ../software.ubuntu1404 software'
+                // create translations-local symbolic links if necessary
+                sh 'if [ -d ../fouo-translations ] && [ ! -d plugins-local ]; then ln -s `pwd`/../fouo-translations/translations-local translations-local && ln -s `pwd`/../fouo-translations/plugins-local plugins-local; fi'
             }
         }
         // Need to expand this step to more robust static analysis scanning with SonarQube
