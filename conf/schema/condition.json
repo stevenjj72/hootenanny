@@ -3,6 +3,8 @@
         "dataType": "enumeration",
         "geometries": [
             "node",
+            "way",
+            "relation",
             "area"
         ],
         "influence": 1,
