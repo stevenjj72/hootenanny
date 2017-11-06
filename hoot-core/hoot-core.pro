@@ -38,7 +38,8 @@ OTHER_FILES = \
     ../conf/core/ConfigOptions.asciidoc \
     ../conf/schema/exit_to.json \
     ../conf/schema/scuba_diving.json \
-    ../conf/schema/shrine.json
+    ../conf/schema/shrine.json \
+    ../conf/schema/condition.json
 
 include(../Configure.pri)
 

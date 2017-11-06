@@ -128,7 +128,7 @@ var many2many = [
 
 //schemaTools.generateOsmRulePermutations(many2many);
 var rules = schemaTools.generateManyToOgrTable(many2many);
-//console.log(JSON.stringify(result, null, "    "));
+console.log(JSON.stringify(rules, null, "    "));
 
 var attrs = {};
 schemaTools.applyManyToOgrTable(rules, {"amenity": "townhall", "name": "foo"}, attrs);

@@ -1,25 +1,22 @@
 [
     {
         "dataType": "enumeration",
-        "isA": "hgispoi",
-        "name": "cemetery",
-        "objectType": "tag",
         "geometries": [
             "node",
             "area"
         ],
         "influence": 1,
-        "mismatchScore": 0.1,
-        "objectType": "tag"
-    },
-    {   
-        "isA": "cemetery",
-        "name": "cemetery=*",
+        "name": "condition",
         "objectType": "tag"
     },
     {
-        "isA": "cemetery",
-        "name": "cemetery=grave",
+        "isA": "condition",
+        "name": "condition=*",
+        "objectType": "tag"
+    },
+    {
+        "isA": "condition",
+        "name": "condition=abandoned",
         "objectType": "tag"
     }
 ]

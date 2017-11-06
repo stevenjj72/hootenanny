@@ -361,7 +361,7 @@
                 "name": "amenity=chapel",
                 "weight": 0.6
             }
-	]
+        ]
     },
     {
         "isA": "amenity=place_of_worship",
