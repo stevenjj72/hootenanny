@@ -19,7 +19,7 @@ pipeline {
         booleanParam(name: 'UI_tests',
             defaultValue: false)
         string(name: 'Box', defaultValue: 'hoot_ubuntu1604', description: 'Vagrant Box')
-        string(name: 'Provider', defaultValue: 'libvirt', description: 'Vagrant Provider')
+        string(name: 'Provider', defaultValue: 'virtualbox', description: 'Vagrant Provider')
     }
     stages {
         stage("Setup") {
@@ -31,7 +31,7 @@ pipeline {
                 sh 'git submodule update --init'
                 // remove any files from previous builds
                 sh 'git clean -f -x'
-                sh 'cp -R ../software.ubuntu1404 software'
+                //sh 'cp -R ../software.ubuntu1404 software'
                 // create translations-local symbolic links if necessary
                 sh 'if [ -d ../fouo-translations ] && [ ! -d plugins-local ]; then cp -R `pwd`/../fouo-translations/translations-local translations-local && cp -R `pwd`/../fouo-translations/plugins-local plugins-local; fi'
             }
