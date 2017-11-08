@@ -33,6 +33,32 @@ coverage:
 core-coverage:
 	$(MAKE) -f Makefile.old core-coverage
 
+build-dist-bin: always
+	$(MAKE) -f Makefile.old build
+-include HOOT_VERSION_FILE
+
+# Build a binary distributable tarball. This is Linux Distribution specific so it will likely only
+# be used in development or one-off scenarios
+dist-bin: build-dist-bin docs
+	$(MAKE) -f Makefile.old build
+	rm -rf tmp/hootenanny-bin-$(HOOT_VERSION)
+	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)
+	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)/docs/
+	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)/local/
+	cp -R conf tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp docs/*.pdf tmp/hootenanny-bin-$(HOOT_VERSION)/docs/
+	cp -R lib tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R local/lib tmp/hootenanny-bin-$(HOOT_VERSION)/local/
+	cp -R translations tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R plugins tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R rules tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R scripts tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R SetupEnv.sh tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cp -R bin tmp/hootenanny-bin-$(HOOT_VERSION)/
+	[ -d plugins-local ] && cp -R plugins-local tmp/hootenanny-bin-$(HOOT_VERSION)/
+	[ -d translations-local ] && cp -R translations-local tmp/hootenanny-bin-$(HOOT_VERSION)/
+	tar cvzf tmp/hootenanny-bin-$(HOOT_VERSION).tar.gz tmp/hootenanny-bin-$(HOOT_VERSION)
+
 eclipse:
 	$(MAKE) -f Makefile.old eclipse
 
@@ -61,6 +87,7 @@ help:
 	@echo "coverage                - If configured '--with-coverage', then creates test coverage reports."
 	@echo "docs                    - Build all project documentation."
 	@echo "dist                    - Make a distributable tarball."
+	@echo "dist-bin                - Make a distributable binary tarball. This will be distro specific."
 	@echo "eclipse                 - If configured '--with-services', then, builds Eclipse IDE project files."
 	@echo "osmapidb                - If configured '--with-services', then builds a clean copy of an OSM API database."
 	@echo "pp-test                 - Run the pretty-pipes tests.  Should take less than five minutes."

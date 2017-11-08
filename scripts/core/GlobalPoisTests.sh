@@ -7,3 +7,5 @@ hoot --version --debug; HootTest --slow --exclude=.*PrintNamesCmdTest.sh --exclu
 
 # This isn't working in Ubuntu 16.04. :(
 #cd $HOOT_HOME/plugins-local; mocha
+
+make -sj`nproc` dist-bin
