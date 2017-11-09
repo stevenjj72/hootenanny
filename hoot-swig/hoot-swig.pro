@@ -28,6 +28,8 @@ INCLUDEPATH += \
   $${DEPENDPATH} \
   /usr/include/nodejs \
   ../local/include/ \
+  $$(JAVA_HOME)/include \
+  $$(JAVA_HOME)/include/linux \
 
 PRECOMPILED_HEADER = src/main/cpp/hoot/swig/HootSwigStable.h
 
@@ -57,13 +59,11 @@ QMAKE_CXXFLAGS += -fno-strict-aliasing
 SWIG_FILES = $$files(src/*.i, true)
 
 swig.files=src/main/cpp/hoot/swig
-swig.commands=swig -c++ -java -package hoot -DGEOS_DLL= $$find(QMAKE_CXXFLAGS, -I.*) -I../hoot-core/src/main/cpp/ -I../hoot-rnd/src/main/cpp/ -outdir src/main/java-swig/hoot/ -o tmp/swig/HootSwigJni.cxx src/main/cpp/hoot/swig/swig.i
+swig.commands=mkdir -p src/main/java-swig/hoot/; mkdir -p tmp/swig; swig -c++ -java -package hoot -DGEOS_DLL= $$find(QMAKE_CXXFLAGS, -I.*) -I../hoot-core/src/main/cpp/ -I../hoot-rnd/src/main/cpp/ -outdir src/main/java-swig/hoot/ -o tmp/swig/HootSwigJni.cxx src/main/cpp/hoot/swig/swig.i
 swig.input=src/main/cpp/hoot/swig/swig.i
 swig.variable_out=dum
 swig.output=tmp/swig/HootSwigJni.cxx
 swig.name=swig
-
-message($$QMAKE_CXXFLAGS)
 
 PRE_TARGETDEPS=swig
 

@@ -24,13 +24,13 @@ SUBDIRS += \
     hoot-hadoop \
 }
 
+rnd {
+SUBDIRS += hoot-rnd
+}
+
 swig {
 SUBDIRS += \
     hoot-swig
-}
-
-rnd {
-SUBDIRS += hoot-rnd
 }
 
 SUBDIRS += \
