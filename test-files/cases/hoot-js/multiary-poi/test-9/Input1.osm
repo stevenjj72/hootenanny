@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-40163' action='modify' lat='12.78583127935' lon='44.97444032882'>
+    <tag k='ID' v='1-00096' />
+    <tag k='MATCH' v='1-00096' />
+    <tag k='REVIEW' v='none' />
+    <tag k='alt_name' v='قلعة مربوط' />
+    <tag k='attribution' v='osm' />
+    <tag k='error:circular' v='15' />
+    <tag k='historic' v='castle' />
+    <tag k='hoot:hash' v='sha1sum:aad0274bb8d39433cff9682bc6d0d06343b1f201' />
+    <tag k='int_name' v='Fort Marbūţ, Fort Marbut' />
+    <tag k='is_in' v='Republic of Yemen , جمهورية اليمن' />
+    <tag k='license' v='This data is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/.' />
+    <tag k='name' v='قلعة مربوط' />
+    <tag k='name:ar' v='قلعة مربوط' />
+    <tag k='name:ar1' v='قلعة مربوط' />
+    <tag k='name:de' v='Fort Marbut' />
+    <tag k='name:en' v='Fort Marbut' />
+    <tag k='name:fr' v='Fort Marbut' />
+    <tag k='place' v='locality' />
+    <tag k='source' v='fill in imagery source name' />
+    <tag k='source:datetime' v='2012-05-11T00:45:57.000Z' />
+    <tag k='uuid' v='{73301b4e-b5bd-43b5-b8bf-4e83d4b4aef8}' />
+    <tag k='wheelchair' v='unknown' />
+  </node>
+</osm>

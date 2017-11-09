@@ -31,6 +31,12 @@
 #include <hoot/core/conflate/MatchCreator.h>
 #include <hoot/core/conflate/MergerBase.h>
 
+// Qt
+#include <QByteArray>
+
+// tgs
+#include <tgs/HashMap.h>
+
 #include "MultiaryCluster.h"
 
 namespace hoot
@@ -71,13 +77,21 @@ public:
 
 private:
 
+  typedef std::pair<QByteArray, QByteArray> HashPair;
+
   QString _lastExplainText;
   ConstOsmMapPtr _map;
   boost::shared_ptr<MatchCreator> _matchCreator;
+  QHash<HashPair, MatchClassification> _cache;
 };
 
 typedef boost::shared_ptr<MultiaryScoreCache> MultiaryScoreCachePtr;
 
+}
+
+inline uint qHash(const std::pair<QByteArray, QByteArray>& p)
+{
+  return Tgs::cantorPairing(qHash(p.first), qHash(p.second));
 }
 
 #endif // __MULTIARY_SCORE_CACHE_H__

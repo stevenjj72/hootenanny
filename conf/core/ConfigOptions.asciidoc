@@ -2488,6 +2488,21 @@ This differencer can be used with:
 * `small.way.merger.diff`
 * `remove.duplicate.areas.diff`
 
+=== translation.debug.in.script
+
+* Data Type: string
+* Default Value: ``
+
+The translation script when translating input OGR data when using hoot::TranslationDebugOp.
+
+=== translation.debug.out.script
+
+* Data Type: string
+* Default Value: ``
+
+The translation script when translating OSM data to an OGR output when using
+hoot::TranslationDebugOp.
+
 === translation.direction
 
 * Data Type: string

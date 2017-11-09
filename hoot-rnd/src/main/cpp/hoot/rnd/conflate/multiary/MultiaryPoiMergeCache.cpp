@@ -143,7 +143,6 @@ MultiaryClusterPtr MultiaryPoiMergeCache::merge(MultiaryClusterPtr c1, MultiaryC
   // create a merge vector and a clean way to clean it up.
   std::vector<Merger*> mergers;
   ScopedMergerDeleter deleteMergers(mergers);
-
   // create a merger with the provided merge creator.
   _mergerCreator->createMergers(ms, mergers);
 

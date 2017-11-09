@@ -131,7 +131,7 @@ boost::shared_ptr<Feature> JavaScriptTranslator::_createFeature(QVariantMap vm, 
   // figure out which layer this feature belongs in.
   boost::shared_ptr<const Layer> layer;
 
-  for (size_t i = 0; i < _schema->getLayerCount(); ++i)
+  for (size_t i = 0; i < getOgrOutputSchema()->getLayerCount(); ++i)
   {
     boost::shared_ptr<const Layer> l = _schema->getLayer(i);
 
@@ -798,8 +798,8 @@ double JavaScriptTranslator::_toDouble(const QVariant& v) const
   return v.toDouble();
 }
 
-vector<ScriptToOgrTranslator::TranslatedFeature> JavaScriptTranslator::translateToOgr(Tags& tags,
-  ElementType elementType, geos::geom::GeometryTypeId geometryType)
+vector<ScriptToOgrTranslator::TranslatedFeature> JavaScriptTranslator::translateToOgr(
+  const Tags& tags, ElementType elementType, geos::geom::GeometryTypeId geometryType)
 {
   return _createAllFeatures(_translateToOgrVariants(tags, elementType, geometryType));
 }
@@ -842,7 +842,7 @@ vector<Tags> JavaScriptTranslator::translateToOgrTags(Tags& tags, ElementType el
   return result;
 }
 
-QVariantList JavaScriptTranslator::_translateToOgrVariants(Tags& tags,
+QVariantList JavaScriptTranslator::_translateToOgrVariants(const Tags& tags,
   ElementType elementType, geos::geom::GeometryTypeId geometryType)
 {
   _tags = &tags;

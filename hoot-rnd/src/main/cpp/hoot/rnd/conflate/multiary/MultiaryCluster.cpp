@@ -32,6 +32,21 @@
 namespace hoot
 {
 
+bool MultiaryCluster::containsLink(boost::shared_ptr<MultiaryCluster> other) const
+{
+  foreach (boost::weak_ptr<MultiaryCluster> link, _links)
+  {
+    MultiaryClusterPtr p = link.lock();
+    assert(p.get() != 0);
+    if (other == p)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 QString MultiaryCluster::toString() const
 {
   QString result;

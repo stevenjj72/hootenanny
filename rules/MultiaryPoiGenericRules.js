@@ -46,6 +46,7 @@ var weightedWordDistance = new hoot.NameExtractor(
 
 var distances = [
 
+    {k:'aeroway',                             match:2500,     review:4000},
     {k:'amenity',                             match:100,      review:200},
     {k:'amenity',  v:'grave_yard',            match:500,      review:1000},
     {k:'cemetery',                            match:500,      review:1000},
@@ -60,6 +61,7 @@ var distances = [
     {k:'leisure',                             match:250,      review:500},
     {k:'man_made',                            match:100,      review:200},
     {k:'natural',                             match:500,      review:1000},
+    {k:'office',                              match:100,      review:200},
     {k:'place',                               match:500,      review:1000},
     {k:'place',     v:'built_up_area',        match:2000,     review:3000},
     {k:'place',     v:'locality',             match:2000,     review:3000},
@@ -73,6 +75,7 @@ var distances = [
     {k:'sport',                               match:50,       review:100},
     {k:'station',                             match:100,      review:200},
     {k:'station',   v:'light_rail',           match:500,      review:1000},
+    {k:'studio',                              match:100,      review:200},
     {k:'tourism',                             match:100,      review:200},
     // hotel campuses can be quite large
     {k:'tourism',   v:'hotel',                match:200,      review:400},
@@ -228,6 +231,7 @@ function additiveScore(map, e1, e2) {
     var artworkTypeDistance = 1.0;
     var cuisineDistance = 1.0;
     var sportDistance = 1.0;
+    hoot.log("Here");
     if (!ignoreType)
     {
       poiDistance = getTagCategoryDistance("poi", map, e1, e2);

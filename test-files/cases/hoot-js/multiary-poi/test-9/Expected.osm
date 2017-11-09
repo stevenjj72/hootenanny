@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="hootenanny" srs="+epsg:4326">
+    <bounds minlat="12.78583127935" minlon="44.97444032882" maxlat="12.78658013039" maxlon="44.97505159645"/>
+    <node visible="true" id="-3" timestamp="1970-01-01T00:00:00Z" version="1" lat="12.7865801303900017" lon="44.9750515964500011">
+        <tag k="is_in:place" v="Aden"/>
+        <tag k="hoot:hash" v="sha1sum:127bfe0064ff6f859742feb0d7fb020793a5508c"/>
+        <tag k="is_in:city" v="مدينة عـدن"/>
+        <tag k="is_in:state" v="Aden"/>
+        <tag k="wm_No_Category" v="yes"/>
+        <tag k="REVIEW" v="none"/>
+        <tag k="is_in:country" v="Yemen"/>
+        <tag k="ID" v="3-00125"/>
+        <tag k="source" v="fill in imagery source name"/>
+        <tag k="uuid" v="wikimapia:1315217"/>
+        <tag k="name" v="رأس مربط"/>
+        <tag k="source:url" v="http://wikimapia.org/1315217/ar/%D8%B1%D8%A3%D8%B3-%D9%85%D8%B1%D8%A8%D8%B7"/>
+        <tag k="MATCH" v="1-00097"/>
+        <tag k="name:en" v="Head of Stud"/>
+        <tag k="error:circular" v="15"/>
+    </node>
+    <node visible="true" id="-1" timestamp="1970-01-01T00:00:00Z" version="1" lat="12.7858312793499991" lon="44.9744403288200019">
+        <tag k="is_in" v="Republic of Yemen , جمهورية اليمن"/>
+        <tag k="hoot:status" v="3"/>
+        <tag k="source" v="fill in imagery source name"/>
+        <tag k="name:de" v="Fort Marbut"/>
+        <tag k="building" v="fort"/>
+        <tag k="int_name" v="Fort Marbūţ, Fort Marbut"/>
+        <tag k="name:ar1" v="قلعة مربوط"/>
+        <tag k="ele" v="27"/>
+        <tag k="name" v="قلعة مربوط"/>
+        <tag k="license" v="This data is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/."/>
+        <tag k="alt_name" v="Fort Marbūţ"/>
+        <tag k="ID" v="1-00096"/>
+        <tag k="MATCH" v="1-00096"/>
+        <tag k="hoot:wrong" v="missMatch"/>
+        <tag k="attribution" v="osm"/>
+        <tag k="wheelchair" v="unknown"/>
+        <tag k="name:fr" v="Fort Marbut"/>
+        <tag k="REVIEW" v="none"/>
+        <tag k="is_in:country_code" v="YE"/>
+        <tag k="hoot:hash" v="sha1sum:011d063619eb5f688a2530a1b5bb9b94853ce0a0"/>
+        <tag k="name:en" v="Fort Marbut"/>
+        <tag k="place" v="locality"/>
+        <tag k="source:datetime" v="2012-05-11T00:45:57.000Z"/>
+        <tag k="uuid" v="{73301b4e-b5bd-43b5-b8bf-4e83d4b4aef8};GeoNames.org:415162"/>
+        <tag k="source:hash" v="sha1sum:dce037d61e6f5757143897da94893ed507624f7d;sha1sum:3087e31f43729ccf86ef46488ee2762abc9e0ee3"/>
+        <tag k="name:ar" v="قلعة مربوط"/>
+        <tag k="historic" v="castle"/>
+        <tag k="error:circular" v="15"/>
+    </node>
+</osm>

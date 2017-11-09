@@ -44,28 +44,40 @@ class MultiaryCluster : public QList<ConstElementPtr>
 {
 public:
   /**
-   * True if the cluster is still valid. This may be set to false after a cluster has been merged
-   * into a parent cluster. The valid flag is here to ease book-keeping.
-   */
-  bool valid;
-
-  /**
-   * A list of links from this cluster to other clusters. These links refer to some kind of
-   * non-miss relationship between the clusters.
-   */
-  QList< boost::shared_ptr<MultiaryCluster> > links;
-
-  /**
    * A single element that represents the merged result of all the cluster's members.
    */
   ElementPtr mergedElement;
 
-  MultiaryCluster() { valid = true; }
+  MultiaryCluster() { _valid = true; }
+
+  bool containsLink(boost::shared_ptr<MultiaryCluster> other) const;
+
+  void appendLink(boost::shared_ptr<MultiaryCluster> c) { _links.append(c); }
+
+  QList< boost::weak_ptr<MultiaryCluster> > getLinks() const { return _links; }
+
+  bool isValid() const { return _valid; }
+
+  void markInvalid() { _valid = false; }
 
   QString toString() const;
+private:
+  /**
+   * A list of links from this cluster to other clusters. These links refer to some kind of
+   * non-miss relationship between the clusters.
+   */
+  QList< boost::weak_ptr<MultiaryCluster> > _links;
+
+  /**
+   * True if the cluster is still valid. This may be set to false after a cluster has been merged
+   * into a parent cluster. The valid flag is here to ease book-keeping.
+   */
+  bool _valid;
+
 };
 
 typedef boost::shared_ptr<MultiaryCluster> MultiaryClusterPtr;
+typedef boost::weak_ptr<MultiaryCluster> MultiaryClusterWeakPtr;
 
 }
 

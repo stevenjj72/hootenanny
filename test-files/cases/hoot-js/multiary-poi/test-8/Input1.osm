@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-41187' action='modify' lat='12.79025985545' lon='44.98390404059'>
+    <tag k='ID' v='1-00073' />
+    <tag k='MATCH' v='1-00073' />
+    <tag k='REVIEW' v='none' />
+    <tag k='addr:postcode' v='00967' />
+    <tag k='attribution' v='osm' />
+    <tag k='error:circular' v='15' />
+    <tag k='hoot:hash' v='sha1sum:f40460246df65947f18431eca6d8c407af0be206' />
+    <tag k='license' v='This data is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/.' />
+    <tag k='name' v='مبنى قناة عدن الفضائية' />
+    <tag k='name:ar' v='مبنى قناة عدن الفضائية' />
+    <tag k='name:en' v='Aden TV Building' />
+    <tag k='office' v='government' />
+    <tag k='opening_hours' v='24/7' />
+    <tag k='source' v='fill in imagery source name' />
+    <tag k='source:datetime' v='2017-03-04T07:51:51.000Z' />
+    <tag k='uuid' v='{e07ab387-3908-426f-87d1-e49ba6b86b88}' />
+  </node>
+</osm>

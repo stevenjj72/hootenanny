@@ -193,20 +193,34 @@ public:
         _findMatches(v[i], matches);
       }
 
-      // while this is O(n^2) matches should generally be pretty small.
-      for (MatchSet::const_iterator it = matches.begin(); it != matches.end(); ++it)
+      if (matches.size() > 1000)
       {
-        const Match* m1 = *it;
-        for (MatchSet::const_iterator jt = matches.begin(); jt != matches.end(); ++jt)
+        LOG_WARN("Found an unexpectedly large match: " << matches.size() <<
+          ". Skipping conflict test.");
+        int count = 0;
+        for (MatchSet::const_iterator it = matches.begin(); it != matches.end() && count < 100; ++it)
         {
-          const Match* m2 = *jt;
-          if (m1 != m2)
+          count++;
+          LOG_WARN(**it)
+        }
+      }
+      else
+      {
+        // while this is O(n^2) matches should generally be pretty small.
+        for (MatchSet::const_iterator it = matches.begin(); it != matches.end(); ++it)
+        {
+          const Match* m1 = *it;
+          for (MatchSet::const_iterator jt = matches.begin(); jt != matches.end(); ++jt)
           {
-            if (checkForConflicts && MergerFactory::getInstance().isConflicting(map, m1, m2))
+            const Match* m2 = *jt;
+            if (m1 != m2)
             {
-              LOG_INFO(m1->toString());
-              LOG_INFO(m2->toString());
-              throw InternalErrorException("Found an unexpected conflicting match.");
+              if (checkForConflicts && MergerFactory::getInstance().isConflicting(map, m1, m2))
+              {
+                LOG_INFO(m1->toString());
+                LOG_INFO(m2->toString());
+                throw InternalErrorException("Found an unexpected conflicting match.");
+              }
             }
           }
         }

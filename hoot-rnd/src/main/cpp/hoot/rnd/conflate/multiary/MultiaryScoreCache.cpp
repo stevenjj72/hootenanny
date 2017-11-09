@@ -32,6 +32,7 @@
 // hoot
 #include <hoot/core/util/Log.h>
 #include <hoot/core/conflate/MatchClassification.h>
+#include <hoot/core/visitors/CalculateHashVisitor.h>
 
 namespace hoot
 {
@@ -66,21 +67,31 @@ MatchClassification MultiaryScoreCache::getScore(ConstElementPtr e1, ConstElemen
 {
   _lastExplainText.clear();
 
-  OsmMapPtr tmp(new OsmMap(_map->getProjection()));
-  tmp->addElement(ElementPtr(e1->clone()));
-  tmp->addElement(ElementPtr(e2->clone()));
-
-  boost::scoped_ptr<Match> m(
-    _matchCreator->createMatch(tmp, e1->getElementId(), e2->getElementId()));
+  HashPair key(CalculateHashVisitor::toHash(e1), CalculateHashVisitor::toHash(e2));
 
   // default to a hard miss.
   MatchClassification result(0, 1, 0);
 
-  // if the MatchCreator returns a valid match class, use that as the score.
-  if (m)
+  if (_cache.contains(key))
   {
-    result = m->getClassification();
-    _lastExplainText = m->explain();
+    result = _cache[key];
+  }
+  else
+  {
+    OsmMapPtr tmp(new OsmMap(_map->getProjection()));
+    tmp->addElement(ElementPtr(e1->clone()));
+    tmp->addElement(ElementPtr(e2->clone()));
+
+    boost::scoped_ptr<Match> m(
+      _matchCreator->createMatch(tmp, e1->getElementId(), e2->getElementId()));
+
+    // if the MatchCreator returns a valid match class, use that as the score.
+    if (m)
+    {
+      result = m->getClassification();
+      _lastExplainText = m->explain();
+    }
+    _cache[key] = result;
   }
 
   return result;

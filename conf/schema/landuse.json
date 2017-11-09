@@ -94,6 +94,16 @@
         }
     },
     {
+	"#" : "This is in the GeoNames translation. tank farm: a tract of land occupied by large, cylindrical, metal tanks in which oil or liquid petrochemicals are stored",
+        "isA": "landuse",
+        "name": "landuse=tank_farm",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "man_made=oil_terminal",
+            "weight": 0.8
+        }
+    },
+    {
         "geometries": [
             "node",
             "area"

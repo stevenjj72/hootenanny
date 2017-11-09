@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-42248' action='modify' lat='12.78658013039' lon='44.97505159645'>
+    <tag k='ID' v='3-00125' />
+    <tag k='MATCH' v='1-00097' />
+    <tag k='REVIEW' v='none' />
+    <tag k='hoot:hash' v='sha1sum:3653491378c4953c7dc3b51fbcb99c81c6e9e6eb' />
+    <tag k='is_in:city' v='مدينة عـدن' />
+    <tag k='is_in:country' v='Yemen' />
+    <tag k='is_in:place' v='Aden' />
+    <tag k='is_in:state' v='Aden' />
+    <tag k='name' v='رأس مربط' />
+    <tag k='name:en' v='Head of Stud' />
+    <tag k='source' v='fill in imagery source name' />
+    <tag k='source:url' v='http://wikimapia.org/1315217/ar/%D8%B1%D8%A3%D8%B3-%D9%85%D8%B1%D8%A8%D8%B7' />
+    <tag k='uuid' v='wikimapia:1315217' />
+    <tag k='wm_No_Category' v='yes' />
+  </node>
+</osm>

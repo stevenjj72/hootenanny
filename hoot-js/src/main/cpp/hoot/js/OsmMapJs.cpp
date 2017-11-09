@@ -62,7 +62,8 @@ OsmMapJs::OsmMapJs(OsmMapPtr map)
 
 OsmMapJs::~OsmMapJs()
 {
-  while (!v8::V8::IdleNotification());
+  int count = 0;
+  while (!v8::V8::IdleNotification() && count++ < 100);
 }
 
 void OsmMapJs::Init(Handle<Object> target) {

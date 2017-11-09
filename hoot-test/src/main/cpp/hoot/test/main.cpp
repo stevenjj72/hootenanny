@@ -131,6 +131,22 @@ public:
     }
   }
 
+  virtual void startTest(CppUnit::Test * test)
+  {
+    if (_showTestName)
+    {
+      cout << "Starting " << test->getName() << "..." << endl << flush;
+    }
+  }
+
+  virtual void startTestRun(CppUnit::Test * test, CppUnit::TestResult * /*eventManager*/)
+  {
+    if (_showTestName)
+    {
+      cout << "Starting " << test->getName() << "..." << endl << flush;
+    }
+  }
+
   virtual void endTestRun(CppUnit::Test* /*test*/, CppUnit::TestResult* /*eventManager*/ )
   {
     if (_showElapsed)

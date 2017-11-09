@@ -110,6 +110,15 @@
         "objectType": "tag"
     },
     {
+ 	"#": "This is not well defined on the OSM Wiki: http://wiki.openstreetmap.org/wiki/WikiProject_Oil_and_Gas_Infrastructure",
+        "geometries": [
+            "node"
+        ],
+        "isA": "man_made",
+        "name": "man_made=oil_terminal",
+        "objectType": "tag"
+    },
+    {
         "categories": [],
         "geometries": [
             "node",

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-41191' action='modify' lat='12.79023741625' lon='44.98433181046'>
+    <tag k='ID' v='3-00144' />
+    <tag k='MATCH' v='1-00073' />
+    <tag k='REVIEW' v='none' />
+    <tag k='amenity' v='studio' />
+    <tag k='hoot:hash' v='sha1sum:cbb282127f19c6ebacba2cf53138b4da48d3024a' />
+    <tag k='is_in:city' v='مدينة عـدن' />
+    <tag k='is_in:country' v='Yemen' />
+    <tag k='is_in:place' v='Aden' />
+    <tag k='is_in:state' v='Aden' />
+    <tag k='name' v='مبنى الاداعة و التلفزيون- القناة 2' />
+    <tag k='name:en' v='Al Adaya &amp; TV Building - Channel 2' />
+    <tag k='rawWmCategory' v='TV' />
+    <tag k='source' v='fill in imagery source name' />
+    <tag k='source:url' v='http://wikimapia.org/1310698/ar/%D9%85%D8%A8%D9%86%D9%89-%D8%A7%D9%84%D8%A7%D8%AF%D8%A7%D8%B9%D8%A9-%D9%88-%D8%A7%D9%84%D8%AA%D9%84%D9%81%D8%B2%D9%8A%D9%88%D9%86-%D8%A7%D9%84%D9%82%D9%86%D8%A7%D8%A9-2' />
+    <tag k='studio' v='television' />
+    <tag k='uuid' v='wikimapia:1310698' />
+  </node>
+</osm>

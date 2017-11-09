@@ -35,11 +35,8 @@ OTHER_FILES = \
     $$files(../rules/*.js, true) \
     $$files(../conf/schema/*.json, true) \
     $$files(../docs/commands/*.asciidoc, true) \
+    $$files(../scripts/core/*, true) \
     ../conf/core/ConfigOptions.asciidoc \
-    ../conf/schema/exit_to.json \
-    ../conf/schema/scuba_diving.json \
-    ../conf/schema/shrine.json \
-    ../conf/schema/condition.json
 
 include(../Configure.pri)
 

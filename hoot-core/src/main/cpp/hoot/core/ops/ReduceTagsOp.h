@@ -24,3 +24,37 @@
  *
  * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
+
+#ifndef REDUCETAGSOP_H
+#define REDUCETAGSOP_H
+
+#include "OsmMapOperation.h"
+
+namespace hoot
+{
+
+/**
+ * Destructively reduce the number of tags by consolidating tags with few values into a single
+ * tag.
+ *
+ * This is useful if you want to force OSM data into a tabular format such as SHP, but don't know
+ * which keys are in the OSM data.
+ *
+ * @note This only operates on nodes.
+ */
+class ReduceTagsOp : public OsmMapOperation
+{
+public:
+  static std::string className() { return "hoot::ReduceTagsOp"; }
+
+  ReduceTagsOp();
+
+  virtual void apply(boost::shared_ptr<OsmMap>& map);
+
+private:
+  int _maxColumns;
+};
+
+}
+
+#endif // REDUCETAGSOP_H

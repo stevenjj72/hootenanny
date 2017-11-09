@@ -79,7 +79,7 @@ public:
     /**
      * Returns true if both the clusters that are part of this link are valid.
      */
-    bool isValid() const { return a->valid && b->valid; }
+    bool isValid() const { return a->isValid() && b->isValid(); }
 
     QString toString() const
     {
