@@ -105,6 +105,10 @@ public:
     CalculateHashVisitor hashVisitor;
     map->visitRw(hashVisitor);
 
+#warning remove me
+  saveMap(map, "tmp/debug.osm");
+
+
     LOG_INFO("Applying pre-conflation operations...");
     NamedOp(ConfigOptions().getConflatePreOps()).apply(map);
 

@@ -74,7 +74,7 @@ exports.matchScore = function(map, e1, e2) {
         classification = 'match';
     }
 
-    hoot.log(matchScore.explain);
+    //hoot.log(matchScore.explain);
 //    hoot.trace("***POI MATCH DETAIL***");
 //    hoot.trace("e1: " + e1.getId() + ", " + e1.getTags().get("name"));
 //    if (e1.getTags().get("note"))

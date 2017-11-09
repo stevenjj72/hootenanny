@@ -30,6 +30,7 @@
 #include <hoot/core/io/OsmJsonReader.h>
 #include <hoot/core/io/OsmJsonWriter.h>
 #include <hoot/core/scoring/multiary/MultiaryMatchComparator.h>
+#include <hoot/core/util/ConfPath.h>
 #include <hoot/core/util/Log.h>
 
 using namespace hoot;
@@ -419,19 +420,19 @@ public:
     QString inputJson =
       "{'version': 0.6,'generator': 'Overpass API','elements':[\n"
       "{'type':'node','id': -1,'lat': 2.0,'lon': -3.0,\n"
-      "  'tags':{'hoot:status':'1', 'ID':'1-000000', 'MATCH':'1-000000', 'poi':'yes'}},\n"
+      "  'tags':{'hoot:status':'1', 'ID':'1-000000', 'MATCH':'1-000000', 'amenity':'restaurant'}},\n"
       "{'type':'node','id': -2,'lat': 2.0,'lon': -3.0,\n"
-      "  'tags':{'hoot:status':'1', 'ID':'1-000001', 'MATCH':'1-000000', 'poi':'yes'}},\n"
+      "  'tags':{'hoot:status':'1', 'ID':'1-000001', 'MATCH':'1-000000', 'amenity':'restaurant'}},\n"
       "{'type':'node','id': -3,'lat': 2.0,'lon': -3.0,\n"
-      "  'tags':{'hoot:status':'1', 'ID':'1-000002', 'MATCH':'1-000000', 'poi':'yes'}}\n"
+      "  'tags':{'hoot:status':'1', 'ID':'1-000002', 'MATCH':'1-000000', 'amenity':'restaurant'}}\n"
       "]}\n";
 
     QString conflatedJson =
       "{'version': 0.6,'generator': 'Overpass API','elements':[\n"
       "{'type':'node','id': -1,'lat': 2.0,'lon': -3.0,\n"
-      "  'tags':{'hoot:status':'Conflated', 'ID':'1-000000;1-000002', 'MATCH':'1-000000', 'poi':'yes'}},\n"
+      "  'tags':{'hoot:status':'Conflated', 'ID':'1-000000;1-000002', 'MATCH':'1-000000', 'amenity':'restaurant'}},\n"
       "{'type':'node','id': -2,'lat': 2.0,'lon': -3.0,\n"
-      "  'tags':{'hoot:status':'1', 'ID':'1-000001', 'MATCH':'1-000000', 'poi':'yes'}},\n"
+      "  'tags':{'hoot:status':'1', 'ID':'1-000001', 'MATCH':'1-000000', 'amenity':'restaurant'}},\n"
       "{'type': 'relation','id': -1,'members': [\n"
       "  {'type': 'node', 'ref': -1, 'role': 'reviewee'},\n"
       "  {'type': 'node', 'ref': -2, 'role': 'reviewee'}\n"
@@ -447,8 +448,11 @@ public:
     conflated->getNode(-2)->setStatus(Status::Unknown2);
 
     MultiaryMatchComparator uut;
-    uut.setTranslationScript("/home/vagrant/hoot/translation-local/HGISv20.js");
+    uut.setTranslationScript(ConfPath::getHootHome() + "/translations-local/HGISv20.js");
+    // disable translation warnings.
+    DisableLog dl;
     double correct = uut.evaluateMatches(input, conflated);
+    dl.reset();
 
     LOG_VAR(OsmJsonWriter().toString(conflated));
     LOG_VAR(uut.toString());

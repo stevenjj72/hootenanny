@@ -238,7 +238,6 @@ function additiveScore(map, e1, e2) {
       artworkTypeDistance = getTagAncestorDistance("artwork_type", map, e1, e2);
       cuisineDistance = getTagAncestorDistance("cuisine", map, e1, e2);
       sportDistance = getTagAncestorDistance("sport", map, e1, e2);
-      hoot.log(poiDistance);
     }
 
     var score = 0;

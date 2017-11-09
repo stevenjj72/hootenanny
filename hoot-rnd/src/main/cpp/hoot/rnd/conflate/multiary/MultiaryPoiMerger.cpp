@@ -97,13 +97,19 @@ void MultiaryPoiMerger::_createReviews(const OsmMapPtr& map,
 {
   foreach (MultiaryClusterAlgorithm::ClusterLinkPtr link, reviews)
   {
+    QString explain = link->explainText;
+
+    if (explain.isEmpty())
+    {
+      explain = "It is not clear how to group these POIs.";
+    }
     // we aren't using the review score in the review mark b/c the review score is almost always
     // 0. We may be able to fudge a value based on the match/miss thresholds, but I'm not sure
     // the score is every really used so I'll just leave it the default value for now.
     ReviewMarker::mark(map,
       map->getElement(link->a->mergedElement->getElementId()),
       map->getElement(link->b->mergedElement->getElementId()),
-      link->explainText,
+      explain,
       "POI");
   }
 }

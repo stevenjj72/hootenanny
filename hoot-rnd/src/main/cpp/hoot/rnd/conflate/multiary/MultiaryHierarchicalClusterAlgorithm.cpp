@@ -47,9 +47,11 @@ MultiaryHierarchicalClusterAlgorithm::MultiaryHierarchicalClusterAlgorithm(
 void MultiaryHierarchicalClusterAlgorithm::_addChildLinks(MultiaryClusterPtr parent,
   MultiaryClusterPtr child)
 {
-  foreach (MultiaryClusterPtr other, child->links)
+  foreach (MultiaryClusterWeakPtr otherWeak, child->getLinks())
   {
-    if (other->valid)
+    MultiaryClusterPtr other = otherWeak.lock();
+
+    if (other.get() != 0 && other->isValid())
     {
       MatchClassification s = _scoreCache->getScore(parent, other);
 
@@ -57,10 +59,10 @@ void MultiaryHierarchicalClusterAlgorithm::_addChildLinks(MultiaryClusterPtr par
       if (_matchThreshold.getType(s) != MatchType::Miss)
       {
         // only create a new ClusterLink if paren't hasn't already been linked.
-        if (other->links.contains(parent) == false)
+        if (other->containsLink(parent) == false)
         {
-          parent->links.append(other);
-          other->links.append(parent);
+          parent->appendLink(other);
+          other->appendLink(parent);
 
           ClusterLinkPtr l(new ClusterLink(parent, other, s));
           l->explainText = _scoreCache->getLastExplainText();
@@ -92,9 +94,9 @@ MultiaryClusterAlgorithm::ClusterList MultiaryHierarchicalClusterAlgorithm::calc
       MultiaryClusterPtr newCluster = _mergeCache->merge(cl->a, cl->b);
 
       // update the connected links in all clusters to reflect the latest merger
-      cl->a->valid = false;
+      cl->a->markInvalid();
       _clusters.removeAll(cl->a);
-      cl->b->valid = false;
+      cl->b->markInvalid();
       _clusters.removeAll(cl->b);
 
       _clusters.append(newCluster);
@@ -169,9 +171,12 @@ void MultiaryHierarchicalClusterAlgorithm::_initializeClusters(
     if (mt == MatchType::Match || mt == MatchType::Review)
     {
       ClusterLinkPtr l(new ClusterLink(eToCluster[it->first], eToCluster[it->second], score));
-      l->a->links.append(l->b);
-      l->b->links.append(l->a);
+      l->a->appendLink(l->b);
+      l->b->appendLink(l->a);
       l->explainText = _scoreCache->getLastExplainText();
+      if (l->explainText.isEmpty()) {
+        l->explainText = "POIs fall into an ambiguous cluster.";
+      }
       _linkQueue.push(l);
     }
   }
