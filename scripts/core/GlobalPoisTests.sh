@@ -8,4 +8,10 @@ hoot --version --debug; HootTest --slow --exclude=.*PrintNamesCmdTest.sh --exclu
 # This isn't working in Ubuntu 16.04. :(
 #cd $HOOT_HOME/plugins-local; mocha
 
+# Test the swig bindings
+cd hoot-swig
+mvn test
+
+cd ..
 make -sj`nproc` dist-bin
+

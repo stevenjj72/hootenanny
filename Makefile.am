@@ -55,9 +55,11 @@ dist-bin: build-dist-bin docs
 	cp -R scripts tmp/hootenanny-bin-$(HOOT_VERSION)/
 	cp -R SetupEnv.sh tmp/hootenanny-bin-$(HOOT_VERSION)/
 	cp -R bin tmp/hootenanny-bin-$(HOOT_VERSION)/
+	cd hoot-swig; mvn package
+	cp hoot-swig/target/*.jar tmp/hootenanny-bin-$(HOOT_VERSION)/lib
 	[ -d plugins-local ] && cp -R plugins-local tmp/hootenanny-bin-$(HOOT_VERSION)/
 	[ -d translations-local ] && cp -R translations-local tmp/hootenanny-bin-$(HOOT_VERSION)/
-	tar cvzf tmp/hootenanny-bin-$(HOOT_VERSION).tar.gz tmp/hootenanny-bin-$(HOOT_VERSION)
+	cd tmp; tar cvzf hootenanny-bin-$(HOOT_VERSION).tar.gz hootenanny-bin-$(HOOT_VERSION)
 
 eclipse:
 	$(MAKE) -f Makefile.old eclipse
