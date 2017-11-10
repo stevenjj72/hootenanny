@@ -46,6 +46,10 @@ class SearchBoundsCalculator;
 
 /**
  * A simple class to represent relationships between nodes.
+ *
+ * neighborIndex is the index of the againstElement that was passed into findMatches.
+ *
+ * @sa MultiaryUtilities::findMatches
  */
 class MultiarySimpleMatch
 {
@@ -57,7 +61,7 @@ public:
   QString toString() const { return QString("{neighborIndex: %1, score: %2}").arg(neighborIndex).
         arg(score); }
 
-  // The index of the elements that match in the provided vector.
+  // The index of the elements that match in the provided vector. (AKA againstElement index)
   int neighborIndex;
   double score;
 };
@@ -116,8 +120,12 @@ public:
    * Conflate the provided elements when appropriate. These elements should have some
    * interrelationship, but even if they don't the data will be handled appropriately.
    *
+   * The conflate method may conflate all the elements into one record, conflate no
+   * elements, or anything in between.
+   *
    * @param pbfElements PBF representation of the elements to conflate.
-   * @return A new list of elements that represent the conflated result.
+   * @return A new list of elements that represent the conflated result. The returned
+   * set will always be >=1 && <= pbfElements.size().
    */
   static QList<MultiaryElement> conflateCluster(QList<QByteArray> pbfElements);
 
