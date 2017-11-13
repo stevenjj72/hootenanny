@@ -48,10 +48,12 @@ MatchClassification MultiaryScoreCache::getScore(MultiaryClusterPtr c1, Multiary
 {
   // make sure all the elements in c1 can possibly (regardless of how remotely) be merged with
   // any of the elements in c2.
-  foreach (const ConstElementPtr& e1, *c1)
+  for (int i = 0; i < c1->size(); i++)
   {
-    foreach (const ConstElementPtr& e2, *c2)
+    const ConstElementPtr& e1 = c1->at(i);
+    for (int j = 0; j < c2->size(); j++)
     {
+      const ConstElementPtr& e2 = c2->at(j);
       MatchClassification mc = getScore(e1, e2);
       if (mc.getMissP() == 1)
       {

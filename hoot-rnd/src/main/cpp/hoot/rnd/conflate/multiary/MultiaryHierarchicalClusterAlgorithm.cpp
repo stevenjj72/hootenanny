@@ -58,7 +58,7 @@ void MultiaryHierarchicalClusterAlgorithm::_addChildLinks(MultiaryClusterPtr par
       // if the match is a miss there is no reason to record it as a link.
       if (_matchThreshold.getType(s) != MatchType::Miss)
       {
-        // only create a new ClusterLink if paren't hasn't already been linked.
+        // only create a new ClusterLink if parent hasn't already been linked.
         if (other->containsLink(parent) == false)
         {
           parent->appendLink(other);

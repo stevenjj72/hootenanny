@@ -32,13 +32,30 @@
 namespace hoot
 {
 
+int MultiaryCluster::_instanceCount = 0;
+
+MultiaryCluster::MultiaryCluster()
+{
+  _valid = true;
+  _instanceCount++;
+}
+
+MultiaryCluster::~MultiaryCluster()
+{
+  _instanceCount--;
+#warning remove me. This is hear to debug a memory leak
+  if (_instanceCount > 10000)
+  {
+    LOG_VARW(_instanceCount);
+  }
+}
+
 bool MultiaryCluster::containsLink(boost::shared_ptr<MultiaryCluster> other) const
 {
   foreach (boost::weak_ptr<MultiaryCluster> link, _links)
   {
     MultiaryClusterPtr p = link.lock();
-    assert(p.get() != 0);
-    if (other == p)
+    if (p.get() != 0 && other == p)
     {
       return true;
     }

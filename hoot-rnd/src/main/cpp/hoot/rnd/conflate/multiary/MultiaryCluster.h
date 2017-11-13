@@ -48,7 +48,9 @@ public:
    */
   ElementPtr mergedElement;
 
-  MultiaryCluster() { _valid = true; }
+  MultiaryCluster();
+
+  virtual ~MultiaryCluster();
 
   bool containsLink(boost::shared_ptr<MultiaryCluster> other) const;
 
@@ -62,6 +64,9 @@ public:
 
   QString toString() const;
 private:
+  MultiaryCluster(const MultiaryCluster& mc);
+  MultiaryCluster& operator=(const MultiaryCluster& mc);
+
   /**
    * A list of links from this cluster to other clusters. These links refer to some kind of
    * non-miss relationship between the clusters.
@@ -73,6 +78,8 @@ private:
    * into a parent cluster. The valid flag is here to ease book-keeping.
    */
   bool _valid;
+
+  static int _instanceCount;
 
 };
 

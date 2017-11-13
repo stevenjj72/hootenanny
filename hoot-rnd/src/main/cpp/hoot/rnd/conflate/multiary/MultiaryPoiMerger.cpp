@@ -120,8 +120,9 @@ void MultiaryPoiMerger::_mergeClusters(const OsmMapPtr& map,
 {
   foreach (MultiaryClusterPtr mc, clusters)
   {
-    foreach (ConstElementPtr e, *mc)
+    for (int i = 0; i < mc->size(); i++)
     {
+      const ConstElementPtr& e = mc->at(i);
       if (e->getElementId() != mc->mergedElement->getElementId())
       {
         RecursiveElementRemover(e->getElementId()).apply(map);

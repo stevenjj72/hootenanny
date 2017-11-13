@@ -102,17 +102,17 @@ MultiaryPoiMergeCache::MultiaryPoiMergeCache(ConstOsmMapPtr map,
 
 MultiaryClusterPtr MultiaryPoiMergeCache::merge(MultiaryClusterPtr c1, MultiaryClusterPtr c2)
 {
-  MultiaryClusterPtr result(new MultiaryCluster);
+  MultiaryClusterPtr result(new MultiaryCluster());
 
   // put all the elements from the two input clusters into our output cluster. These are the
   // original, unmerged elements.
-  foreach (const ConstElementPtr& e, *c1)
+  for (int i = 0; i < c1->size(); i++)
   {
-    result->append(e);
+    result->append(c1->at(i));
   }
-  foreach (const ConstElementPtr& e, *c2)
+  for (int i = 0; i < c2->size(); i++)
   {
-    result->append(e);
+    result->append(c2->at(i));
   }
 
   // sort the elements so the first inputs come first.
@@ -155,9 +155,9 @@ MultiaryClusterPtr MultiaryPoiMergeCache::merge(MultiaryClusterPtr c1, MultiaryC
 
   // create an environment in which we can call the merge operation without modify the input map.
   std::set<ElementId> eids;
-  foreach (const ConstElementPtr& e, *result)
+  for (int i = 0; i < result->size(); i++)
   {
-    eids.insert(e->getElementId());
+    eids.insert(result->at(i)->getElementId());
   }
 
   OsmMapPtr tmp(new OsmMap(_map->getProjection()));
