@@ -218,7 +218,8 @@
             "area"
         ],
         "aliases": [
-            "leisure=sports_complex"
+            "leisure=sports_complex",
+            "leisure=sports_center"
         ],
         "isA": "leisure",
         "name": "leisure=sports_centre",

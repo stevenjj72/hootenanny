@@ -162,6 +162,19 @@
             "hgispoi"
         ],
         "isA": "building",
+        "name": "building=apartments",
+        "objectType": "tag",
+        "similarTo": {
+            "name": "building=hotel",
+            "weight": 0.5
+        }
+    },
+    {
+        "categories": [
+            "poi",
+            "hgispoi"
+        ],
+        "isA": "building",
         "name": "building=fort",
         "objectType": "tag"
     },
