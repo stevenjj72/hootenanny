@@ -84,17 +84,14 @@ public:
 
   ScriptMatchVisitor(const ConstOsmMapPtr& map, vector<const Match*>& result,
     ConstMatchThresholdPtr mt, boost::shared_ptr<PluginContext> script) :
-    _map(map),
     _result(result),
     _mt(mt),
     _script(script),
     _customSearchRadius(-1.0)
   {
-    _neighborCountMax = -1;
-    _neighborCountSum = 0;
-    _elementsEvaluated = 0;
-    _elementsVisited = 0;
-    _maxGroupSize = 0;
+    LOG_DEBUG("ScriptMatchVisitor");
+
+    setMap(map);
 
     HandleScope handleScope;
     Context::Scope context_scope(_script->getContext());
@@ -419,6 +416,20 @@ public:
     }
   }
 
+  void setMap(const ConstOsmMapPtr&  m)
+  {
+    _map = m;
+    _neighborCountMax = -1;
+    _neighborCountSum = 0;
+    _elementsEvaluated = 0;
+    _elementsVisited = 0;
+    _maxGroupSize = 0;
+    _index.reset();
+    _matchCandidateCache.clear();
+    _searchRadiusCache.clear();
+    _indexToEid.clear();
+  }
+
   void setScriptPath(QString path) { _scriptPath = path; }
   QString getScriptPath() const { return _scriptPath; }
 
@@ -571,6 +582,7 @@ boost::shared_ptr<ScriptMatchVisitor> ScriptMatchCreator::_getCachedVisitor(
 {
   if (!_cachedScriptVisitor.get() || _cachedScriptVisitor->getMap() != map)
   {
+    LOG_DEBUG("_getCachedVisitor");
     LOG_VART(_cachedScriptVisitor.get());
     QString scriptPath = _scriptPath;
     if (_cachedScriptVisitor.get())
@@ -583,9 +595,17 @@ boost::shared_ptr<ScriptMatchVisitor> ScriptMatchCreator::_getCachedVisitor(
     QFileInfo scriptFileInfo(_scriptPath);
     LOG_TRACE("Resetting the match candidate checker " << scriptFileInfo.fileName() << "...");
 
-    vector<const Match*> emptyMatches;
-    _cachedScriptVisitor.reset(
-      new ScriptMatchVisitor(map, emptyMatches, ConstMatchThresholdPtr(), _script));
+    if (!_cachedScriptVisitor.get())
+    {
+#warning is this working?
+      vector<const Match*> emptyMatches;
+      _cachedScriptVisitor.reset(
+        new ScriptMatchVisitor(map, emptyMatches, ConstMatchThresholdPtr(), _script));
+    }
+    else
+    {
+      _cachedScriptVisitor->setMap(map);
+    }
     _cachedScriptVisitor->setScriptPath(scriptPath);
     //If the search radius has already been calculated for this matcher once, we don't want to do
     //it again due to the expense.
