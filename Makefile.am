@@ -45,6 +45,7 @@ dist-bin: build-dist-bin docs
 	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)
 	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)/docs/
 	mkdir -p tmp/hootenanny-bin-$(HOOT_VERSION)/local/
+	mkdir -p local/lib
 	cp -R conf tmp/hootenanny-bin-$(HOOT_VERSION)/
 	cp docs/*.pdf tmp/hootenanny-bin-$(HOOT_VERSION)/docs/
 	cp -R lib tmp/hootenanny-bin-$(HOOT_VERSION)/
