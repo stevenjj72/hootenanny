@@ -24,7 +24,7 @@
  *
  * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#include "SparkJsonWriter.h"
+#include "SparkWriter.h"
 
 // geos
 #include <geos/geom/Envelope.h>
@@ -33,38 +33,50 @@ using namespace geos::geom;
 
 // hoot
 #include <hoot/core/conflate/MatchFactory.h>
-#include <hoot/core/io/OsmJsonWriter.h>
+//#include <hoot/core/io/OsmJsonWriter.h>
 #include <hoot/core/util/ConfigOptions.h>
 #include <hoot/core/util/Exception.h>
 #include <hoot/core/util/Factory.h>
 #include <hoot/core/util/Log.h>
 #include <hoot/core/visitors/CalculateHashVisitor.h>
+#include <hoot/rnd/conflate/multiary/MultiaryUtilities.h>
+#include <hoot/core/util/StringUtils.h>
 
 // Qt
 #include <QStringBuilder>
+#include <QFileInfo>
 
 namespace hoot
 {
 
-HOOT_FACTORY_REGISTER(OsmMapWriter, SparkJsonWriter)
+HOOT_FACTORY_REGISTER(OsmMapWriter, SparkWriter)
 
 using namespace boost;
 
-SparkJsonWriter::SparkJsonWriter() :
-  _precision(round(ConfigOptions().getWriterPrecision()))
+SparkWriter::SparkWriter() :
+_precision(round(ConfigOptions().getWriterPrecision())),
+_nodeCtr(0),
+_logUpdateInterval(ConfigOptions().getApidbBulkInserterFileOutputStatusUpdateInterval())
 {
-
 }
 
-void SparkJsonWriter::open(QString fileName)
+void SparkWriter::open(QString fileName)
 {
   close();
 
+  QFileInfo fileInfo(fileName);
+
   _fp.reset(new QFile());
-  _fp->setFileName(fileName);
+  const QString addFileName =
+    fileInfo.absolutePath() + "/" + fileInfo.baseName() + "-add." + fileInfo.completeSuffix();
+  _fp->setFileName(addFileName);
+  if (_fp->exists() && !_fp->remove())
+  {
+    throw HootException(QObject::tr("Error removing existing %1 for writing.").arg(addFileName));
+  }
   if (!_fp->open(QIODevice::WriteOnly | QIODevice::Text))
   {
-    throw HootException(QObject::tr("Error opening %1 for writing").arg(fileName));
+    throw HootException(QObject::tr("Error opening %1 for writing").arg(addFileName));
   }
 
   // find a match creator that can provide the search bounds.
@@ -92,7 +104,7 @@ void SparkJsonWriter::open(QString fileName)
   }
 }
 
-void SparkJsonWriter::writePartial(const ConstNodePtr& n)
+void SparkWriter::writePartial(const ConstNodePtr& n)
 {
   NodePtr copy(dynamic_cast<Node*>(n->clone()));
   _addExportTagsVisitor.visit(copy);
@@ -101,7 +113,6 @@ void SparkJsonWriter::writePartial(const ConstNodePtr& n)
   QString result;
   // 600 was picked b/c OSM POI records were generally ~500.
   result.reserve(600);
-  result += "A\t";
 
   result += QString::number(e.getMinX(), 'g', 16) % "\t";
   result += QString::number(e.getMinY(), 'g', 16) % "\t";
@@ -109,29 +120,17 @@ void SparkJsonWriter::writePartial(const ConstNodePtr& n)
   result += QString::number(e.getMaxY(), 'g', 16) % "\t";
   /// @todo Update after https://github.com/ngageoint/hootenanny/issues/1663
   result += CalculateHashVisitor::toHashString(n) % "\t";
-  result += "{\"element\":{\"type\":\"node\"";
-  result += ",\"id\":" % QString::number(copy->getId(), 'g', 16);
-  result += ",\"lat\":" % QString::number(copy->getY(), 'g', 16);
-  result += ",\"lon\":" % QString::number(copy->getX(), 'g', 16);
-  result += ",\"tags\":{";
-
-  bool first = true;
-  const Tags& tags = copy->getTags();
-  for (Tags::const_iterator it = tags.begin(); it != tags.end(); ++it)
-  {
-    if (!first)
-    {
-      result += ",";
-    }
-    result += OsmJsonWriter::markupString(it.key()) % ":" % OsmJsonWriter::markupString(it.value());
-    first = false;
-  }
-
-  result += "}}}\n";
+  result += QString(MultiaryUtilities::convertElementToPbf(copy).toBase64().data()) + "\n";
 
   if (_fp->write(result.toUtf8()) == -1)
   {
     throw HootException("Error writing to file: " + _fp->errorString());
+  }
+
+  _nodeCtr++;
+  if (_nodeCtr % _logUpdateInterval == 0)
+  {
+    PROGRESS_INFO(StringUtils::formatLargeNumber(_nodeCtr) << " nodes written.");
   }
 }
 

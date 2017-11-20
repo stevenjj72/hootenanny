@@ -24,8 +24,8 @@
  *
  * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef SPARKJSONWRITER_H
-#define SPARKJSONWRITER_H
+#ifndef SPARKWRITER_H
+#define SPARKWRITER_H
 
 // hoot
 #include <hoot/core/io/PartialOsmMapWriter.h>
@@ -45,15 +45,15 @@ namespace hoot
  *
  * @note Only nodes are supported.
  */
-class SparkJsonWriter : public PartialOsmMapWriter
+class SparkWriter : public PartialOsmMapWriter
 {
 public:
 
-  static std::string className() { return "hoot::SparkJsonWriter"; }
+  static std::string className() { return "hoot::SparkWriter"; }
 
-  SparkJsonWriter();
+  SparkWriter();
 
-  virtual ~SparkJsonWriter() {}
+  virtual ~SparkWriter() {}
 
   /**
    * @see OsmMapWriter
@@ -91,14 +91,17 @@ public:
   virtual void writePartial(const ConstRelationPtr&) { throw NotImplementedException(); }
 
 private:
+
   boost::shared_ptr<QFile> _fp;
 
   SearchBoundsCalculatorPtr _bounds;
   AddExportTagsVisitor _addExportTagsVisitor;
 
   int _precision;
+  long _nodeCtr;
+  long _logUpdateInterval;
 };
 
 }
 
-#endif // SPARKJSONWRITER_H
+#endif // SPARKWRITER_H
