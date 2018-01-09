@@ -78,7 +78,11 @@
         ],
         "isA": "waterway=watercourse",
         "name": "waterway=stream",
-        "objectType": "tag"
+        "objectType": "tag",
+	"similarTo": {
+            "name": "waterway=river",
+            "weight": 0.8
+        }
     },
     {
         "isA": "waterway",

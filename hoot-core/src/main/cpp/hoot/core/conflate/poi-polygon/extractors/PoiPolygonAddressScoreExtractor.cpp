@@ -55,12 +55,6 @@ PoiPolygonAddressScoreExtractor::PoiPolygonAddressScoreExtractor()
 {
 }
 
-//void PoiPolygonAddressScoreExtractor::setConfiguration(const Settings& conf)
-//{
-//  ConfigOptions config = ConfigOptions(conf);
-//  setAddressScoreThreshold(config.getPoiPolygonAddressScoreThreshold());
-//}
-
 double PoiPolygonAddressScoreExtractor::extract(const OsmMap& map, const ConstElementPtr& poi,
                                                 const ConstElementPtr& poly) const
 {

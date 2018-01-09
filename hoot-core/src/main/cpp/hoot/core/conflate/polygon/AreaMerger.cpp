@@ -22,7 +22,8 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016, 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2016, 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
  */
 #include "AreaMerger.h"
 
@@ -30,7 +31,6 @@
 #include <hoot/core/conflate/poi-polygon/PoiPolygonMatch.h>
 #include <hoot/core/schema/TagMergerFactory.h>
 #include <hoot/core/ops/RecursiveElementRemover.h>
-
 
 namespace hoot
 {
@@ -41,10 +41,6 @@ AreaMerger::AreaMerger()
 
 void AreaMerger::merge(OsmMapPtr map)
 {
-  //var newTags = hoot.TagMergerFactory.mergeTags(e1.getTags(), e2.getTags());
-  //e1.setTags(newTags);
-  //new hoot.RecursiveElementRemover(e2).apply(map);
-
   //there should be exactly two area polygons
 
   int areaCount = map->getElementCount();
@@ -57,6 +53,7 @@ void AreaMerger::merge(OsmMapPtr map)
   ElementPtr element2;
   int parsedElementCount = 0;
 
+  //find the area(s) as ways
   const WayMap& ways = map->getWays();
   for (WayMap::const_iterator wayItr = ways.begin(); wayItr != ways.end(); ++wayItr)
   {
@@ -77,6 +74,7 @@ void AreaMerger::merge(OsmMapPtr map)
 
   if (parsedElementCount < 2)
   {
+    //find the area(s) as relations
     const RelationMap& relations = map->getRelations();
     for (RelationMap::const_iterator relItr = relations.begin(); relItr != map->getRelations().end(); ++relItr)
     {

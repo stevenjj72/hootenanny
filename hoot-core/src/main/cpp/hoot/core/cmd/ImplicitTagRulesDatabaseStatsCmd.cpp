@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -22,44 +22,46 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2016 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2017 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
  */
-#ifndef AREAMERGER_H
-#define AREAMERGER_H
 
-
-// hoot
-#include <hoot/core/OsmMap.h>
-
+// Hoot
+#include <hoot/core/util/Factory.h>
+#include <hoot/core/cmd/BaseCommand.h>
+#include <hoot/core/io/ImplicitTagRulesSqliteReader.h>
 
 namespace hoot
 {
 
-class OsmMap;
-
 /**
- * TODO: How much, if any, does this need to be genericized to handle areas (non-building polys)?
+ *
  */
-class AreaMerger
+class ImplicitTagRulesDatabaseStatsCmd : public BaseCommand
 {
-
 public:
 
-  /**
-   *
-   */
-  AreaMerger();
+  static std::string className() { return "hoot::ImplicitTagRulesDatabaseStatsCmd"; }
 
-  /**
-   * TODO: Merges a single POI with a single polygon, both as defined by PoiPolygonMerger
-   *
-   * @param map an OSM map containing a single node POI and a single polygon area or building, which
-   * can be a way or a relation (multipolygon)
-   */
-  static void merge(OsmMapPtr map);
+  virtual QString getName() const { return "implicit-tagging-rules-database-stats"; }
 
+  virtual int runSimple(QStringList args)
+  {
+    if (args.size() != 1)
+    {
+      std::cout << getHelp() << std::endl << std::endl;
+      throw HootException(QString("%1 takes one parameters.").arg(getName()));
+    }
+
+    ImplicitTagRulesSqliteReader dbReader;
+    dbReader.open(args[0].trimmed());
+    dbReader.printStats();
+    dbReader.close();
+
+    return 0;
+  }
 };
 
-}
+HOOT_FACTORY_REGISTER(Command, ImplicitTagRulesDatabaseStatsCmd)
 
-#endif // AREAMERGER_H
+}

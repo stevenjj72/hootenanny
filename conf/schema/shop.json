@@ -607,6 +607,10 @@
                 "weight": 0.6
             },
             {
+                "name": "shop=grocery",
+                "weight": 0.6
+            },
+            {
                 "name": "shop=kiosk",
                 "weight": 0.6
             },

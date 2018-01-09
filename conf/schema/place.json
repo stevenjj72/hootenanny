@@ -174,7 +174,11 @@
         ],
         "isA": "place",
         "name": "place=farm",
-        "objectType": "tag"
+        "objectType": "tag",
+	"similarTo": {
+            "name": "landuse=farm",
+            "weight": 0.8
+        }
     },
     {
         "categories": [

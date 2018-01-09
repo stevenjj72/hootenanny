@@ -218,7 +218,8 @@
             "area"
         ],
         "aliases": [
-            "leisure=sports_complex"
+            "leisure=sports_complex",
+            "leisure=sports_center"
         ],
         "isA": "leisure",
         "name": "leisure=sports_centre",
@@ -335,5 +336,18 @@
                 "weight": 0.9
             }
         ]
+    },
+    {
+        "geometries": [
+            "node",
+            "area"
+        ],
+        "categories": [
+            "use",
+            "poi"
+        ],
+        "isA": "leisure",
+        "name": "leisure=garden",
+        "objectType": "tag"
     }
 ]

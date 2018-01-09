@@ -88,10 +88,16 @@
         "isA": "landuse",
         "name": "landuse=reservoir",
         "objectType": "tag",
-        "similarTo": {
-            "name": "man_made=water_works",
-            "weight": 0.9
-        }
+        "similarTo": [
+            {
+                "name": "man_made=water_works",
+                "weight": 0.9
+            },
+            {
+                "name": "water=reservoir",
+                "weight": 0.9
+            }
+	]
     },
     {
 	"#" : "This is in the GeoNames translation. tank farm: a tract of land occupied by large, cylindrical, metal tanks in which oil or liquid petrochemicals are stored",
