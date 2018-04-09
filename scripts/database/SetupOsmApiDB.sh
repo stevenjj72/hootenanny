@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euox
 
 # We want to check to see if the $DB_NAME_OSMAPI exists. If it does not exist,
 # we create it. If it already exists, we check its creation date against its
