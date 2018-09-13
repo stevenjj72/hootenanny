@@ -42,6 +42,8 @@
 #include <hoot/rnd/io/MultiaryIngestChangesetReader.h>
 #include <hoot/rnd/io/OsmFileSorter.h>
 #include <hoot/core/io/OgrReader.h>
+#include <hoot/core/algorithms/changeset/ExternalMergeElementSorter.h>
+#include <hoot/core/io/OsmPbfReader.h>
 
 // tgs
 #include <tgs/System/Time.h>
@@ -61,6 +63,11 @@ _logUpdateInterval(ConfigOptions().getTaskStatusUpdateInterval())
   conf().set(ConfigOptions::getHootapiDbWriterRemapIdsKey(), false);
   //for the changeset derivation to work, all input IDs must not be modified as they are read
   conf().set(ConfigOptions::getReaderUseDataSourceIdsKey(), true);
+  //force external sorting; tune value if necessary
+  if (conf().get(ConfigOptions::getElementSorterElementBufferSizeKey()) == -1)
+  {
+    conf().set(ConfigOptions::getElementSorterElementBufferSizeKey(), 100000);
+  }
 
   //for debugging only
   //conf().set(ConfigOptions::getMaxElementsPerPartialMapKey(), 1000);
@@ -123,6 +130,8 @@ void MultiaryIngester::ingest(const QString newInput, const QString translationS
   HootApiDb referenceDb;
   referenceDb.open(referenceOutput);
 
+  //get the new daata stream
+  ElementInputStreamPtr inputStrm = _getNewInputStream(newInput);
   if (!referenceDb.mapExists(mapName))
   {
     LOG_INFO("The reference output dataset does not exist.");
@@ -130,9 +139,10 @@ void MultiaryIngester::ingest(const QString newInput, const QString translationS
     LOG_INFO("Generating a changeset file consisting entirely of create statements.");
 
     //If there's no existing reference data, then there's no point in deriving a changeset diff
-    //or sorting the data by ID.  So in that case, write all of the input data directly to the ref
-    //layer and generate a Spark changeset consisting entirely of create statements.
-    _writeNewReferenceData(_getFilteredNewInputStream(newInput), referenceOutput, changesetOutput);
+    //or sorting the data by ID.  So in that case, write all of the input data directly (after
+    //filtering it) to the ref layer and generate a Spark changeset consisting entirely of create
+    //statements.
+    _writeNewReferenceData(_getFilteredInputStream(inputStrm), referenceOutput, changesetOutput);
   }
   else
   {
@@ -143,78 +153,59 @@ void MultiaryIngester::ingest(const QString newInput, const QString translationS
     //assuming no duplicate map names here
     referenceDb.setMapId(referenceDb.getMapIdByName(mapName));
 
-    //decided to always sort the input
-    _sortInputFile(newInput);
-    QString sortedNewInput = _sortTempFile->fileName();
+    ElementInputStreamPtr filteredInputStrm;
+    //only sort if necessary
+    if (!_inputIsSorted(newInput))
+    {
+      //sort the new input by element id and type
+      boost::shared_ptr<ExternalMergeElementSorter> sorter(new ExternalMergeElementSorter());
+      sorter->sort(inputStrm);
+      //filter the data
+      filteredInputStrm = _getFilteredInputStream(sorter);
+    }
+    else
+    {
+      //filter the data
+      filteredInputStrm = _getFilteredInputStream(inputStrm);
+    }
 
     //create the changes and write them to the ref db layer and also to a changeset file for
     //external use by Spark
     _writeChangesToReferenceLayer(
-      _deriveAndWriteChangesToChangeset(
-        _getFilteredNewInputStream(sortedNewInput), referenceOutput, changesetOutput)->fileName(),
+      _deriveAndWriteChangesToChangeset(filteredInputStrm, referenceOutput, changesetOutput)->fileName(),
       referenceOutput);
   }
 }
 
-void MultiaryIngester::_sortInputFile(const QString input)
+bool MultiaryIngester::_inputIsSorted(const QString input) const
 {
-  _timer.restart();
-  LOG_INFO("Sorting " << input << " by POI ID...");
-
-  //sort incoming data by POI id, if necessary, for changeset derivation
-  const QString sortTempFileBaseName = "multiary-ingest-sort-temp-XXXXXX";
-  if (!OgrReader().isSupported(input))
-  {
-    QFileInfo newInputFileInfo(input);
-      _sortTempFile.reset(
-        new QTemporaryFile(
-          ConfigOptions().getApidbBulkInserterTempFileDir() + "/" + sortTempFileBaseName + "." +
-          newInputFileInfo.completeSuffix()));
-  }
-  else
-  {
-    //OGR formats have to be converted to PBF before sorting
-    _sortTempFile.reset(
-      new QTemporaryFile(
-        ConfigOptions().getApidbBulkInserterTempFileDir() + "/" + sortTempFileBaseName +
-        ".osm.pbf"));
-  }
-  //for debugging only
-  //sortTempFile->setAutoRemove(false);
-  if (!_sortTempFile->open())
-  {
-    throw HootException("Unable to open sort temp file: " + _sortTempFile->fileName() + ".");
-  }
-
-  OsmFileSorter::sort(input, _sortTempFile->fileName());
-
-  LOG_INFO(input << " sorted by POI ID to output: " << _sortTempFile->fileName() << ".");
-  LOG_INFO("Time elapsed: " << StringUtils::secondsToDhms(_timer.elapsed()));
+  return OsmPbfReader().isSupported(input) && OsmPbfReader().isSorted(input);
 }
 
-boost::shared_ptr<ElementInputStream> MultiaryIngester::_getFilteredNewInputStream(
-  const QString sortedNewInput)
+ElementInputStreamPtr MultiaryIngester::_getNewInputStream(const QString input)
 {
   boost::shared_ptr<PartialOsmMapReader> newInputReader =
     boost::dynamic_pointer_cast<PartialOsmMapReader>(
-      OsmMapReaderFactory::getInstance().createReader(sortedNewInput));
+      OsmMapReaderFactory::getInstance().createReader(input));
   newInputReader->setUseDataSourceIds(true);
-  newInputReader->open(sortedNewInput);
-  boost::shared_ptr<ElementInputStream> inputStream =
-    boost::dynamic_pointer_cast<ElementInputStream>(newInputReader);
+  newInputReader->open(input);
+  return boost::dynamic_pointer_cast<ElementInputStream>(newInputReader);
+}
 
+ElementInputStreamPtr MultiaryIngester::_getFilteredInputStream(ElementInputStreamPtr input)
+{
   //filter data down to POIs only, translate each element, and assign it a unique hash id
   boost::shared_ptr<PoiCriterion> elementCriterion(new PoiCriterion());
   QList<ElementVisitorPtr> visitors;
   visitors.append(boost::shared_ptr<TranslationVisitor>(new TranslationVisitor()));
   visitors.append(boost::shared_ptr<CalculateHashVisitor2>(new CalculateHashVisitor2()));
-  boost::shared_ptr<ElementInputStream> filteredNewInputStream(
-    new ElementCriterionVisitorInputStream(inputStream, elementCriterion, visitors));
-  return filteredNewInputStream;
+  return
+    boost::shared_ptr<ElementInputStream>(
+      new ElementCriterionVisitorInputStream(input, elementCriterion, visitors));
 }
 
 void MultiaryIngester::_writeNewReferenceData(
-  boost::shared_ptr<ElementInputStream> filteredNewInputStream, const QString referenceOutput,
+  ElementInputStreamPtr filteredNewInputStream, const QString referenceOutput,
   const QString changesetOutput)
 {
   _timer.restart();
@@ -278,7 +269,7 @@ void MultiaryIngester::_writeNewReferenceData(
 }
 
 boost::shared_ptr<QTemporaryFile> MultiaryIngester::_deriveAndWriteChangesToChangeset(
-  boost::shared_ptr<ElementInputStream> filteredNewInputStream, const QString referenceInput,
+  ElementInputStreamPtr filteredNewInputStream, const QString referenceInput,
   const QString changesetOutput)
 {
   //The changeset file changes and reference layer POI updates are written in two separate steps.

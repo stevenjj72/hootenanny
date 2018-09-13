@@ -9,8 +9,9 @@ mkdir -p $OUTPUT_DIR
 
 source conf/database/DatabaseConfig.sh
 HOOT_DB_URL="hootapidb://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
-# set the max elements per map in such a way that the partial reading occurs
-HOOT_OPTS="--warn -D uuid.helper.repeatable=true -D reader.add.source.datetime=false -D writer.include.circular.error.tags=false -D api.db.email=OsmApiDbHootApiDbConflate@hoottestcpp.org -D hootapi.db.writer.create.user=true -D max.elements.per.partial.map=2"
+# set the max elements per map in such a way that the partial reading occurs; set the element sort buffer size so that multiple sort temp
+# files get created
+HOOT_OPTS="--debug -D uuid.helper.repeatable=true -D reader.add.source.datetime=false -D writer.include.circular.error.tags=false -D api.db.email=OsmApiDbHootApiDbConflate@hoottestcpp.org -D hootapi.db.writer.create.user=true -D max.elements.per.partial.map=2 -D element.sorter.element.buffer.size=5 -D element.sorter.external.temp.format=osm"
 
 GOLD_OUTPUT=$REF_DIR/allCountries-geonames-output.osm
 GOLD_ADD_CHANGESET=$REF_DIR/allCountries-geonames-changeset-add.spark.1
@@ -42,6 +43,9 @@ echo ""
 echo "MULTIARY INGEST - EXPORTING GEONAMES REFERENCE LAYER..."
 echo ""
 hoot convert $HOOT_OPTS "$HOOT_DB_URL/MultiaryIngest-ReferenceLayer" $FINAL_OUTPUT
+
+exit 0
+
 echo ""
 echo "MULTIARY INGEST - COMPARING GEONAMES REFERENCE LAYER OUTPUT..."
 echo ""

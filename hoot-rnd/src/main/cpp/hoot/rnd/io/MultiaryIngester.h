@@ -27,14 +27,15 @@
 #ifndef MULTIARYINGESTER_H
 #define MULTIARYINGESTER_H
 
+// Hoot
+#include <hoot/core/io/ElementInputStream.h>
+
 // Qt
 #include <QElapsedTimer>
 #include <QTemporaryFile>
 
 namespace hoot
 {
-
-class ElementInputStream;
 
 /**
  * This class ingests data into the Multiary POI conflation workflow.  It takes a supported
@@ -55,10 +56,11 @@ class ElementInputStream;
  *
  * TODO: 9/12/18 - I believe that there is a critical bug in that hoot api db data sources aren't
  * be sorted before changeset derivation.  It was originally believed all results were coming back
- * completely sorted by ID from the db, but I don't believe that's the case (see
+ * completely sorted by ID from the db, but I don't believe that's actually the case (see
  * ApiDb::selectElements).  It may not be a hard fix to hook the db data source up to
  * ExternalMergeElementSorter or make the results come back sorted by ID, but given this code is
- * still part of unused prototype, I'm not spending time on it right now - BDW
+ * still part of unused prototype and test output will probably change quiet a bit, I'm not
+ * spending time on it right now - BDW
  */
 class MultiaryIngester
 {
@@ -80,19 +82,17 @@ public:
 
 private:
 
-  QString _sortedNewInput;
-  boost::shared_ptr<QTemporaryFile> _sortTempFile;
-
   long _logUpdateInterval;
 
   QElapsedTimer _timer;
 
-  boost::shared_ptr<ElementInputStream> _getFilteredNewInputStream(const QString sortedNewInput);
+  ElementInputStreamPtr _getNewInputStream(const QString input);
+  ElementInputStreamPtr _getFilteredInputStream(ElementInputStreamPtr input);
 
   /*
    * Writes data to the reference layer when no data exists there (no changeset derivation)
    */
-  void _writeNewReferenceData(boost::shared_ptr<ElementInputStream> filteredNewInputStream,
+  void _writeNewReferenceData(ElementInputStreamPtr filteredNewInputStream,
                               const QString referenceOutput, const QString changesetOutput);
 
   /*
@@ -100,7 +100,7 @@ private:
    * file; returns the changeset file
    */
   boost::shared_ptr<QTemporaryFile> _deriveAndWriteChangesToChangeset(
-    boost::shared_ptr<ElementInputStream> filteredNewInputStream, const QString referenceInput,
+    ElementInputStreamPtr filteredNewInputStream, const QString referenceInput,
     const QString changesetOutput);
 
   /*
@@ -108,10 +108,10 @@ private:
    */
   void _writeChangesToReferenceLayer(const QString changesetOutput, const QString referenceOutput);
 
-  void _sortInputFile(const QString input);
-
   void _doInputErrorChecking(const QString newInput, const QString translationScript,
                              const QString referenceOutput, const QString changesetOutput);
+
+  bool _inputIsSorted(const QString input) const;
 };
 
 }
