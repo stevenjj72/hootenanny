@@ -28,7 +28,7 @@
 #define SERIALIZABLE_H
 
 // Qt
-class QDataStream;
+#include <QDataStream>
 
 // Standard
 #include <string>
