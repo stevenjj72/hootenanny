@@ -42,7 +42,6 @@ namespace pt = boost::property_tree;
 
 // Qt
 #include <QTextStream>
-#include <QTextCodec>
 
 // Standard
 #include <fstream>

@@ -43,7 +43,6 @@
 
 // Qt
 #include <QTextStream>
-#include <QTextCodec>
 
 // Standard
 #include <string>
