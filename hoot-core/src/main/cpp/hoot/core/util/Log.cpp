@@ -35,6 +35,7 @@
 #include <cpl_error.h>
 
 // Qt
+#include <QtCore>
 #include <QDebug>
 
 // Standard
