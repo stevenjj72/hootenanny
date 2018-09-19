@@ -39,7 +39,7 @@ class ElementCriterion;
 
 // Used to get a vector of IDs for the nodes that satisfy
 // the specified criterion
-class FindNodesVisitor :  public ElementConstOsmMapVisitor
+class FindNodesVisitor : public ElementConstOsmMapVisitor
 {
 public:
 

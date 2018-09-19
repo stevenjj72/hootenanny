@@ -1082,7 +1082,7 @@ void OgrReaderInternal::read(OsmMapPtr map, Progress progress)
     f = 0;
     if (_count % 1000 == 0 && Log::getInstance().isInfoEnabled())
     {
-      LOG_DEBUG("Loading " << _path.toUtf8().data() << " " << _layerName.toAscii().data() << " " <<
+      LOG_DEBUG("Loading " << _path << " " << _layerName << " " <<
                 _count << " / " << _featureCount);
     }
     _count++;

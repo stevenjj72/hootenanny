@@ -308,7 +308,7 @@ boost::shared_ptr<BuildingRfClassifier> BuildingMatchCreator::_getRf()
     QString path = ConfPath::search(_conflateMatchBuildingModel);
     LOG_DEBUG("Loading model from: " << path);
 
-    QFile file(path.toAscii().data());
+    QFile file(path);
     if (!file.open(QIODevice::ReadOnly))
     {
       throw HootException("Error opening file: " + path);

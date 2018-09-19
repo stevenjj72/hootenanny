@@ -52,7 +52,7 @@ public:
 
   virtual const char* what() const throw()
   {
-    return _error.toAscii();
+    return _error.toLatin1().data();
   }
 
 protected:

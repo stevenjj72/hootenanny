@@ -36,7 +36,7 @@ class ElementCriterion;
 
 // Used to get a vector of IDs for the ways that satisfy
 // the specified criterion
-class FindWaysVisitor :  public ElementConstOsmMapVisitor
+class FindWaysVisitor : public ElementConstOsmMapVisitor
 {
 public:
 
