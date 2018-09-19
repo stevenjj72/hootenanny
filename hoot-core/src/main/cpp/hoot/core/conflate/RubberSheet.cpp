@@ -46,6 +46,9 @@
 #include <tgs/Interpolation/KernelEstimationInterpolator.h>
 #include <tgs/RandomForest/DataFrame.h>
 
+//  Qt
+#include <QDataStream>
+
 using namespace geos::geom;
 using namespace std;
 using namespace Tgs;
