@@ -2,7 +2,7 @@
 # For code contributing to the hoot nodejs interface
 ##############
 
-QT += script \
+QT += \
     sql \
     testlib \
     xml \
@@ -25,7 +25,6 @@ INCLUDEPATH += \
 PRECOMPILED_HEADER = src/main/cpp/hoot/js/HootJsStable.h
 
 CONFIG += rtti \
-    qtestlib \
     precompile_header
 
 OTHER_FILES += \
