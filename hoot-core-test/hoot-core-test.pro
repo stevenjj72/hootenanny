@@ -2,7 +2,7 @@
 # Contains hoot production test code
 # -------------------------------------------------
 
-QT += script \
+QT += \
     sql \
     testlib \
     xml \
@@ -22,7 +22,6 @@ INCLUDEPATH += \
   ../local/include/ \
 
 CONFIG += rtti \
-    qtestlib \
     debug \
     precompile_header
 
