@@ -219,7 +219,7 @@ public:
     }
     catch (const HootException& e)
     {
-      exceptionMsg = QString::fromAscii(e.what());
+      exceptionMsg = e.what();
     }
     CPPUNIT_ASSERT(exceptionMsg.contains("Map already contains this node"));
   }
@@ -258,7 +258,7 @@ public:
     }
     catch (const HootException& e)
     {
-      exceptionMsg = QString::fromAscii(e.what());
+      exceptionMsg = e.what();
     }
     CPPUNIT_ASSERT(exceptionMsg.contains("Map already contains this way"));
   }
@@ -290,7 +290,7 @@ public:
     }
     catch (const HootException& e)
     {
-      exceptionMsg = QString::fromAscii(e.what());
+      exceptionMsg = e.what();
     }
     CPPUNIT_ASSERT(exceptionMsg.contains("Map already contains this relation"));
   }
@@ -338,7 +338,7 @@ public:
     }
     catch (const HootException& e)
     {
-      exceptionMsg = QString::fromAscii(e.what());
+      exceptionMsg = e.what();
     }
     CPPUNIT_ASSERT(exceptionMsg.contains("Incompatible maps"));
   }
