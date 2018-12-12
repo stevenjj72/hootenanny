@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.clipping;
 
-
 import static hoot.services.HootProperties.HOOTAPI_DB_URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,6 +37,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import hoot.services.models.db.Users;
 
 public class ClipDatasetCommandTest {
 
@@ -60,11 +60,13 @@ public class ClipDatasetCommandTest {
 
         List<String> options = new LinkedList<>();
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
 
         List<String> hootOptions = new LinkedList<>();
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, clipDatasetCommand.getJobId());
         assertEquals(true, clipDatasetCommand.getTrackable());

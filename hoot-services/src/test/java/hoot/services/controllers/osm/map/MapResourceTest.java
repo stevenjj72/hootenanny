@@ -76,10 +76,9 @@ import hoot.services.utils.HootCustomPropertiesSetter;
 import hoot.services.utils.MapUtils;
 import hoot.services.utils.XmlUtils;
 
-
 public class MapResourceTest extends OSMResourceTestAbstract {
     private void getMap(String idOrName, String multiLayerUniqueElementIdsStr,
-        boolean useMultiLayerUniqueElementIdsParameter) throws Exception {
+            boolean useMultiLayerUniqueElementIdsParameter) throws Exception {
         BoundingBox originalBounds = OSMTestUtils.createStartingTestBounds();
         BoundingBox queryBounds = OSMTestUtils.createTestQueryBounds();
         long changesetId = OSMTestUtils.createTestChangeset(originalBounds);
@@ -129,13 +128,12 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         // Query the elements back out geospatially. All but one of the
         // nodes, one of the ways, and one of the relations should be returned.
         Document responseData = null;
-        if (useMultiLayerUniqueElementIdsParameter) {
+        if(useMultiLayerUniqueElementIdsParameter) {
             responseData = target("api/0.6/map/" + idOrName + "/" + queryBounds.toServicesString())
                     .queryParam("multiLayerUniqueElementIds", multiLayerUniqueElementIdsStr)
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        else {
+        } else {
             responseData = target("api/0.6/map/" + idOrName + "/" + queryBounds.toServicesString())
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
@@ -150,7 +148,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
 
         boolean multiLayerUniqueElementIds = multiLayerUniqueElementIdsStr.toLowerCase().equals("true");
         assertEquals(15, XPathAPI.selectNodeList(responseData, "//osm/node").getLength());
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyNode(responseData, 1, String.valueOf(nodeIdsArr[0]), changesetId,
                     originalBounds.getMinLat(), originalBounds.getMinLon(), false);
             OSMTestUtils.verifyNode(responseData, 2, String.valueOf(nodeIdsArr[1]), changesetId,
@@ -163,8 +161,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
                     originalBounds.getMinLat(), originalBounds.getMinLon(), false);
             OSMTestUtils.verifyNode(responseData, 6, String.valueOf(oobNodeIdsArr[0]), changesetId,
                     queryBounds.getMinLat() - 5, queryBounds.getMinLon() - 5, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyNode(responseData, 1, mapId + "_n_" + nodeIdsArr[0], changesetId,
                     originalBounds.getMinLat(), originalBounds.getMinLon(), true);
             OSMTestUtils.verifyNode(responseData, 2, mapId + "_n_" + nodeIdsArr[1], changesetId,
@@ -203,44 +200,40 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         wayNodeIds.add(nodeIdsArr[0]);
         wayNodeIds.add(nodeIdsArr[1]);
         wayNodeIds.add(nodeIdsArr[4]);
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyWay(responseData, 1, String.valueOf(wayIdsArr[0]), changesetId, wayNodeIds,
                     false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyWay(responseData, 1, mapId + "_w_" + wayIdsArr[0], changesetId, wayNodeIds,
                     true);
         }
         wayNodeIds.clear();
         wayNodeIds.add(nodeIdsArr[2]);
         wayNodeIds.add(nodeIdsArr[1]);
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyWay(responseData, 2, String.valueOf(wayIdsArr[1]), changesetId, wayNodeIds,
                     false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyWay(responseData, 2, mapId + "_w_" + wayIdsArr[1], changesetId, wayNodeIds,
                     true);
         }
         wayNodeIds.clear();
         wayNodeIds.add(nodeIdsArr[0]);
         wayNodeIds.add(nodeIdsArr[1]);
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyWay(responseData, 3, String.valueOf(wayIdsArr[2]), changesetId, wayNodeIds,
                     false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyWay(responseData, 3, mapId + "_w_" + wayIdsArr[2], changesetId, wayNodeIds,
                     true);
         }
         wayNodeIds.clear();
         wayNodeIds.add(nodeIdsArr[0]);
         wayNodeIds.add(oobNodeIdsArr[0]);
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyWay(responseData, 4, String.valueOf(wayIdsArr[3]), changesetId, wayNodeIds,
                     false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyWay(responseData, 4, mapId + "_w_" + wayIdsArr[3], changesetId, wayNodeIds,
                     true);
         }
@@ -268,11 +261,10 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         members.add(new RelationMember(wayIdsArr[0], ElementType.Way, "role2"));
         members.add(new RelationMember(nodeIdsArr[2], ElementType.Node));
 
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyRelation(responseData, 1, String.valueOf(relationIdsArr[0]), changesetId,
                     members, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyRelation(responseData, 1, mapId + "_r_" + relationIdsArr[0], changesetId,
                     members, true);
         }
@@ -281,33 +273,30 @@ public class MapResourceTest extends OSMResourceTestAbstract {
 
         members.add(new RelationMember(nodeIdsArr[4], ElementType.Node, "role1"));
         members.add(new RelationMember(relationIdsArr[0], ElementType.Relation, "role1"));
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyRelation(responseData, 2, String.valueOf(relationIdsArr[1]), changesetId,
                     members, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyRelation(responseData, 2, mapId + "_r_" + relationIdsArr[1], changesetId,
                     members, true);
         }
         members.clear();
 
         members.add(new RelationMember(wayIdsArr[1], ElementType.Way));
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyRelation(responseData, 3, String.valueOf(relationIdsArr[2]), changesetId,
                     members, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyRelation(responseData, 3, mapId + "_r_" + relationIdsArr[2], changesetId,
                     members, true);
         }
         members.clear();
 
         members.add(new RelationMember(nodeIdsArr[2], ElementType.Node, "role1"));
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyRelation(responseData, 4, String.valueOf(relationIdsArr[3]), changesetId,
                     members, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyRelation(responseData, 4, mapId + "_r_" + relationIdsArr[3], changesetId,
                     members, true);
         }
@@ -317,11 +306,10 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         members.add(new RelationMember(oobNodeIdsArr[1], ElementType.Node, "role1"));
         members.add(new RelationMember(wayIdsArr[0], ElementType.Way, "role1"));
         members.add(new RelationMember(oobWayId, ElementType.Way, "role1"));
-        if (!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
+        if(!multiLayerUniqueElementIds || !useMultiLayerUniqueElementIdsParameter) {
             OSMTestUtils.verifyRelation(responseData, 5, String.valueOf(relationIdsArr[4]), changesetId,
                     members, false);
-        }
-        else {
+        } else {
             OSMTestUtils.verifyRelation(responseData, 5, mapId + "_r_" + relationIdsArr[4], changesetId,
                     members, true);
         }
@@ -370,8 +358,8 @@ public class MapResourceTest extends OSMResourceTestAbstract {
 
         // Query an empty map. No elements should be returned.
         Document responseData = target("api/0.6/map/" + String.valueOf(mapId) + "/" + queryBounds.toServicesString())
-                    .request(MediaType.TEXT_XML)
-                    .get(Document.class);
+                .request(MediaType.TEXT_XML)
+                .get(Document.class);
 
         assertNotNull(responseData);
 
@@ -532,8 +520,8 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         // nodes, one of the ways, and
         // one of the relations should be returned.
         Document responseData = target("api/0.6/map/" + String.valueOf(mapId) + "/" + queryBounds.toServicesString())
-                    .request(MediaType.TEXT_XML)
-                    .get(Document.class);
+                .request(MediaType.TEXT_XML)
+                .get(Document.class);
 
         assertNotNull(responseData);
 
@@ -842,8 +830,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
                 // results size
                 target("api/0.6/map/" + String.valueOf(mapId) + "/" + queryBounds.toServicesString())
                         .request(MediaType.TEXT_XML).get(Document.class);
-            }
-            catch (BadRequestException e) {
+            } catch (BadRequestException e) {
                 Response r = e.getResponse();
                 assertEquals(Response.Status.BAD_REQUEST, Response.Status.fromStatusCode(r.getStatus()));
                 assertEquals(r.readEntity(String.class), expectedErrorMsg);
@@ -851,8 +838,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
                 OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
                 throw e;
             }
-        }
-        finally {
+        } finally {
             HootCustomPropertiesSetter.setProperty("MAX_QUERY_NODES", originalMaxQueryNodes);
         }
     }
@@ -864,8 +850,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         try {
             // try to query nodes from a map that doesn't exist
             target("api/0.6/map/-2/" + queryBounds.toServicesString()).request(MediaType.TEXT_XML).get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(404, r.getStatus());
             assertEquals(r.readEntity(String.class), "No map with that id exists");
@@ -899,8 +884,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
             target("api/0.6/map//" + queryBounds.toServicesString())
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(404, r.getStatus());
             assertEquals(r.readEntity(String.class), "");
@@ -950,8 +934,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
             target("api/0.6/map/" + duplicatedMapName + "/" + queryBounds.toServicesString())
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (BadRequestException e) {
+        } catch (BadRequestException e) {
             Response r = e.getResponse();
             assertEquals(400, r.getStatus());
             assertEquals(r.readEntity(String.class), expectedErrorMsg);
@@ -976,8 +959,7 @@ public class MapResourceTest extends OSMResourceTestAbstract {
             target("api/0.6/map/" + String.valueOf(mapId) + "/")
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotAllowedException e) {
+        } catch (NotAllowedException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.METHOD_NOT_ALLOWED, Response.Status.fromStatusCode(r.getStatus()));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
@@ -1023,10 +1005,10 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         mapIds.add(mapId);
 
         // create some more maps
-        long mapId2 = MapUtils.insertMap(userId);
+        long mapId2 = MapUtils.insertTestMap();
         mapIds.add(mapId2);
 
-        long mapId3 = MapUtils.insertMap(userId);
+        long mapId3 = MapUtils.insertTestMap();
         mapIds.add(mapId3);
 
         // query out the layers
@@ -1040,22 +1022,20 @@ public class MapResourceTest extends OSMResourceTestAbstract {
         boolean foundSecondId = false;
         boolean foundThirdId = false;
 
-        for (int i = 0; i < mapLayers.getLayers().length; i++) {
+        for(int i = 0; i < mapLayers.getLayers().length; i++) {
             MapLayer layer = mapLayers.getLayers()[i];
             int mapIdsIndex = -1;
-            if (layer.getId() == mapIds.get(0)) {
+            if(layer.getId() == mapIds.get(0)) {
                 foundFirstId = true;
                 mapIdsIndex = 0;
-            }
-            else if (layer.getId() == mapIds.get(1)) {
+            } else if(layer.getId() == mapIds.get(1)) {
                 foundSecondId = true;
                 mapIdsIndex = 1;
-            }
-            else if (layer.getId() == mapIds.get(2)) {
+            } else if(layer.getId() == mapIds.get(2)) {
                 foundThirdId = true;
                 mapIdsIndex = 2;
             }
-            if (mapIdsIndex != -1) {
+            if(mapIdsIndex != -1) {
                 assertEquals("map-with-id-" + mapIds.get(mapIdsIndex), layer.getName());
             }
         }
@@ -1077,9 +1057,9 @@ public class MapResourceTest extends OSMResourceTestAbstract {
 
         MapLayer[] mLayers = mapLayers.getLayers();
 
-        if (mLayers != null) {
-            for (MapLayer layer : mLayers) {
-                if (layer.getId() == mapId) {
+        if(mLayers != null) {
+            for(MapLayer layer : mLayers) {
+                if(layer.getId() == mapId) {
                     fail("Map with ID = " + mapId + " must not be present!");
                 }
             }

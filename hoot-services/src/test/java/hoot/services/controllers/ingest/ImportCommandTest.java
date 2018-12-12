@@ -26,11 +26,13 @@
  */
 package hoot.services.controllers.ingest;
 
-
 import static hoot.services.HootProperties.HOME_FOLDER;
 import static hoot.services.HootProperties.HOOTAPI_DB_URL;
 import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
-import static hoot.services.controllers.ingest.UploadClassification.*;
+import static hoot.services.controllers.ingest.UploadClassification.FGDB;
+import static hoot.services.controllers.ingest.UploadClassification.OSM;
+import static hoot.services.controllers.ingest.UploadClassification.SHP;
+import static hoot.services.controllers.ingest.UploadClassification.ZIP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +44,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import hoot.services.models.db.Users;
 
 public class ImportCommandTest {
 
@@ -62,11 +65,10 @@ public class ImportCommandTest {
         List<String> options = new LinkedList<>();
         //options.add("osm2ogr.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
 
         ImportCommand importCommand = new ImportCommand(jobId, workDir, filesToImport, zips, translation,
-                                      etlName, isNoneTranslation, debugLevel, SHP, caller, null);
+                etlName, isNoneTranslation, debugLevel, SHP, caller, null);
 
         String hootConvertCommand = "hoot convert --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${INPUTS} ${INPUT_NAME} --trans ${TRANSLATION_PATH}";
         String hootConvertCommandNoTranslation = "hoot convert --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${INPUTS} ${INPUT_NAME}";
@@ -78,14 +80,14 @@ public class ImportCommandTest {
         assertNotNull(importCommand.getCommand());
 
         assertEquals(hootConvertCommand, importCommand.getCommand());
-        assertEquals(1, ((List)importCommand.getSubstitutionMap().get("INPUTS")).size());
-        assertTrue(((List)importCommand.getSubstitutionMap().get("INPUTS")).get(0).toString().endsWith("file.shp"));
+        assertEquals(1, ((List) importCommand.getSubstitutionMap().get("INPUTS")).size());
+        assertTrue(((List) importCommand.getSubstitutionMap().get("INPUTS")).get(0).toString().endsWith("file.shp"));
         assertEquals(HOOTAPI_DB_URL + "/" + etlName, importCommand.getSubstitutionMap().get("INPUT_NAME"));
         assertTrue(importCommand.getSubstitutionMap().get("TRANSLATION_PATH").toString().endsWith(translation));
 
         isNoneTranslation = true;
         importCommand = new ImportCommand(jobId, workDir, filesToImport, zips, translation,
-                                          etlName, isNoneTranslation, debugLevel, SHP, caller, null);
+                etlName, isNoneTranslation, debugLevel, SHP, caller, null);
 
         assertEquals(hootConvertCommandNoTranslation, importCommand.getCommand());
 
@@ -117,8 +119,7 @@ public class ImportCommandTest {
         List<String> options = new LinkedList<>();
         options.add("osm2ogr.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
 
         ImportCommand importCommand = new ImportCommand(jobId, workDir, filesToImport, zips, translation,
                 etlName, isNoneTranslation, debugLevel, FGDB, caller, null);
@@ -133,8 +134,8 @@ public class ImportCommandTest {
         assertNotNull(importCommand.getCommand());
 
         assertEquals(hootConvertCommand, importCommand.getCommand());
-        assertEquals(1, ((List)importCommand.getSubstitutionMap().get("INPUTS")).size());
-        assertTrue(((List)importCommand.getSubstitutionMap().get("INPUTS")).get(0).toString().endsWith("file.gdb"));
+        assertEquals(1, ((List) importCommand.getSubstitutionMap().get("INPUTS")).size());
+        assertTrue(((List) importCommand.getSubstitutionMap().get("INPUTS")).get(0).toString().endsWith("file.gdb"));
         assertEquals(HOOTAPI_DB_URL + "/" + etlName, importCommand.getSubstitutionMap().get("INPUT_NAME"));
         assertTrue(importCommand.getSubstitutionMap().get("TRANSLATION_PATH").toString().endsWith(translation));
 
@@ -173,8 +174,7 @@ public class ImportCommandTest {
         List<String> options = new LinkedList<>();
         options.add("osm2ogr.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
 
         ImportCommand importCommand = new ImportCommand(jobId, workDir, filesToImport, zips, translation,
                 etlName, isNoneTranslation, debugLevel, ZIP, caller, null);
@@ -234,15 +234,14 @@ public class ImportCommandTest {
         List<String> options = new LinkedList<>();
         options.add("osm2ogr.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
         options.add("convert.ops=hoot::TranslationOp");
         options.add("translation.script=" + "/" + translation);
 
         String hootConvertCommand = "hoot convert --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${INPUTS} ${INPUT_NAME}";
 
         ImportCommand importCommand = new ImportCommand(jobId, workDir, filesToImport, zips, translation,
-                                          etlName, isNoneTranslation, debugLevel, OSM, caller, null);
+                etlName, isNoneTranslation, debugLevel, OSM, caller, null);
 
         assertEquals(hootConvertCommand, importCommand.getCommand());
 
@@ -257,7 +256,10 @@ public class ImportCommandTest {
         assertEquals(HOOTAPI_DB_URL + "/" + etlName, importCommand.getSubstitutionMap().get("INPUT_NAME"));
 
         List<String> hootOptions = new LinkedList<>();
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(hootOptions, importCommand.getSubstitutionMap().get("HOOT_OPTIONS"));
     }
@@ -279,8 +281,7 @@ public class ImportCommandTest {
         List<String> options = new LinkedList<>();
         options.add("osm2ogr.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
         options.add("convert.ops=hoot::TranslationOp");
         options.add("translation.script=" + HOME_FOLDER + "/" + translation);
 
@@ -302,7 +303,10 @@ public class ImportCommandTest {
         assertEquals(HOOTAPI_DB_URL + "/" + etlName, importCommand.getSubstitutionMap().get("INPUT_NAME"));
 
         List<String> hootOptions = new LinkedList<>();
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(hootOptions, importCommand.getSubstitutionMap().get("HOOT_OPTIONS"));
     }

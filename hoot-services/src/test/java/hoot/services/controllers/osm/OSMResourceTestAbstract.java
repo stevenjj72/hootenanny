@@ -38,19 +38,20 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 
 import hoot.services.jerseyframework.HootServicesJerseyTestAbstract;
+import hoot.services.models.db.Users;
 import hoot.services.utils.MapUtils;
-
 
 /*
  * Base class for tests that need to read/write OSM data to the services database
  */
 
 public abstract class OSMResourceTestAbstract extends HootServicesJerseyTestAbstract {
-
     private static PlatformTransactionManager txManager;
     private static TransactionStatus transactionStatus;
     private static BasicDataSource dbcpDatasource;
 
+    protected Users user;
+    protected String userName;
     protected long userId;
     protected long mapId;
 
@@ -59,14 +60,18 @@ public abstract class OSMResourceTestAbstract extends HootServicesJerseyTestAbst
         dbcpDatasource = applicationContext.getBean("dataSource", BasicDataSource.class);
     }
 
-    public OSMResourceTestAbstract(String... controllerGroup) {}
+    public OSMResourceTestAbstract(String... controllerGroup) {
+    }
 
     @Before
     public void beforeTest() throws Exception {
         transactionStatus = txManager.getTransaction(null);
 
-        userId = MapUtils.insertUser();
-        mapId = MapUtils.insertMap(userId);
+        user = MapUtils.insertTestUser();
+        userId = user.getId();
+        userName = user.getDisplayName();
+
+        mapId = MapUtils.insertTestMap();
         OSMTestUtils.setUserId(userId);
         OSMTestUtils.setMapId(mapId);
     }
@@ -78,9 +83,9 @@ public abstract class OSMResourceTestAbstract extends HootServicesJerseyTestAbst
     }
 
     protected Timestamp getCurrentDBTime() throws Exception {
-        try (Connection conn = dbcpDatasource.getConnection()) {
+        try(Connection conn = dbcpDatasource.getConnection()) {
             String sql = "SELECT now()";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            try(PreparedStatement stmt = conn.prepareStatement(sql)) {
                 ResultSet rs = stmt.executeQuery();
                 rs.next();
                 return rs.getTimestamp(1);

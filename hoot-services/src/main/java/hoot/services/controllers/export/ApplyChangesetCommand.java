@@ -34,18 +34,11 @@ import java.util.Map;
 
 import hoot.services.models.db.Users;
 
-
 class ApplyChangesetCommand extends ExportCommand {
     ApplyChangesetCommand(String jobId, ExportParams params, String debugLevel, Class<?> caller, Users user) {
         super(jobId, params);
-        // ensure valid email address in `params`:
-        if(user != null) {
-            params.setUserEmail(user.getEmail());
-        }
-        List<String> hootOptions = toHootOptions(super.getCommonExportHootOptions());
-
-        Long mapId = Long.parseLong(params.getInput());
-        hoot.services.models.osm.Map conflatedMap = getConflatedMap(mapId);
+        List<String> hootOptions = toHootOptions(super.getCommonExportHootOptions(user));
+        hoot.services.models.osm.Map conflatedMap = getConflatedMap(params.getInputId());
 
         // AOI = Area of Interest
         String conflictAOI = getAOI(params, conflatedMap);
@@ -77,7 +70,7 @@ class ApplyChangesetCommand extends ExportCommand {
         //+osm_api_db_export_time+ is a timestamp that's written at the time the data in the OSM API database is first exported.
         // It's checked against when writing the resulting changeset after the conflation job to see if any other changesets
         // were added to the OSM API db between the export time and the time the changeset is written.
-        if (! tags.containsKey(exportTimeTag)) {
+        if(!tags.containsKey(exportTimeTag)) {
             throw new IllegalStateException("Error exporting data.  Map with ID: " + conflatedMap.getId() +
                     " is missing " + exportTimeTag + ".");
         }

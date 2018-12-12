@@ -26,15 +26,12 @@
  */
 package hoot.services.utils;
 
-import static hoot.services.utils.DbUtils.createQuery;
-import static hoot.services.utils.MapUtils.insertMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -46,7 +43,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -58,14 +54,9 @@ import hoot.services.ApplicationContextUtils;
 import hoot.services.UnitTest;
 import hoot.services.jerseyframework.HootServicesSpringTestConfig;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HootServicesSpringTestConfig.class, loader = AnnotationConfigContextLoader.class)
 public class DbUtilsTest {
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -78,12 +69,12 @@ public class DbUtilsTest {
     @Category(UnitTest.class)
     @Transactional
     public void testDeleteTables() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = insertMap(userId);
+        MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
 
         //burn a sequence to see if this makes them persist
         //after table delete
-        Long burner = DbUtils.createQuery()
+        DbUtils.createQuery()
                 .select(Expressions.numberTemplate(Long.class, "nextval('changesets_" + mapId + "_id_seq')"))
                 .from()
                 .fetchOne();
@@ -101,7 +92,6 @@ public class DbUtilsTest {
 
     }
 
-
     public boolean checkForDependents(long mapId) throws SQLException {
         return DbUtils.getMapTableSeqCount(mapId) > 0;
     }
@@ -110,8 +100,9 @@ public class DbUtilsTest {
     @Category(UnitTest.class)
     @Transactional
     public void testUpdateMapsTableTags() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = insertMap(userId);
+        MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
+
         JSONParser parser = new JSONParser();
         Map<String, String> tags = new HashMap<>();
         String k1 = "input1";

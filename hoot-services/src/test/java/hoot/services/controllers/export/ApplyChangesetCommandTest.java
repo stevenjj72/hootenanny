@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.export;
 
-
 import static hoot.services.HootProperties.OSMAPI_DB_URL;
 import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
 import static org.junit.Assert.assertEquals;
@@ -48,9 +47,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
 import hoot.services.jerseyframework.HootServicesSpringTestConfig;
+import hoot.services.models.db.Users;
 import hoot.services.utils.DbUtils;
 import hoot.services.utils.MapUtils;
-
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HootServicesSpringTestConfig.class, loader = AnnotationConfigContextLoader.class)
@@ -63,16 +62,15 @@ public class ApplyChangesetCommandTest {
         String debugLevel = "error";
         Class<?> caller = this.getClass();
 
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
+        Users user = MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
         String aoi = "-104.8192,38.8162,-104.6926,38.9181";
 
         ExportParams exportParams = new ExportParams();
-        exportParams.setInput("map-with-id-" + mapId);
+        exportParams.setInputFile("map-with-id-" + mapId);
         exportParams.setOutputName("output");
         exportParams.setTextStatus(true);
         exportParams.setAppend(false);
-        exportParams.setInputType("file");
         exportParams.setOutputType("shp");
         exportParams.setBounds(aoi);
 
@@ -84,9 +82,12 @@ public class ApplyChangesetCommandTest {
 
         ApplyChangesetCommand exportCommand = new ApplyChangesetCommand(jobId, exportParams, debugLevel, caller, null);
 
-        List<String> options = exportCommand.getCommonExportHootOptions();
+        List<String> options = exportCommand.getCommonExportHootOptions(user);
         List<String> hootOptions = new LinkedList<>();
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, exportCommand.getJobId());
         assertEquals(true, exportCommand.getTrackable());
@@ -95,7 +96,7 @@ public class ApplyChangesetCommandTest {
         assertNotNull(exportCommand.getCommand());
 
         String expectedCommand = "hoot changeset-apply --${DEBUG_LEVEL} ${HOOT_OPTIONS} " +
-                        "${SQL_CHANGESET_PATH} ${TARGET_DATABASE_URL} ${CONFLICT_AOI} ${CONFLICT_TIMESTAMP}";
+                "${SQL_CHANGESET_PATH} ${TARGET_DATABASE_URL} ${CONFLICT_AOI} ${CONFLICT_TIMESTAMP}";
         assertEquals(expectedCommand, exportCommand.getCommand());
 
         assertTrue(exportCommand.getSubstitutionMap().containsKey("DEBUG_LEVEL"));

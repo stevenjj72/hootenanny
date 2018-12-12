@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.export;
 
-
 import static hoot.services.HootProperties.OSMAPI_DB_URL;
 import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
 import static org.junit.Assert.assertEquals;
@@ -46,17 +45,18 @@ import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 
 import hoot.services.IntegrationTest;
-import hoot.services.command.CommandResult;
 import hoot.services.command.ExternalCommandRunner;
 import hoot.services.command.ExternalCommandRunnerImpl;
+import hoot.services.models.db.Users;
 import hoot.services.utils.MapUtils;
 import hoot.services.utils.XmlDocumentBuilder;
-
 
 public class DeriveChangesetCommandTest {
 
     @Test
     public void testDeriveChangesetNoSQLCommand() {
+        Users user = MapUtils.insertTestUser();
+
         String jobId = UUID.randomUUID().toString();
         String debugLevel = "error";
         Class<?> caller = this.getClass();
@@ -66,20 +66,21 @@ public class DeriveChangesetCommandTest {
         exportParams.setOutputName("output");
         exportParams.setAppend(false);
         exportParams.setTextStatus(false);
-        exportParams.setInputType("file");
         exportParams.setOutputType("shp");
         exportParams.setBounds(aoi);
 
         DeriveChangesetCommand deriveChangesetCommand = new DeriveChangesetCommand(jobId, exportParams, debugLevel, caller, null);
 
-        List<String> options = deriveChangesetCommand.getCommonExportHootOptions();
+        List<String> options = deriveChangesetCommand.getCommonExportHootOptions(user);
         options.add("convert.bounding.box=" + aoi);
         options.add("osm.changeset.sql.file.writer.generate.new.ids=false");
-        options.add("changeset.user.id=" + exportParams.getUserId());
-
+        options.add("changeset.user.id=" + user.getId());
         List<String> hootOptions = new LinkedList<>();
 
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, deriveChangesetCommand.getJobId());
         assertEquals(true, deriveChangesetCommand.getTrackable());
@@ -100,7 +101,7 @@ public class DeriveChangesetCommandTest {
         assertEquals(OSMAPI_DB_URL, deriveChangesetCommand.getSubstitutionMap().get("OSMAPI_DB_URL"));
 
         assertTrue(deriveChangesetCommand.getSubstitutionMap().containsKey("INPUT"));
-        assertEquals(exportParams.getInput(), deriveChangesetCommand.getSubstitutionMap().get("INPUT"));
+        assertEquals(exportParams.getInputFile(), deriveChangesetCommand.getSubstitutionMap().get("INPUT"));
 
         String expectedOutputPath = new File(new File(TEMP_OUTPUT_PATH, jobId),
                 exportParams.getOutputName() + "." + exportParams.getOutputType()).getAbsolutePath();
@@ -115,29 +116,30 @@ public class DeriveChangesetCommandTest {
         String debugLevel = "error";
         Class<?> caller = this.getClass();
 
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
+        Users user = MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
         String aoi = "-104.8192,38.8162,-104.6926,38.9181";
 
         ExportParams exportParams = new ExportParams();
-        exportParams.setInput("map-with-id-" + mapId);
+        exportParams.setInputFile("map-with-id-" + mapId);
         exportParams.setOutputName("output");
         exportParams.setTextStatus(true);
         exportParams.setAppend(false);
-        exportParams.setInputType("file");
         exportParams.setOutputType("shp");
         exportParams.setBounds(aoi);
-        exportParams.setUserId(String.valueOf(userId));
 
         DeriveChangesetCommand deriveChangesetCommand = new DeriveChangesetCommand(jobId, exportParams, debugLevel, caller, null);
 
-        List<String> options = deriveChangesetCommand.getCommonExportHootOptions();
+        List<String> options = deriveChangesetCommand.getCommonExportHootOptions(user);
         options.add("convert.bounding.box=" + aoi);
         options.add("osm.changeset.sql.file.writer.generate.new.ids=false");
-        options.add("changeset.user.id=" + exportParams.getUserId());
+        options.add("changeset.user.id=" + user.getId());
 
         List<String> hootOptions = new LinkedList<>();
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, deriveChangesetCommand.getJobId());
         assertEquals(true, deriveChangesetCommand.getTrackable());
@@ -159,7 +161,7 @@ public class DeriveChangesetCommandTest {
         assertEquals(OSMAPI_DB_URL, deriveChangesetCommand.getSubstitutionMap().get("OSMAPI_DB_URL"));
 
         assertTrue(deriveChangesetCommand.getSubstitutionMap().containsKey("INPUT"));
-        assertEquals(exportParams.getInput(), deriveChangesetCommand.getSubstitutionMap().get("INPUT"));
+        assertEquals(exportParams.getInputFile(), deriveChangesetCommand.getSubstitutionMap().get("INPUT"));
 
         String expectedChangesetOutputPath = new File(new File(TEMP_OUTPUT_PATH, jobId),
                 "changeset-" + jobId + ".osc.sql").getAbsolutePath();
@@ -182,21 +184,18 @@ public class DeriveChangesetCommandTest {
 
             workDir = new File(TEMP_OUTPUT_PATH, jobId);
             FileUtils.forceMkdir(workDir);
-            File outputFile = new File(new File(TEMP_OUTPUT_PATH, jobId),jobId + ".osc");
+            File outputFile = new File(new File(TEMP_OUTPUT_PATH, jobId), jobId + ".osc");
 
             ExportParams exportParams = new ExportParams();
-            //exportParams.setInput(HOME_FOLDER + "/hoot-services/src/test/resources/hoot/services/controllers/export/AllDataTypesA.osm");
-            //exportParams.setInput(HOME_FOLDER + "/hoot-services/src/test/resources/hoot/services/controllers/export/ExportJobResourceTestAdtConflated.osm");
             exportParams.setOutputName(jobId);
             exportParams.setAppend(false);
             exportParams.setTextStatus(false);
-            exportParams.setInputType("file");
             exportParams.setOutputType("osc");
             exportParams.setBounds(aoi);
 
             DeriveChangesetCommand exportCommand = new DeriveChangesetCommand(jobId, exportParams, debugLevel, caller, null);
             ExternalCommandRunner externalCommandRunner = new ExternalCommandRunnerImpl();
-            CommandResult commandResult = externalCommandRunner.exec(exportCommand.getCommand(), exportCommand.getSubstitutionMap(),
+            externalCommandRunner.exec(exportCommand.getCommand(), exportCommand.getSubstitutionMap(),
                     exportCommand.getJobId(), this.getClass().getName(), exportCommand.getWorkDir(), false);
 
             //verify output file - we're not going to do an exact diff on it to avoid a dependency on
@@ -207,8 +206,7 @@ public class DeriveChangesetCommandTest {
             assert (XPathAPI.selectNodeList(actualChangesetDoc, "//osmChange").getLength() == 1);
             assert (XPathAPI.selectNodeList(actualChangesetDoc, "//osmChange/create").getLength() > 0);
             //assert (XPathAPI.selectNodeList(actualChangesetDoc, "//osmChange/delete").getLength() > 0);
-        }
-        finally {
+        } finally {
             FileUtils.deleteQuietly(workDir);
         }
     }

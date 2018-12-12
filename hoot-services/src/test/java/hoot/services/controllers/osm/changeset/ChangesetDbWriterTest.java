@@ -35,10 +35,10 @@ import org.junit.Assert;
 import hoot.services.controllers.osm.OSMTestUtils;
 import hoot.services.geo.BoundingBox;
 import hoot.services.models.db.QCurrentNodes;
+import hoot.services.models.db.Users;
 import hoot.services.models.osm.Changeset;
 import hoot.services.models.osm.Element.ElementType;
 import hoot.services.utils.MapUtils;
-
 
 /**
  * This is simply in place for doing a rough performance check on changeset
@@ -50,21 +50,21 @@ public class ChangesetDbWriterTest {
 
     /*
      * @Test
-     * 
+     *
      * @Category(IntegrationTest.class)
      */
     public void testLargeWrite() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
-        long changesetId = Changeset.insertNew(mapId, userId, new HashMap<String, String>());
+        Users user = MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
+        long changesetId = Changeset.insertNew(mapId, user.getId(), new HashMap<String, String>());
         BoundingBox originalBounds = OSMTestUtils.createStartingTestBounds();
 
         String changeset = "<osmChange version=\"0.3\" generator=\"iD\">" + "<create>";
-        for (int i = 0; i < NUM_NODES; i++) {
+        for(int i = 0; i < NUM_NODES; i++) {
             changeset += "<node id=\"" + (i + 1) * -1 + "\" lon=\"" + originalBounds.getMinLon()
                     + "\" lat=\"" + originalBounds.getMinLat() + "\" version=\"0\" changeset=\"" + changesetId
                     + "\">";
-            for (int j = 0; j < NUM_TAGS_PER_NODE; j++) {
+            for(int j = 0; j < NUM_TAGS_PER_NODE; j++) {
                 changeset += "<tag k=\"" + "tag " + (j + 1) + "\" v=\"" + (j + 1) + "\"/>";
             }
             changeset += "</node>";

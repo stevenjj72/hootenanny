@@ -44,17 +44,18 @@ import hoot.services.models.db.QCurrentRelationMembers;
 import hoot.services.models.db.QCurrentRelations;
 import hoot.services.models.db.QCurrentWayNodes;
 import hoot.services.models.db.QCurrentWays;
-
+import hoot.services.models.db.Users;
 
 public final class MapUtils {
 
-    private MapUtils() {}
+    private MapUtils() {
+    }
 
     /**
      *
      *
      * @param mapId
-
+    
      *             //TODO: This code needs to be changed to dynamically read in
      *             the data types from querydsl. If I make a change to the
      *             schema in liquibase, it will never be picked up unless this
@@ -130,8 +131,7 @@ public final class MapUtils {
                     + "      ON UPDATE NO ACTION ON DELETE NO ACTION" + ")" + "WITH (" + "  OIDS=FALSE" + ");";
 
             createTable(createTblSql, connection);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Error creating map with id = " + mapId, e);
         }
     }
@@ -155,7 +155,7 @@ public final class MapUtils {
         return (recordCount > 0);
     }
 
-    public static long insertMap(long userId) {
+    public static long insertTestMap() {
         Long newId = createQuery()
                 .select(Expressions.numberTemplate(Long.class, "nextval('maps_id_seq')"))
                 .from()
@@ -165,9 +165,9 @@ public final class MapUtils {
             Timestamp now = new Timestamp(Calendar.getInstance().getTimeInMillis());
 
             createQuery().insert(maps)
-            .columns(maps.id, maps.createdAt, maps.displayName, maps.publicCol, maps.userId)
-            .values(newId, now, "map-with-id-" + newId, true, userId)
-            .execute();
+                    .columns(maps.id, maps.createdAt, maps.displayName, maps.publicCol, maps.userId)
+                    .values(newId, now, "map-with-id-" + newId, true, Users.TEST_USER.getId())
+                    .execute();
         }
 
         createMap(newId);
@@ -175,32 +175,15 @@ public final class MapUtils {
         return newId;
     }
 
-    public static long insertUser() {
-        Long newId = createQuery()
-                .select(Expressions.numberTemplate(Long.class, "nextval('users_id_seq')"))
-                .from()
-                .fetchOne();
-
-        assert newId != null : "failed to generate new test user id";
-
-        // don't collide with someone's actual osm user id
-        newId *= -1;
-        long rowsAffected = createQuery().insert(users)
-                .columns(users.id, users.displayName, users.email, users.provider_access_key,
-                        users.provider_access_token, users.hootservices_created_at,
-                        users.hootservices_last_authorize, users.provider_created_at)
-                .values(newId, newId + "::MapUtils::insertUser()", newId + "@hootenanny.test", "provider_access_key",
-                        "provider_access_token",
-                        Expressions.currentTimestamp(), Expressions.currentTimestamp(), Expressions.currentTimestamp())
-                .execute();
-
-        assert rowsAffected == 1 : "failed to insert test user";
-
-        return newId;
+    public static Users insertTestUser() {
+        Users u = Users.TEST_USER;
+        deleteUser(u);
+        createQuery().insert(users).populate(u).execute();
+        return u;
     }
 
-    static void deleteUser(long userId) {
-        createQuery().delete(users).where(users.id.eq(userId)).execute();
+    static void deleteUser(Users u) {
+        createQuery().delete(users).where(users.id.eq(u.getId())).execute();
     }
 
     /**

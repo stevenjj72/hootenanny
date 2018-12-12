@@ -35,39 +35,28 @@ import java.util.Map;
 
 import hoot.services.models.db.Users;
 
-
 class DeriveChangesetCommand extends ExportCommand {
     DeriveChangesetCommand(String jobId, ExportParams params, String debugLevel, Class<?> caller, Users user) {
         super(jobId, params);
-        if(user != null) {
-            params.setUserEmail(user.getEmail());
-        }
-        Long mapId = Long.parseLong(params.getInput());
-        hoot.services.models.osm.Map conflatedMap = getConflatedMap(mapId);
+        hoot.services.models.osm.Map conflatedMap = getConflatedMap(params.getInputId());
 
         String aoi = getAOI(params, conflatedMap);
 
         //This is set up for the XML changeset workflow.
-        List<String> options = super.getCommonExportHootOptions();
+        List<String> options = super.getCommonExportHootOptions(user);
         options.add("convert.bounding.box=" + aoi);
         if(user == null) {
-            options.add("api.db.email=test@test.com");
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
+            options.add("changeset.user.id=" + Users.TEST_USER.getId());
         } else {
             options.add("api.db.email=" + user.getEmail());
+            options.add("changeset.user.id=" + user.getId());
         }
         options.add("reader.use.file.status=true");
         options.add("reader.keep.status.tag=true");
         double changesetBufferSize = Double.parseDouble(CHANGESET_DERIVE_BUFFER); //in degrees
         options.add("changeset.buffer=" + String.valueOf(changesetBufferSize));
         options.add("changeset.allow.deleting.reference.features=false");
-
-        String userId = params.getUserId();
-        if (userId != null) {
-            options.add("changeset.user.id=" + userId);
-        }
-        else {
-            throw new RuntimeException("changeset.user.id cannot be null.  Please provide a valid user ID!");
-        }
 
         List<String> hootOptions = toHootOptions(options);
 
@@ -79,12 +68,11 @@ class DeriveChangesetCommand extends ExportCommand {
 
         String command;
 
-        if (params.getOutputType().equalsIgnoreCase("osc")) {
+        if(params.getOutputType().equalsIgnoreCase("osc")) {
             // Just derive without apply (Will return .osc file to the REST caller)
             substitutionMap.put("CHANGESET_OUTPUT_PATH", super.getOutputPath());
             command = "hoot changeset-derive --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${OSMAPI_DB_URL} ${INPUT} ${CHANGESET_OUTPUT_PATH}";
-        }
-        else {
+        } else {
             // Derive changeset here.  The actual apply command is issued via ApplyChangesetCommand from another class.
             substitutionMap.put("CHANGESET_OUTPUT_PATH", super.getSQLChangesetPath()); //"changeset-" + getJobId() + ".osc.sql"
             command = "hoot changeset-derive --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${OSMAPI_DB_URL} ${INPUT} ${CHANGESET_OUTPUT_PATH} ${OSMAPI_DB_URL}";

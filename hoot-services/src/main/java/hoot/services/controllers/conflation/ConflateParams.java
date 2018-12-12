@@ -26,9 +26,7 @@
  */
 package hoot.services.controllers.conflation;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 
 public class ConflateParams {
 
@@ -39,10 +37,18 @@ public class ConflateParams {
     private String inputType2;
 
     @JsonProperty("INPUT1")
+    @Deprecated
     private String input1;
 
     @JsonProperty("INPUT2")
+    @Deprecated
     private String input2;
+
+    @JsonProperty("INPUT_ID_1")
+    private Long inputId1;
+
+    @JsonProperty("INPUT_ID_2")
+    private Long inputId2;
 
     @JsonProperty("REFERENCE_LAYER")
     private String referenceLayer;
@@ -69,6 +75,7 @@ public class ConflateParams {
     private String timeStamp;
 
     @JsonProperty("USER_EMAIL")
+    @Deprecated
     private String userEmail;
 
     @JsonProperty("CONFLATION_COMMAND")
@@ -170,10 +177,12 @@ public class ConflateParams {
         this.timeStamp = timeStamp;
     }
 
+    @Deprecated
     public String getUserEmail() {
         return userEmail;
     }
 
+    @Deprecated
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
     }
@@ -191,8 +200,8 @@ public class ConflateParams {
         return "ConflateParams{" +
                 "inputType1='" + inputType1 + '\'' +
                 ", inputType2='" + inputType2 + '\'' +
-                ", input1='" + input1 + '\'' +
-                ", input2='" + input2 + '\'' +
+                ", inputId1='" + inputId1 + '\'' +
+                ", inputId2='" + inputId2 + '\'' +
                 ", referenceLayer='" + referenceLayer + '\'' +
                 ", advancedOptions='" + advancedOptions + '\'' +
                 ", outputName='" + outputName + '\'' +
@@ -201,7 +210,6 @@ public class ConflateParams {
                 ", conflationType='" + conflationType + '\'' +
                 ", generateReport='" + generateReport + '\'' +
                 ", timeStamp='" + timeStamp + '\'' +
-                ", userEmail='" + userEmail + '\'' +
                 ", conflationCommand='" + conflationCommand + '\'' +
                 '}';
     }

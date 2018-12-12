@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.export;
 
-
 import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,7 +40,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import hoot.services.UnitTest;
-
+import hoot.services.models.db.Users;
 
 public class CalculateTilesCommandTest {
     @Test
@@ -56,8 +55,7 @@ public class CalculateTilesCommandTest {
         jobParams.setOutputName("output");
         jobParams.setAppend(false);
         jobParams.setTextStatus(false);
-        jobParams.setInput("input1;input2");
-        jobParams.setInputType("file");
+        jobParams.setInputFile("input1;input2");
         jobParams.setOutputType("tiles");
         jobParams.setBounds(aoi);
         jobParams.setMaxNodeCountPerTile(1000);
@@ -66,12 +64,15 @@ public class CalculateTilesCommandTest {
         CalculateTilesCommand command = new CalculateTilesCommand(jobId, jobParams, debugLevel, caller, null);
 
         List<String> options = new LinkedList<>();
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
         options.add("convert.bounding.box=" + aoi);
 
         List<String> hootOptions = new LinkedList<>();
 
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, command.getJobId());
         assertEquals(true, command.getTrackable());
@@ -89,10 +90,10 @@ public class CalculateTilesCommandTest {
         assertEquals(hootOptions, command.getSubstitutionMap().get("HOOT_OPTIONS"));
 
         assertTrue(command.getSubstitutionMap().containsKey("INPUTS"));
-        assertEquals(jobParams.getInput(), command.getSubstitutionMap().get("INPUTS"));
+        assertEquals(jobParams.getInputFile(), command.getSubstitutionMap().get("INPUTS"));
 
         String expectedOutputPath = new File(new File(TEMP_OUTPUT_PATH, jobId),
-        		jobParams.getOutputName() + "." + jobParams.getOutputType()).getAbsolutePath();
+                jobParams.getOutputName() + "." + jobParams.getOutputType()).getAbsolutePath();
 
         assertTrue(command.getSubstitutionMap().containsKey("OUTPUT"));
         assertEquals(expectedOutputPath, command.getSubstitutionMap().get("OUTPUT"));
@@ -116,20 +117,22 @@ public class CalculateTilesCommandTest {
         jobParams.setOutputName("output");
         jobParams.setAppend(false);
         jobParams.setTextStatus(false);
-        jobParams.setInput("input1;input2");
-        jobParams.setInputType("file");
+        jobParams.setInputFile("input1;input2");
         jobParams.setOutputType("tiles");
         jobParams.setBounds(aoi);
 
         CalculateTilesCommand command = new CalculateTilesCommand(jobId, jobParams, debugLevel, caller, null);
 
         List<String> options = new LinkedList<>();
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
         options.add("convert.bounding.box=" + aoi);
 
         List<String> hootOptions = new LinkedList<>();
 
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, command.getJobId());
         assertEquals(true, command.getTrackable());
@@ -147,10 +150,10 @@ public class CalculateTilesCommandTest {
         assertEquals(hootOptions, command.getSubstitutionMap().get("HOOT_OPTIONS"));
 
         assertTrue(command.getSubstitutionMap().containsKey("INPUTS"));
-        assertEquals(jobParams.getInput(), command.getSubstitutionMap().get("INPUTS"));
+        assertEquals(jobParams.getInputFile(), command.getSubstitutionMap().get("INPUTS"));
 
         String expectedOutputPath = new File(new File(TEMP_OUTPUT_PATH, jobId),
-        		jobParams.getOutputName() + "." + jobParams.getOutputType()).getAbsolutePath();
+                jobParams.getOutputName() + "." + jobParams.getOutputType()).getAbsolutePath();
 
         assertTrue(command.getSubstitutionMap().containsKey("OUTPUT"));
         assertEquals(expectedOutputPath, command.getSubstitutionMap().get("OUTPUT"));
@@ -159,9 +162,8 @@ public class CalculateTilesCommandTest {
     @Test(expected = IllegalArgumentException.class)
     @Category(UnitTest.class)
     public void testCalculateTilesCommandNoMaxNodeCountOrPixelSize1() {
-    	try
-    	{
-    		String jobId = UUID.randomUUID().toString();
+        try {
+            String jobId = UUID.randomUUID().toString();
             String debugLevel = "error";
             Class<?> caller = this.getClass();
             String aoi = "-104.8192,38.8162,-104.6926,38.9181";
@@ -170,15 +172,13 @@ public class CalculateTilesCommandTest {
             jobParams.setOutputName("output");
             jobParams.setAppend(false);
             jobParams.setTextStatus(false);
-            jobParams.setInput("input1;input2");
-            jobParams.setInputType("file");
+            jobParams.setInputFile("input1;input2");
             jobParams.setOutputType("tiles");
             jobParams.setBounds(aoi);
             jobParams.setMaxNodeCountPerTile(1000);
 
             new CalculateTilesCommand(jobId, jobParams, debugLevel, caller, null);
-    	}
-    	catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("If either max node count per tile or pixel size is specified, then both input parameters must be specified."));
             throw e;
         }
@@ -187,9 +187,8 @@ public class CalculateTilesCommandTest {
     @Test(expected = IllegalArgumentException.class)
     @Category(UnitTest.class)
     public void testCalculateTilesCommandNoMaxNodeCountOrPixelSize2() {
-    	try
-    	{
-    		String jobId = UUID.randomUUID().toString();
+        try {
+            String jobId = UUID.randomUUID().toString();
             String debugLevel = "error";
             Class<?> caller = this.getClass();
             String aoi = "-104.8192,38.8162,-104.6926,38.9181";
@@ -198,15 +197,13 @@ public class CalculateTilesCommandTest {
             jobParams.setOutputName("output");
             jobParams.setAppend(false);
             jobParams.setTextStatus(false);
-            jobParams.setInput("input1;input2");
-            jobParams.setInputType("file");
+            jobParams.setInputFile("input1;input2");
             jobParams.setOutputType("tiles");
             jobParams.setBounds(aoi);
             jobParams.setPixelSize(0.001);
 
             new CalculateTilesCommand(jobId, jobParams, debugLevel, caller, null);
-    	}
-    	catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("If either max node count per tile or pixel size is specified, then both input parameters must be specified."));
             throw e;
         }

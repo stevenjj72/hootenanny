@@ -36,7 +36,6 @@ import java.util.Map;
 import hoot.services.command.ExternalCommand;
 import hoot.services.models.db.Users;
 
-
 class ClipDatasetCommand extends ExternalCommand {
     ClipDatasetCommand(String jobId, ClipDatasetParams params, String debugLevel, Class<?> caller, Users user) {
         super(jobId);
@@ -45,7 +44,7 @@ class ClipDatasetCommand extends ExternalCommand {
         options.add("hootapi.db.writer.overwrite.map=true");
         options.add("hootapi.db.writer.job.id=" + jobId);
         if(user == null) {
-            options.add("api.db.email=test@test.com");
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
         } else {
             options.add("api.db.email=" + user.getEmail());
         }

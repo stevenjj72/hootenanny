@@ -26,14 +26,14 @@
  */
 package hoot.services.controllers.export;
 
+import javax.ws.rs.BadRequestException;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExportParams {
-	
+
     @JsonProperty("outputtype")
     private String outputType;
 
@@ -50,15 +50,24 @@ public class ExportParams {
     private String tagOverrides;
 
     @JsonProperty("inputtype")
+    @Deprecated
     private String inputType;
 
     @JsonProperty("TASK_BBOX")
     private String bounds;
 
     @JsonProperty("USER_ID")
+    @Deprecated
     private String userId;
 
+    @JsonProperty("inputFile")
+    private String inputFile;
+
+    @JsonProperty("inputId")
+    private Long inputId;
+
     @JsonProperty("input")
+    @Deprecated
     private String input;
 
     @JsonProperty("translation")
@@ -68,11 +77,12 @@ public class ExportParams {
     private Boolean append;
 
     @JsonProperty("USER_EMAIL")
+    @Deprecated
     private String userEmail;
-    
+
     @JsonProperty("MAX_NODE_COUNT_PER_TILE")
     private long maxNodeCountPerTile = -1;
-    
+
     @JsonProperty("PIXEL_SIZE")
     private double pixelSize = -1.0;
 
@@ -92,12 +102,20 @@ public class ExportParams {
         this.outputName = outputName;
     }
 
-    public String getInput() {
-        return input;
+    public Long getInputId() {
+        return inputId;
     }
 
-    public void setInput(String input) {
-        this.input = input;
+    public void setInputId(Long inputId) {
+        this.inputId = inputId;
+    }
+
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
     }
 
     public String getTranslation() {
@@ -140,10 +158,12 @@ public class ExportParams {
         this.append = append;
     }
 
+    @Deprecated
     public String getInputType() {
         return inputType;
     }
 
+    @Deprecated
     public void setInputType(String inputType) {
         this.inputType = inputType;
     }
@@ -156,22 +176,26 @@ public class ExportParams {
         this.bounds = bounds;
     }
 
+    @Deprecated
     public String getUserId() {
         return userId;
     }
 
+    @Deprecated
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
+    @Deprecated
     public String getUserEmail() {
-        return (this.userEmail == null) ? "test@test.com" : userEmail;
+        return this.userEmail;
     }
 
+    @Deprecated
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
     }
-    
+
     public long getMaxNodeCountPerTile() {
         return maxNodeCountPerTile;
     }
@@ -179,7 +203,7 @@ public class ExportParams {
     public void setMaxNodeCountPerTile(long maxNodeCountPerTile) {
         this.maxNodeCountPerTile = maxNodeCountPerTile;
     }
-    
+
     public double getPixelSize() {
         return pixelSize;
     }
@@ -194,16 +218,42 @@ public class ExportParams {
                 "outputType='" + outputType + '\'' +
                 ", outputName='" + outputName + '\'' +
                 ", textStatus=" + textStatus +
-                ", inputType='" + inputType + '\'' +
                 ", bounds='" + bounds + '\'' +
-                ", userId='" + userId + '\'' +
-                ", input='" + input + '\'' +
+                ", inputId='" + inputId + '\'' +
+                ", inputFile='" + inputFile + '\'' +
                 ", translation='" + translation + '\'' +
                 ", append=" + append +
-                ", userEmail='" + userEmail + '\'' +
                 ", maxNodeCountPerTile='" + maxNodeCountPerTile + '\'' +
                 ", overrides='" + tagOverrides + '\'' +
                 ", pixelSize='" + pixelSize + '\'' +
                 '}';
+    }
+
+    public void validate() throws BadRequestException {
+        if(input != null) {
+            throw new BadRequestException("input parameter has been removed");
+        }
+        if(inputType != null) {
+            throw new BadRequestException("inputType parameter has been removed");
+        }
+        if(userEmail != null) {
+            throw new BadRequestException("userEmail parameter has been removed");
+        }
+        if(userId != null) {
+            throw new BadRequestException("userId parameter has been removed");
+        }
+        if(inputId == null && inputFile == null) {
+            throw new BadRequestException("inputId -or- inputFile must be specified");
+        }
+    }
+
+    @Deprecated
+    public String getInput() {
+        return input;
+    }
+
+    @Deprecated
+    public void setInput(String input) {
+        this.input = input;
     }
 }

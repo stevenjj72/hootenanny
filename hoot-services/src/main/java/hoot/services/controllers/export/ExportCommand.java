@@ -46,7 +46,6 @@ import hoot.services.models.db.Users;
 import hoot.services.models.osm.Map;
 import hoot.services.utils.DbUtils;
 
-
 class ExportCommand extends ExternalCommand {
     private final ExportParams params;
 
@@ -57,14 +56,12 @@ class ExportCommand extends ExternalCommand {
 
     ExportCommand(String jobId, ExportParams params, String debugLevel, Class<?> caller, Users user) {
         this(jobId, params);
-        if(user != null) {
-            params.setUserEmail(user.getEmail());
-        }
-        if (params.getAppend()) {
+
+        if(params.getAppend()) {
             appendToFGDB();
         }
 
-        List<String> hootOptions = toHootOptions(this.getCommonExportHootOptions());
+        List<String> hootOptions = toHootOptions(this.getCommonExportHootOptions(user));
 
         java.util.Map<String, Object> substitutionMap = new HashMap<>();
         substitutionMap.put("DEBUG_LEVEL", debugLevel);
@@ -87,19 +84,17 @@ class ExportCommand extends ExternalCommand {
         String translation = params.getTranslation();
         File tdsTemplate = null;
 
-        if (translation.equalsIgnoreCase("translations/TDSv61.js")) {
+        if(translation.equalsIgnoreCase("translations/TDSv61.js")) {
             tdsTemplate = new File(templateHome, "tds61.tgz");
-        }
-        else if (translation.equalsIgnoreCase("translations/TDSv40.js")) {
+        } else if(translation.equalsIgnoreCase("translations/TDSv40.js")) {
             tdsTemplate = new File(templateHome, "tds40.tgz");
         }
 
-        if ((tdsTemplate != null) && tdsTemplate.exists()) {
-            File outputDir = new File(this.getWorkFolder(), params.getOutputName() + "."     + params.getOutputType().toLowerCase());
+        if((tdsTemplate != null) && tdsTemplate.exists()) {
+            File outputDir = new File(this.getWorkFolder(), params.getOutputName() + "." + params.getOutputType().toLowerCase());
             try {
                 FileUtils.forceMkdir(outputDir);
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 throw new RuntimeException("Error creating directory: " + outputDir.getAbsolutePath(), ioe);
             }
 
@@ -108,24 +103,28 @@ class ExportCommand extends ExternalCommand {
         }
     }
 
-    List<String> getCommonExportHootOptions() {
+    List<String> getCommonExportHootOptions(Users user) {
         List<String> options = new LinkedList<>();
         options.add("convert.ops=hoot::DecomposeBuildingRelationsVisitor");
         options.add("hootapi.db.writer.overwrite.map=true");
-        options.add("api.db.email=" + params.getUserEmail());
         options.add("hootapi.db.writer.job.id=" + jobId);
+        if(user != null) {
+            options.add("api.db.email=" + user.getEmail());
+        } else {
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
+        }
 
         //# Add the option to have status tags as text with "Input1" instead of "1" or "Unknown1"
-        if (params.getTextStatus()) {
+        if(params.getTextStatus()) {
             options.add("writer.text.status=true");
         }
 
-        if (!params.getTagOverrides().isEmpty()) {
-            options.add("translation.override=" + params.getTagOverrides() );
+        if(!params.getTagOverrides().isEmpty()) {
+            options.add("translation.override=" + params.getTagOverrides());
         }
 
         //# Add the option to append
-        if (params.getAppend()) {
+        if(params.getAppend()) {
             options.add("ogr.append.data=true");
         }
 
@@ -136,10 +135,9 @@ class ExportCommand extends ExternalCommand {
         File outputFolder = this.getWorkFolder();
         File outputFile;
 
-        if (!StringUtils.isBlank(params.getOutputName())) {
+        if(!StringUtils.isBlank(params.getOutputName())) {
             outputFile = new File(outputFolder, params.getOutputName() + "." + params.getOutputType());
-        }
-        else {
+        } else {
             outputFile = new File(outputFolder, getJobId() + "." + params.getOutputType());
         }
 
@@ -147,11 +145,11 @@ class ExportCommand extends ExternalCommand {
     }
 
     String getInput() {
-        if (! params.getInputType().equalsIgnoreCase("file")) {
-            return HOOTAPI_DB_URL + "/" + params.getInput();
+        if(params.getInputFile() != null) {
+            return params.getInputFile();
+        } else {
+            return HOOTAPI_DB_URL + "/" + params.getInputId();
         }
-
-        return params.getInput();
     }
 
     static Map getConflatedMap(Long mapId) {
@@ -164,10 +162,9 @@ class ExportCommand extends ExternalCommand {
         // if sent a bbox in the url (reflecting task grid bounds)
         // use that, otherwise use the bounds of the conflated output
         BoundingBox boundingBox;
-        if (params.getBounds() != null) {
+        if(params.getBounds() != null) {
             boundingBox = new BoundingBox(params.getBounds());
-        }
-        else {
+        } else {
             boundingBox = conflatedMap.getBounds();
         }
 

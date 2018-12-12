@@ -26,7 +26,6 @@
  */
 package hoot.services.utils;
 
-
 import static hoot.services.models.db.QMaps.maps;
 
 import java.sql.Connection;
@@ -65,7 +64,6 @@ import com.querydsl.sql.types.EnumAsObjectType;
 import hoot.services.ApplicationContextUtils;
 import hoot.services.models.db.QUsers;
 
-
 /**
  * General Hoot services database utilities
  */
@@ -74,8 +72,8 @@ public final class DbUtils {
 
     private static final SQLTemplates templates = PostgreSQLTemplates.builder().quote().build();
 
-
-    private DbUtils() {}
+    private DbUtils() {
+    }
 
     /**
      * The types of operations that can be performed on an OSM element from a
@@ -110,7 +108,7 @@ public final class DbUtils {
         configuration.register("current_relation_members", "member_type", new EnumAsObjectType<>(nwr_enum.class));
         configuration.setExceptionTranslator(new SpringExceptionTranslator());
 
-        if ((mapId != null) && (!mapId.isEmpty())) {
+        if((mapId != null) && (!mapId.isEmpty())) {
             overrideTable(mapId, configuration);
         }
 
@@ -118,7 +116,7 @@ public final class DbUtils {
     }
 
     private static void overrideTable(String mapId, Configuration config) {
-        if (config != null) {
+        if(config != null) {
 
             PreConfiguredNameMapping tablemapping = new PreConfiguredNameMapping();
             tablemapping.registerTableOverride("current_relation_members", "current_relation_members_" + mapId);
@@ -152,16 +150,6 @@ public final class DbUtils {
         return createQuery(String.valueOf(mapId));
     }
 
-    /**
-     * Gets the map id from map name
-     *
-     * @param mapName map name
-     * @return map ID
-     */
-    public static Long getMapIdByName(String mapName) {
-        return createQuery().select(maps.id).from(maps).where(maps.displayName.eq(mapName)).fetchOne();
-    }
-
     public static String getDisplayNameById(long mapId) {
         return createQuery().select(maps.displayName).from(maps).where(maps.id.eq(mapId)).fetchOne();
     }
@@ -183,8 +171,7 @@ public final class DbUtils {
 
         try {
             deleteTables(tables);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Error deleting map related tables by map id.  mapId = " + mapId, e);
         }
 
@@ -197,8 +184,7 @@ public final class DbUtils {
 
         try {
             deleteSequences(sequences);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Error deleting map related sequences by map id.  mapId = " + mapId, e);
         }
     }
@@ -221,7 +207,7 @@ public final class DbUtils {
 
         List<Object> results = createQuery(mapId).select(maps.tags).from(maps).where(maps.id.eq(mapId)).fetch();
 
-        if (!results.isEmpty()) {
+        if(!results.isEmpty()) {
             Object oTag = results.get(0);
             tags = PostgresUtils.postgresObjToHStore(oTag);
         }
@@ -230,11 +216,11 @@ public final class DbUtils {
     }
 
     public static void deleteTables(List<String> tables) throws SQLException {
-        try (Connection conn = getConnection()) {
-            for (String table : tables) {
+        try(Connection conn = getConnection()) {
+            for(String table : tables) {
                 // DDL Statement. No support in QueryDSL anymore. Have to do it the old-fashioned way.
                 String sql = "DROP TABLE IF EXISTS \"" + table + "\"";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try(PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.execute();
                     stmt.close();
                 }
@@ -246,11 +232,11 @@ public final class DbUtils {
     }
 
     public static void deleteSequences(List<String> sequences) throws SQLException {
-        try (Connection conn = getConnection()) {
-            for (String seq : sequences) {
+        try(Connection conn = getConnection()) {
+            for(String seq : sequences) {
                 // DDL Statement. No support in QueryDSL anymore. Have to do it the old-fashioned way.
                 String sql = "DROP SEQUENCE IF EXISTS \"" + seq + "\"";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try(PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.execute();
                     stmt.close();
                 }
@@ -264,14 +250,14 @@ public final class DbUtils {
     public static List<String> getTablesList(String tablePrefix) throws SQLException {
         List<String> tables = new ArrayList<>();
 
-        try (Connection conn = getConnection()) {
+        try(Connection conn = getConnection()) {
             String sql = "SELECT table_name " +
                     "FROM information_schema.tables " +
                     "WHERE table_schema='public' AND table_name LIKE " + "'" + tablePrefix.replace('-', '_') + "_%'";
 
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
+            try(PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try(ResultSet rs = stmt.executeQuery()) {
+                    while(rs.next()) {
                         // Retrieve by column name
                         tables.add(rs.getString("table_name"));
                     }
@@ -289,28 +275,29 @@ public final class DbUtils {
     public static long getMapTableSeqCount(long mapId) throws SQLException {
         long count = 0;
 
-        try (Connection conn = getConnection()) {
+        try(Connection conn = getConnection()) {
             String sql = "SELECT count(*) " +
                     "FROM information_schema.tables " +
                     "WHERE table_schema='public' AND table_name LIKE " + "'%_" + mapId + "'";
 
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next())
+            try(PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try(ResultSet rs = stmt.executeQuery()) {
+                    if(rs.next()) {
                         count += rs.getLong(1);
+                    }
                     stmt.close();
                 }
             }
-
 
             sql = "SELECT count(*) " +
                     "FROM information_schema.sequences " +
                     "WHERE sequence_schema='public' AND sequence_name LIKE " + "'%_" + mapId + "_id_seq'";
 
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next())
+            try(PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try(ResultSet rs = stmt.executeQuery()) {
+                    if(rs.next()) {
                         count += rs.getLong(1);
+                    }
                     stmt.close();
                 }
             }
@@ -318,7 +305,6 @@ public final class DbUtils {
 
         return count;
     }
-
 
     /**
      * Returns table size in bytes
@@ -362,13 +348,13 @@ public final class DbUtils {
     public static long getRecordIdForInputString(String input, RelationalPathBase<?> table,
             NumberPath<Long> idField, StringPath nameField) throws WebApplicationException {
 
-        if (org.apache.commons.lang3.StringUtils.isEmpty(input)) {
+        if(org.apache.commons.lang3.StringUtils.isEmpty(input)) {
             throw new BadRequestException("No record exists with ID: " + input
                     + ".  Please specify a valid record.");
         }
 
         // Check if we can compare by ID
-        if (org.apache.commons.lang3.math.NumberUtils.isNumber(input)) {
+        if(org.apache.commons.lang3.math.NumberUtils.isNumber(input)) {
             logger.debug("Verifying that record with ID = {} in '{}' table has previously been created ...",
                     input, table.getTableName());
 
@@ -377,21 +363,20 @@ public final class DbUtils {
                     .where(idField.eq(Long.valueOf(input)))
                     .fetchCount();
 
-            if (recordCount == 0) {
+            if(recordCount == 0) {
                 throw new NotFoundException("No record exists with ID = " + input +
                         " in '" + table + "' table. Please specify a valid record.");
             }
 
-            if (recordCount == 1) {
+            if(recordCount == 1) {
                 return Long.valueOf(input);
             }
 
-            if (recordCount > 1) {
+            if(recordCount > 1) {
                 throw new BadRequestException("Multiple records exist with ID = " + input + " in '" + table
                         + "' table. Please specify a single, valid record.");
             }
-        }
-        else { // input wasn't parsed as a numeric ID, so let's try it as a name
+        } else { // input wasn't parsed as a numeric ID, so let's try it as a name
             logger.debug("Verifying that record with NAME = {} in '{}' table has previously been created ...",
                     input, table.getTableName());
 
@@ -403,16 +388,16 @@ public final class DbUtils {
                     .where(nameField.eq(input))
                     .fetch();
 
-            if (records.isEmpty()) {
+            if(records.isEmpty()) {
                 throw new NotFoundException("No record exists with NAME = " + input +
                         " in '" + table + "' table. Please specify a valid record.");
             }
 
-            if (records.size() == 1) {
+            if(records.size() == 1) {
                 return records.get(0);
             }
 
-            if (records.size() > 1) {
+            if(records.size() > 1) {
                 throw new BadRequestException("Multiple records exist with NAME = " + input
                         + " in '" + table + "' table. Please specify a single, valid record.");
             }

@@ -29,6 +29,7 @@ package hoot.services.controllers.osm.user;
 import static hoot.services.models.db.QUsers.users;
 import static hoot.services.utils.DbUtils.createQuery;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -58,7 +59,6 @@ import hoot.services.models.db.Users;
 import hoot.services.models.osm.User;
 import hoot.services.utils.XmlDocumentBuilder;
 
-
 /**
  * Service endpoint for OSM user information
  */
@@ -72,15 +72,15 @@ public class UserResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@Context HttpServletRequest request) {
-         Users user = (Users) request.getAttribute(hoot.services.HootUserRequestFilter.HOOT_USER_ATTRIBUTE);
-         if(user == null) {
-             user = new Users();
-             user.setDisplayName("Test User");
-             user.setEmail("test@hootenanny");
-             user.setId(-1L);
-             user.setHootservicesCreatedAt(new Timestamp(System.currentTimeMillis()));
-         }
-         return Response.ok().entity(user).build();
+        Users user = (Users) request.getAttribute(hoot.services.HootUserRequestFilter.HOOT_USER_ATTRIBUTE);
+        if(user == null) {
+            user = new Users();
+            user.setDisplayName("Test User");
+            user.setEmail("test@hootenanny");
+            user.setId(-1L);
+            user.setHootservicesCreatedAt(new Timestamp(System.currentTimeMillis()));
+        }
+        return Response.ok().entity(user).build();
     }
 
     /**
@@ -105,11 +105,13 @@ public class UserResource {
                 .where(users.id.eq(userId))
                 .fetchOne();
 
-        if (user == null) {
+        if(user == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
         String contentType = null;
-        if(request != null) { contentType = request.getHeader("Content-Type"); }
+        if(request != null) {
+            contentType = request.getHeader("Content-Type");
+        }
         if(contentType == null || contentType.trim().equalsIgnoreCase("application/xml")) {
             Document responseDoc = writeResponse(new User(user));
             return Response.ok().entity(new DOMSource(responseDoc)).type(MediaType.APPLICATION_XML).build();
@@ -120,18 +122,21 @@ public class UserResource {
 
     @GET
     @Path("/name/{displayName}")
-    public Response getByDisplayName(@Context HttpServletRequest request, @PathParam("displayName") String displayName) throws ParserConfigurationException {
+    public Response getByDisplayName(@Context HttpServletRequest request, @PathParam("displayName") String displayName) throws ParserConfigurationException, UnsupportedEncodingException {
+        String displayNameDecoded = java.net.URLDecoder.decode(displayName, "utf-8");
         Users user = createQuery()
                 .select(users)
                 .from(users)
-                .where(users.displayName.equalsIgnoreCase(displayName))
+                .where(users.displayName.equalsIgnoreCase(displayNameDecoded))
                 .fetchOne();
 
-        if (user == null) {
+        if(user == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
         String contentType = null;
-        if(request != null) { contentType = request.getHeader("Content-Type"); }
+        if(request != null) {
+            contentType = request.getHeader("Content-Type");
+        }
         if(contentType == null || contentType.trim().equalsIgnoreCase("application/xml")) {
             Document responseDoc = writeResponse(new User(user));
             return Response.ok().entity(new DOMSource(responseDoc)).type(MediaType.APPLICATION_XML).build();
@@ -159,8 +164,7 @@ public class UserResource {
         try {
             user = getOrSaveByEmail(userEmail);
             return Response.ok().entity(user).build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             String msg = "Error saving user: " + " (" + userEmail + ")";
             return Response.status(Status.INTERNAL_SERVER_ERROR).type(MediaType.TEXT_PLAIN).entity(msg).build();
         }
@@ -181,14 +185,12 @@ public class UserResource {
         try {
             users = retrieveAllUsers();
             return Response.ok().entity(users).build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR)
                     .type(MediaType.TEXT_PLAIN)
                     .entity("failed to list users")
                     .build();
         }
-
 
     }
 
@@ -214,13 +216,13 @@ public class UserResource {
                 .fetchOne();
 
         // none then create
-        if (users == null) {
+        if(users == null) {
             long rowCount = createQuery().insert(QUsers.users)
                     .columns(QUsers.users.email, QUsers.users.displayName)
                     .values(userEmail, userEmail)
                     .execute();
 
-            if (rowCount > 0) {
+            if(rowCount > 0) {
                 users = createQuery()
                         .select(QUsers.users)
                         .from(QUsers.users)

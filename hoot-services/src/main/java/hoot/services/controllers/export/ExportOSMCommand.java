@@ -35,36 +35,33 @@ import java.util.Map;
 import hoot.services.HootProperties;
 import hoot.services.models.db.Users;
 
-
 class ExportOSMCommand extends ExportCommand {
     ExportOSMCommand(String jobId, ExportParams params, String debugLevel, Class<?> caller, Users user) {
         super(jobId, params);
+        List<String> options = new LinkedList<>();
         if(user != null) {
-            // ensure user's email set properly.
-            params.setUserEmail(user.getEmail());
+            options.add("api.db.email=" + user.getEmail());
+        } else {
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
         }
 
-
-        List<String> options = new LinkedList<>();
-        options.add("api.db.email=" + params.getUserEmail());
-
-        if (!params.getTagOverrides().isEmpty() && !params.getIncludeHootTags()) {
+        if(!params.getTagOverrides().isEmpty() && !params.getIncludeHootTags()) {
             options.add("convert.ops=hoot::TranslationOp;hoot::RemoveElementsVisitor");
             options.add("remove.elements.visitor.element.criterion=hoot::ReviewRelationCriterion");
             options.add("remove.elements.visitor.recursive=false");
-        } else if (!params.getTagOverrides().isEmpty()) {
+        } else if(!params.getTagOverrides().isEmpty()) {
             options.add("convert.ops=hoot::TranslationOp");
         }
 
-        if (!params.getTagOverrides().isEmpty()) {
+        if(!params.getTagOverrides().isEmpty()) {
 
-            File trans = new File(new File(HootProperties.HOME_FOLDER, "translations"),"OSM_Export.js");
+            File trans = new File(new File(HootProperties.HOME_FOLDER, "translations"), "OSM_Export.js");
             options.add("translation.script=" + trans.getAbsolutePath());
 
-            options.add("translation.override=" + params.getTagOverrides() );
+            options.add("translation.override=" + params.getTagOverrides());
         }
 
-        if (params.getTextStatus()) {
+        if(params.getTextStatus()) {
             options.add("writer.text.status=true");
         }
 

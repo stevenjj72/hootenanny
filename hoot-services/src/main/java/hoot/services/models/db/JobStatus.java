@@ -51,6 +51,8 @@ public class JobStatus {
 
     private String statusDetail;
 
+    private Long resourceId;
+
     public java.sql.Timestamp getEnd() {
         return end;
     }
@@ -98,21 +100,31 @@ public class JobStatus {
     public void setStatusDetail(String statusDetail) {
         this.statusDetail = statusDetail;
     }
+
     public JobStatusResponse toJobStatusResponse() {
-    	JobStatusResponse response = new JobStatusResponse();
+        JobStatusResponse response = new JobStatusResponse();
         response.setJobId(jobId);
         response.setStatus(hoot.services.job.JobStatus.fromInteger(this.getStatus()).toString());
         response.setStatusDetail(this.getStatusDetail());
         response.setPercentComplete(this.getPercentComplete());
         response.setLastText(this.getStatusDetail());
+        response.setResourceId(this.getResourceId());
         return response;
     }
+
     public JobStatusResponse toJobStatusResponse(JobStatusManager jobStatusManager) {
-    	JobStatusResponse response = this.toJobStatusResponse();
+        JobStatusResponse response = this.toJobStatusResponse();
         List<CommandStatus> commandDetail = jobStatusManager.getCommandDetail(jobId);
         response.setCommandDetail(commandDetail);
         return response;
     }
 
-}
+    public Long getResourceId() {
+        return resourceId;
+    }
 
+    public void setResourceId(Long resourceId) {
+        this.resourceId = resourceId;
+    }
+
+}

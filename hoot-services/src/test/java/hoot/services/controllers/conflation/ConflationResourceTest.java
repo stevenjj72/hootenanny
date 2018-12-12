@@ -52,7 +52,6 @@ import hoot.services.job.Job;
 import hoot.services.utils.HootCustomPropertiesSetter;
 import hoot.services.utils.MapUtils;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HootServicesSpringTestConfig.class, loader = AnnotationConfigContextLoader.class)
 @Transactional
@@ -98,7 +97,6 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
         conflateParams.setInput2("-1");
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
-        conflateParams.setUserEmail("test@test.com");
         conflateParams.setCollectStats(false);
         conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
 
@@ -125,7 +123,6 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
         conflateParams.setInput2("-999");
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
-        conflateParams.setUserEmail("test@test.com");
         conflateParams.setCollectStats(false);
         conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
 
@@ -152,7 +149,6 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
             conflateParams.setInputType2("DB");
             conflateParams.setInput2("2");
             conflateParams.setOutputName("OutputLayer");
-            conflateParams.setUserEmail("test@test.com");
             conflateParams.setCollectStats(false);
             conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
 
@@ -166,16 +162,14 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
             assertThat(response.getStatus(), is(Status.BAD_REQUEST.getStatusCode()));
             assertThat(errorMessage, is("Attempted to conflate an OSM API database data source but OSM " +
                     "API database support is disabled."));
-        }
-        finally {
+        } finally {
             HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.TRUE);
         }
     }
 
     @Test
     public void testConflate() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
+        long mapId = MapUtils.insertTestMap();
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("OSM_API_DB");
@@ -184,7 +178,6 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
         conflateParams.setInput2(String.valueOf(mapId));
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
-        conflateParams.setUserEmail("test@test.com");
         conflateParams.setCollectStats(false);
         conflateParams.setBounds("20,30,40,50");
         conflateParams.setReferenceLayer("1");

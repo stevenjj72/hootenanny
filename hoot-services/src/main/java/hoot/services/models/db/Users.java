@@ -27,6 +27,7 @@
 package hoot.services.models.db;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.annotation.Generated;
 import javax.servlet.http.HttpServletRequest;
@@ -37,13 +38,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-
 /**
  * Users is a Querydsl bean type
  */
 @Generated("com.querydsl.codegen.BeanSerializer")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Users {
+    public static final Users TEST_USER = Users.generateTestUser();
 
     public Users() {
         this.hootservices_created_at = new Timestamp(System.currentTimeMillis());
@@ -152,5 +153,20 @@ public class Users {
             return null;
         }
         return (Users) request.getAttribute(hoot.services.HootUserRequestFilter.HOOT_USER_ATTRIBUTE);
+    }
+
+    private static Users generateTestUser() {
+        Users u = new Users();
+        u.setId(-1L);
+        u.setDisplayName("Test User");
+        u.setEmail("test@hootenanny");
+        u.setProviderAccessKey("provider_access_key");
+        u.setProviderAccessToken("provider_access_token");
+
+        u.setHootservicesCreatedAt(new Timestamp(new Date().getTime()));
+        u.setHootservicesLastAuthorize(u.getHootservicesCreatedAt());
+        u.setProviderCreatedAt(u.getHootservicesCreatedAt());
+
+        return u;
     }
 }

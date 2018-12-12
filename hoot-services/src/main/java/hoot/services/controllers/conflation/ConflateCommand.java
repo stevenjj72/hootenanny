@@ -47,7 +47,6 @@ import hoot.services.command.ExternalCommand;
 import hoot.services.geo.BoundingBox;
 import hoot.services.models.db.Users;
 
-
 class ConflateCommand extends ExternalCommand {
 
     private final ConflateParams conflateParams;
@@ -60,7 +59,7 @@ class ConflateCommand extends ExternalCommand {
 
         //Since we're not returning the osm api db layer to the hoot ui, this exception
         //shouldn't actually ever occur, but will leave this check here anyway.
-        if (conflatingOsmApiDbData && !OSM_API_DB_ENABLED) {
+        if(conflatingOsmApiDbData && !OSM_API_DB_ENABLED) {
             throw new IllegalArgumentException("Attempted to conflate an OSM API database data source but OSM " +
                     "API database support is disabled.");
         }
@@ -69,7 +68,7 @@ class ConflateCommand extends ExternalCommand {
 
         // osm api db related input params have already been validated by
         // this point, so just check to see if any osm api db input is present
-        if (conflatingOsmApiDbData && OSM_API_DB_ENABLED) {
+        if(conflatingOsmApiDbData && OSM_API_DB_ENABLED) {
             ConflateUtils.validateOsmApiDbConflateParams(params);
 
             String secondaryParameterKey = ConflateUtils.isFirstLayerOsmApiDb(params) ? params.getInput2() : params.getInput1();
@@ -77,26 +76,24 @@ class ConflateCommand extends ExternalCommand {
             //Record the aoi of the conflation job (equal to that of the secondary layer), as
             //we'll need it to detect conflicts at export time.
             long secondaryMapId = Long.parseLong(secondaryParameterKey);
-            if (!hoot.services.models.osm.Map.mapExists(secondaryMapId)) {
+            if(!hoot.services.models.osm.Map.mapExists(secondaryMapId)) {
                 String msg = "No secondary map exists with ID: " + secondaryMapId;
                 throw new IllegalArgumentException(msg);
             }
 
-            if (params.getBounds() != null) {
+            if(params.getBounds() != null) {
                 bounds = new BoundingBox(params.getBounds());
-            }
-            else {
+            } else {
                 hoot.services.models.osm.Map secondaryMap = new hoot.services.models.osm.Map(secondaryMapId);
                 bounds = secondaryMap.getBounds();
             }
-        }
-        else {
+        } else {
             bounds = null;
         }
 
         String aoi = null;
 
-        if (bounds != null) {
+        if(bounds != null) {
             aoi = bounds.getMinLon() + "," + bounds.getMinLat() + "," + bounds.getMaxLon() + "," + bounds.getMaxLat();
         }
 
@@ -107,7 +104,7 @@ class ConflateCommand extends ExternalCommand {
         options.add("writer.text.status=true");
         options.add("hootapi.db.writer.job.id=" + jobId);
         if(user == null) {
-            options.add("api.db.email=test@test.com");
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
         } else {
             options.add("api.db.email=" + user.getEmail());
         }
@@ -119,43 +116,41 @@ class ConflateCommand extends ExternalCommand {
         String input2 = input2Type.equalsIgnoreCase("DB") ? (HOOTAPI_DB_URL + "/" + params.getInput2()) : params.getInput2();
 
         String referenceLayer = params.getReferenceLayer();
-        if (referenceLayer.equalsIgnoreCase("1")) {
-            if (input1Type.equalsIgnoreCase("OSM_API_DB")) {
-                input1 = OSMAPI_DB_URL; 
+        if(referenceLayer.equalsIgnoreCase("1")) {
+            if(input1Type.equalsIgnoreCase("OSM_API_DB")) {
+                input1 = OSMAPI_DB_URL;
             }
-        }
-        else if (referenceLayer.equalsIgnoreCase("2")) {
+        } else if(referenceLayer.equalsIgnoreCase("2")) {
             options.add("tag.merger.default=hoot::OverwriteTag1Merger");
-            if (input2Type.equalsIgnoreCase("OSM_API_DB")) {
+            if(input2Type.equalsIgnoreCase("OSM_API_DB")) {
                 input2 = OSMAPI_DB_URL;
             }
         }
         //This is set up for the XML changeset workflow.
-        if (input1Type.equalsIgnoreCase("OSM_API_DB") || input2Type.equalsIgnoreCase("OSM_API_DB"))
-        {
-          options.add("convert.bounding.box=" + aoi);
-          options.add("reader.conflate.use.data.source.ids.1=true");
-          options.add("reader.conflate.use.data.source.ids.2=false");
-          options.add("id.generator=hoot::PositiveIdGenerator");
-          options.add("osm.map.writer.factory.writer=hoot::NonIdRemappingHootApiDbWriter");
-          options.add("preserve.unknown1.element.id.when.modifying.features=true");
+        if(input1Type.equalsIgnoreCase("OSM_API_DB") || input2Type.equalsIgnoreCase("OSM_API_DB")) {
+            options.add("convert.bounding.box=" + aoi);
+            options.add("reader.conflate.use.data.source.ids.1=true");
+            options.add("reader.conflate.use.data.source.ids.2=false");
+            options.add("id.generator=hoot::PositiveIdGenerator");
+            options.add("osm.map.writer.factory.writer=hoot::NonIdRemappingHootApiDbWriter");
+            options.add("preserve.unknown1.element.id.when.modifying.features=true");
         }
 
         String output = HOOTAPI_DB_URL + "/" + params.getOutputName();
 
-        if (params.getAdvancedOptions() != null) {
+        if(params.getAdvancedOptions() != null) {
             String[] advOptions = params.getAdvancedOptions().trim().split("-D ");
             Arrays.stream(advOptions).forEach((option) -> {
-                if (!option.isEmpty()) {
+                if(!option.isEmpty()) {
                     options.add(option.trim());
-                };
+                }
             });
         }
 
         List<String> hootOptions = toHootOptions(options);
 
         String stats = "";
-        if (params.getCollectStats()) {
+        if(params.getCollectStats()) {
             // Don't include non-error log messages in stdout because we are redirecting to file
             debugLevel = "error";
 
@@ -167,16 +162,14 @@ class ConflateCommand extends ExternalCommand {
         String conflationCommand = params.getConflationCommand();
         String diffTags = "";
         String differential = "";
-        if (conflationCommand != null && conflationCommand.contains("differential-tags")){
-          conflationCommand = "conflate";
-          differential = "--differential";
-          diffTags = "--include-tags";
+        if(conflationCommand != null && conflationCommand.contains("differential-tags")) {
+            conflationCommand = "conflate";
+            differential = "--differential";
+            diffTags = "--include-tags";
+        } else if(conflationCommand != null && conflationCommand.contains("differential")) {
+            conflationCommand = "conflate";
+            differential = "--differential";
         }
-        else if (conflationCommand != null && conflationCommand.contains("differential")){
-          conflationCommand = "conflate";
-          differential = "--differential";
-        }
-
 
         Map<String, Object> substitutionMap = new HashMap<>();
         substitutionMap.put("CONFLATION_COMMAND", conflationCommand);
@@ -197,12 +190,11 @@ class ConflateCommand extends ExternalCommand {
     public CommandResult execute() {
         CommandResult commandResult = super.execute();
 
-        if (conflateParams.getCollectStats()) {
+        if(conflateParams.getCollectStats()) {
             File statsFile = new File(RPT_STORE_PATH, conflateParams.getOutputName() + "-stats.csv");
             try {
                 FileUtils.write(statsFile, commandResult.getStdout(), Charset.defaultCharset());
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 throw new RuntimeException("Error writing to " + statsFile.getAbsolutePath(), ioe);
             }
         }

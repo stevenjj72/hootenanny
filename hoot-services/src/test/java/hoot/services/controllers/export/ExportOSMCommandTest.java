@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.export;
 
-
 import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,6 +38,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import hoot.services.models.db.Users;
 
 public class ExportOSMCommandTest {
 
@@ -49,22 +49,23 @@ public class ExportOSMCommandTest {
         Class<?> caller = this.getClass();
 
         ExportParams exportParams = new ExportParams();
-        exportParams.setInput("input");
+        exportParams.setInputFile("input");
         exportParams.setOutputName("output");
         exportParams.setTextStatus(true);
-        exportParams.setInputType("file");
         exportParams.setOutputType("shp");
 
         ExportOSMCommand exportCommand = new ExportOSMCommand(jobId, exportParams, debugLevel, caller, null);
 
         List<String> options = new LinkedList<>();
-        options.add("hootapi.db.writer.create.user=true");
-        options.add("api.db.email=test@test.com");
+        options.add("api.db.email=" + Users.TEST_USER.getEmail());
         options.add("writer.text.status=true");
 
         List<String> hootOptions = new LinkedList<>();
 
-        options.forEach(option -> { hootOptions.add("-D"); hootOptions.add(option); });
+        options.forEach(option -> {
+            hootOptions.add("-D");
+            hootOptions.add(option);
+        });
 
         assertEquals(jobId, exportCommand.getJobId());
         assertEquals(true, exportCommand.getTrackable());
@@ -82,7 +83,7 @@ public class ExportOSMCommandTest {
         assertEquals(hootOptions, exportCommand.getSubstitutionMap().get("HOOT_OPTIONS"));
 
         assertTrue(exportCommand.getSubstitutionMap().containsKey("INPUT"));
-        assertEquals(exportParams.getInput(), exportCommand.getSubstitutionMap().get("INPUT"));
+        assertEquals(exportParams.getInputFile(), exportCommand.getSubstitutionMap().get("INPUT"));
 
         String expectedOutputPath = new File(new File(TEMP_OUTPUT_PATH, jobId),
                 exportParams.getOutputName() + "." + exportParams.getOutputType()).getAbsolutePath();

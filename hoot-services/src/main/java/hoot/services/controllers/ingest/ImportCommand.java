@@ -51,24 +51,22 @@ import hoot.services.command.CommandResult;
 import hoot.services.command.ExternalCommand;
 import hoot.services.models.db.Users;
 
-
 class ImportCommand extends ExternalCommand {
     private static final Logger logger = LoggerFactory.getLogger(ImportCommand.class);
 
     private final File workDir;
 
     ImportCommand(String jobId, File workDir, List<File> filesToImport, List<File> zipsToImport, String translation,
-                  String etlName, Boolean isNoneTranslation, String debugLevel, UploadClassification classification,
-                  Class<?> caller, Users user) {
+            String etlName, Boolean isNoneTranslation, String debugLevel, UploadClassification classification,
+            Class<?> caller, Users user) {
         super(jobId);
         this.workDir = workDir;
 
         // TODO: Reconcile this logic with the UI.  Passing of translation script's name appears to be inconsistent!
         String translationPath;
-        if (translation.startsWith("translations/")) {
+        if(translation.startsWith("translations/")) {
             translationPath = new File(HOME_FOLDER, translation).getAbsolutePath();
-        }
-        else {
+        } else {
             translationPath = new File(new File(SCRIPT_FOLDER), translation).getAbsolutePath();
         }
 
@@ -80,12 +78,12 @@ class ImportCommand extends ExternalCommand {
         if(user != null) {
             options.add("api.db.email=" + user.getEmail());
         } else {
-            options.add("api.db.email=test@test.com");
+            options.add("api.db.email=" + Users.TEST_USER.getEmail());
         }
 
         //if (((classification == OSM) && !isNoneTranslation) || (classification == GEONAMES)) {
-            //options.add("convert.ops=hoot::TranslationOp");
-            //options.add("translation.script=" + translationPath);
+        //options.add("convert.ops=hoot::TranslationOp");
+        //options.add("translation.script=" + translationPath);
         //}
 
         List<String> hootOptions = toHootOptions(options);
@@ -101,20 +99,19 @@ class ImportCommand extends ExternalCommand {
         String hootConvertCommand = "hoot convert --${DEBUG_LEVEL} ${HOOT_OPTIONS} ${INPUTS} ${INPUT_NAME}";
 
         String command = null;
-        if ((classification == SHP) || (classification == FGDB) || (classification == ZIP)) {
-            if ((classification == ZIP) && !zipsToImport.isEmpty()) {
+        if((classification == SHP) || (classification == FGDB) || (classification == ZIP)) {
+            if((classification == ZIP) && !zipsToImport.isEmpty()) {
                 //Reading a GDAL dataset in a .gz file or a .zip archive
                 inputs = zipsToImport.stream().map(zip -> "/vsizip/" + zip.getAbsolutePath()).collect(Collectors.toList());
                 substitutionMap.put("INPUTS", inputs);
             }
 
-            if (!isNoneTranslation) {
+            if(!isNoneTranslation) {
                 substitutionMap.put("TRANSLATION_PATH", translationPath);
                 hootConvertCommand += " --trans ${TRANSLATION_PATH}";
             }
             command = hootConvertCommand;
-        }
-        else if ((classification == OSM) || (classification == GEONAMES)) {
+        } else if((classification == OSM) || (classification == GEONAMES)) {
             command = hootConvertCommand;
         }
 
@@ -127,8 +124,7 @@ class ImportCommand extends ExternalCommand {
 
         try {
             FileUtils.forceDelete(workDir);
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             logger.error("Error deleting folder: {} ", workDir.getAbsolutePath(), ioe);
         }
 

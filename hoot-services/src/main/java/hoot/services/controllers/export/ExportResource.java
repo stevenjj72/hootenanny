@@ -31,6 +31,7 @@ import static hoot.services.HootProperties.TEMP_OUTPUT_PATH;
 import static hoot.services.HootProperties.TRANSLATION_EXT_PATH;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -68,9 +69,7 @@ import hoot.services.controllers.osm.map.MapResource;
 import hoot.services.job.Job;
 import hoot.services.job.JobProcessor;
 import hoot.services.models.db.Users;
-import hoot.services.utils.DbUtils;
 import hoot.services.utils.XmlDocumentBuilder;
-
 
 @Controller
 @Path("/export")
@@ -82,7 +81,8 @@ public class ExportResource {
     @Autowired
     private UserAwareExportCommandFactory userAwareExportCommandFactory;
 
-    public ExportResource() {}
+    public ExportResource() {
+    }
 
     /**
      * Asynchronous export service.
@@ -114,97 +114,75 @@ public class ExportResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response export(ExportParams params, @Context HttpServletRequest request,
-                           @QueryParam("DEBUG_LEVEL") @DefaultValue("info") String debugLevel) {
+            @QueryParam("DEBUG_LEVEL") @DefaultValue("info") String debugLevel) throws IOException {
         Users user = Users.fromRequest(request);
         String jobId = "ex_" + UUID.randomUUID().toString().replace("-", "");
 
-        // ensure valid email address in `params`:
-        if(user != null) {
-            params.setUserEmail(user.getEmail());
+        params.validate();
+
+        String outputType = params.getOutputType();
+        String outputName = !StringUtils.isBlank(params.getOutputName()) ? params.getOutputName() : jobId;
+
+        // Created scratch area for each export request.
+        // This is where downloadable files will be stored and other intermediate artifacts.
+        File workDir = new File(TEMP_OUTPUT_PATH, jobId);
+        FileUtils.forceMkdir(workDir); // throws IOException
+
+        List<Command> workflow = new LinkedList<>();
+
+        if(outputType.equalsIgnoreCase("osm")) {
+            ExternalCommand exportOSMCommand = userAwareExportCommandFactory.build(jobId, params, debugLevel,
+                    ExportOSMCommand.class, this.getClass(), user);
+
+            workflow.add(exportOSMCommand);
+
+            Command zipCommand = getZIPCommand(workDir, outputName, outputType);
+            if(zipCommand != null) {
+                workflow.add(zipCommand);
+            }
+        } else if(outputType.equalsIgnoreCase("osm.pbf")) {
+            ExternalCommand exportOSMCommand = userAwareExportCommandFactory.build(jobId, params, debugLevel,
+                    ExportOSMCommand.class, this.getClass(), user);
+
+            workflow.add(exportOSMCommand);
+        } else if(outputType.equalsIgnoreCase("osc")) {
+            ExternalCommand deriveChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
+                    debugLevel, DeriveChangesetCommand.class, this.getClass(), user);
+
+            workflow.add(deriveChangesetCommand);
+        } else if(outputType.equalsIgnoreCase("osm_api_db")) {
+            ExternalCommand deriveChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
+                    debugLevel, DeriveChangesetCommand.class, this.getClass(), user);
+
+            ExternalCommand applyChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
+                    debugLevel, ApplyChangesetCommand.class, this.getClass(), user);
+
+            workflow.add(deriveChangesetCommand);
+            workflow.add(applyChangesetCommand);
+        } else if(outputType.startsWith("tiles")) {
+            ExternalCommand calculateTilesCommand = userAwareExportCommandFactory.build(jobId, params,
+                    debugLevel, CalculateTilesCommand.class, this.getClass(), user);
+
+            workflow.add(calculateTilesCommand);
+        } else { //else Shape/FGDB
+            ExternalCommand exportCommand = userAwareExportCommandFactory.build(jobId, params,
+                    debugLevel, ExportCommand.class, this.getClass(), user);
+
+            workflow.add(exportCommand);
+
+            Command zipCommand = getZIPCommand(workDir, outputName, outputType);
+            if(zipCommand != null) {
+                workflow.add(zipCommand);
+            }
         }
 
-        try {
-            String outputType = params.getOutputType();
-            String outputName = !StringUtils.isBlank(params.getOutputName()) ? params.getOutputName() : jobId;
-
-            // Created scratch area for each export request.
-            // This is where downloadable files will be stored and other intermediate artifacts.
-            File workDir = new File(TEMP_OUTPUT_PATH, jobId);
-            FileUtils.forceMkdir(workDir);
-
-            List<Command> workflow = new LinkedList<>();
-
-            if (outputType.equalsIgnoreCase("osm")) {
-                ExternalCommand exportOSMCommand = userAwareExportCommandFactory.build(jobId, params, debugLevel,
-                        ExportOSMCommand.class, this.getClass(), user);
-
-                workflow.add(exportOSMCommand);
-
-                Command zipCommand = getZIPCommand(workDir, outputName, outputType);
-                if (zipCommand != null) {
-                    workflow.add(zipCommand);
-                }
-            }
-            else if (outputType.equalsIgnoreCase("osm.pbf")) {
-                ExternalCommand exportOSMCommand = userAwareExportCommandFactory.build(jobId, params, debugLevel,
-                        ExportOSMCommand.class, this.getClass(), user);
-
-                workflow.add(exportOSMCommand);
-            }
-            else if (outputType.equalsIgnoreCase("osc")) {
-                ExternalCommand deriveChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
-                        debugLevel, DeriveChangesetCommand.class, this.getClass(), user);
-
-                workflow.add(deriveChangesetCommand);
-            }
-            else if (outputType.equalsIgnoreCase("osm_api_db")) {
-                ExternalCommand deriveChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
-                        debugLevel, DeriveChangesetCommand.class, this.getClass(), user);
-
-                ExternalCommand applyChangesetCommand = userAwareExportCommandFactory.build(jobId, params,
-                        debugLevel, ApplyChangesetCommand.class, this.getClass(), user);
-
-                workflow.add(deriveChangesetCommand);
-                workflow.add(applyChangesetCommand);
-            }
-            else if (outputType.startsWith("tiles")) {
-                ExternalCommand calculateTilesCommand = userAwareExportCommandFactory.build(jobId, params,
-                        debugLevel, CalculateTilesCommand.class, this.getClass(), user);
-
-                workflow.add(calculateTilesCommand);
-            }
-            else { //else Shape/FGDB
-                ExternalCommand exportCommand = userAwareExportCommandFactory.build(jobId, params,
-                        debugLevel, ExportCommand.class, this.getClass(), user);
-
-                workflow.add(exportCommand);
-
-                Command zipCommand = getZIPCommand(workDir, outputName, outputType);
-                if (zipCommand != null) {
-                    workflow.add(zipCommand);
-                }
-            }
-
-            jobProcessor.submitAsync(new Job(jobId, workflow.toArray(new Command[workflow.size()])));
-        }
-        catch (WebApplicationException wae) {
-            throw wae;
-        }
-        catch (IllegalArgumentException iae) {
-            throw new WebApplicationException(iae, Response.status(Response.Status.BAD_REQUEST).entity(iae.getMessage()).build());
-        }
-        catch (Exception e) {
-            String msg = "Error exporting data!  Params: " + params;
-            throw new WebApplicationException(e, Response.serverError().entity(msg).build());
-        }
+        jobProcessor.submitAsync(new Job(jobId, workflow.toArray(new Command[workflow.size()])));
 
         java.util.Map<String, Object> json = new HashMap<String, Object>();
         json.put("jobid", jobId);
 
-        //Update last accessed timestamp for db datasets on export
-        if (params.getInputType().equalsIgnoreCase("db")) {
-            Long mapid = DbUtils.getMapIdByName(params.getInput());
-            MapResource.updateLastAccessed(mapid);
+        if(params.getInputId() != null) {
+            MapResource.updateLastAccessed(params.getInputId());
         }
 
         return Response.ok(json).build();
@@ -230,8 +208,8 @@ public class ExportResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportFile(@PathParam("id") String jobId,
-                               @QueryParam("outputname") String outputname,
-                               @QueryParam("ext") String ext) {
+            @QueryParam("outputname") String outputname,
+            @QueryParam("ext") String ext) {
         Response response;
 
         try {
@@ -239,7 +217,7 @@ public class ExportResource {
             File exportFile = getExportFile(jobId, outputname, fileExt);
 
             String outFileName = jobId;
-            if (! StringUtils.isBlank(outputname)) {
+            if(!StringUtils.isBlank(outputname)) {
                 outFileName = outputname;
             }
 
@@ -247,11 +225,9 @@ public class ExportResource {
             responseBuilder.header("Content-Disposition", "attachment; filename=" + outFileName + "." + fileExt);
 
             response = responseBuilder.build();
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebApplicationException(e);
         }
 
@@ -278,17 +254,15 @@ public class ExportResource {
     @Path("/xml/{id}")
     @Produces(MediaType.TEXT_XML)
     public Response getXmlOutput(@PathParam("id") String jobId,
-                                 @QueryParam("ext") String ext) {
+            @QueryParam("ext") String ext) {
         Response response;
 
         try {
             File out = getExportFile(jobId, jobId, StringUtils.isEmpty(ext) ? "xml" : ext);
             response = Response.ok(new DOMSource(XmlDocumentBuilder.parse(FileUtils.readFileToString(out, "UTF-8")))).build();
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebApplicationException(e);
         }
 
@@ -315,17 +289,15 @@ public class ExportResource {
     @Path("/geojson/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGeoJsonOutput(@PathParam("id") String jobId,
-                                 @QueryParam("ext") String ext) {
+            @QueryParam("ext") String ext) {
         Response response;
 
         try {
             File out = getExportFile(jobId, jobId, StringUtils.isEmpty(ext) ? "geojson" : ext);
             response = Response.ok(FileUtils.readFileToString(out, "UTF-8")).build();
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new WebApplicationException(e);
         }
 
@@ -345,11 +317,11 @@ public class ExportResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExportResources() {
         String transExtPath = HOME_FOLDER + "/" + "/plugins-local/script/utp";
-        if ((TRANSLATION_EXT_PATH != null) && (!TRANSLATION_EXT_PATH.isEmpty())) {
+        if((TRANSLATION_EXT_PATH != null) && (!TRANSLATION_EXT_PATH.isEmpty())) {
             transExtPath = TRANSLATION_EXT_PATH;
         }
 
-        List<java.util.Map<String,Object>> exportResources = new ArrayList<java.util.Map<String,Object>>(2);
+        List<java.util.Map<String, Object>> exportResources = new ArrayList<java.util.Map<String, Object>>(2);
         try {
             java.util.Map<String, Object> json = new HashMap<String, Object>();
             json.put("name", "TDS");
@@ -362,14 +334,13 @@ public class ExportResource {
             exportResources.add(json);
 
             File file = new File(transExtPath);
-            if (file.exists() && file.isDirectory()) {
+            if(file.exists() && file.isDirectory()) {
                 json = new HashMap<String, Object>();
                 json.put("name", "UTP");
                 json.put("description", "UTP");
                 exportResources.add(json);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             String msg = "Error retrieving exported resource list!";
             throw new WebApplicationException(e, Response.serverError().entity(msg).build());
         }
@@ -380,17 +351,14 @@ public class ExportResource {
     private Command getZIPCommand(File workDir, String outputName, String outputType) {
         File targetZIP = new File(workDir, outputName + ".zip");
 
-        if (outputType.equalsIgnoreCase("SHP")) {
-            return new ZIPDirectoryContentsCommand(targetZIP,  new File(workDir, outputName), this.getClass());
-        }
-        else if (outputType.equalsIgnoreCase("OSM")) {
+        if(outputType.equalsIgnoreCase("SHP")) {
+            return new ZIPDirectoryContentsCommand(targetZIP, new File(workDir, outputName), this.getClass());
+        } else if(outputType.equalsIgnoreCase("OSM")) {
             String fileToCompress = outputName + "." + outputType;
             return new ZIPFileCommand(targetZIP, workDir, fileToCompress, this.getClass());
-        }
-        else if (outputType.equalsIgnoreCase("GDB")) {
+        } else if(outputType.equalsIgnoreCase("GDB")) {
             return new ZIPDirectoryContentsCommand(targetZIP, workDir, this.getClass());
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -398,7 +366,7 @@ public class ExportResource {
     private static File getExportFile(String jobId, String outputName, String fileExt) {
         File exportFile = new File(new File(TEMP_OUTPUT_PATH, jobId), outputName + "." + fileExt);
 
-        if (!exportFile.exists()) {
+        if(!exportFile.exists()) {
             String errorMsg = "Error exporting data.  Missing output file.";
             throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity(errorMsg).build());
         }

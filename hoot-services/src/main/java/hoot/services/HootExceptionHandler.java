@@ -34,26 +34,31 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Provider
 public class HootExceptionHandler implements ExceptionMapper<Exception> {
-	@Override
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response toResponse(Exception err) {
-        if (err instanceof WebApplicationException) {
+    private static final Logger logger = LoggerFactory.getLogger(HootExceptionHandler.class);
+
+    @Override
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response toResponse(Exception err) {
+        logger.error("Outbound Exception", err);
+        if(err instanceof WebApplicationException) {
             WebApplicationException e = (WebApplicationException) err;
             Response r = e.getResponse();
 
             // Rebuild the response if needed,
             // but never send back the generic WebApplicationException messages:
-            if (r.getLength() < 1 && !e.getMessage().startsWith("HTTP")) {
+            if(r.getLength() < 1 && !e.getMessage().startsWith("HTTP")) {
                 return Response.status(r.getStatus()).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
-            }
-            else {
+            } else {
                 return Response.status(r.getStatus()).entity("").type(MediaType.TEXT_PLAIN).build();
             }
         }
+
         return Response.status(Status.INTERNAL_SERVER_ERROR).entity("").build();
-	}
+    }
 
 }

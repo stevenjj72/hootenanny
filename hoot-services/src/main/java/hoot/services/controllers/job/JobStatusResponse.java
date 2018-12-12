@@ -26,7 +26,6 @@
  */
 package hoot.services.controllers.job;
 
-
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -38,6 +37,9 @@ import hoot.services.models.db.CommandStatus;
 public class JobStatusResponse {
     @JsonProperty("jobId")
     private String jobId;
+
+    @JsonProperty("resourceId")
+    private Long resourceId;
 
     @JsonProperty("status")
     private String status;
@@ -111,6 +113,15 @@ public class JobStatusResponse {
                 ", percentComplete=" + percentComplete +
                 ", lastText='" + lastText + '\'' +
                 ", commandDetail=" + commandDetail +
+                ", resourceId=" + resourceId +
                 '}';
+    }
+
+    public Long getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(Long resourceId) {
+        this.resourceId = resourceId;
     }
 }

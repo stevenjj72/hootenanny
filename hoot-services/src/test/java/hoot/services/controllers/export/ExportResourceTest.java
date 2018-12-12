@@ -74,7 +74,6 @@ import hoot.services.utils.DbUtils;
 import hoot.services.utils.HootCustomPropertiesSetter;
 import hoot.services.utils.MapUtils;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HootServicesSpringTestConfig.class, loader = AnnotationConfigContextLoader.class)
 @Transactional
@@ -98,14 +97,19 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     public void testExportOSMResource() throws Exception {
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("osm");
-        exportParams.setInput("input");
+        exportParams.setInputFile("input");
         exportParams.setOutputName("output");
         exportParams.setTextStatus(true);
-        exportParams.setInputType("file");
 
-        String responseData = target("export/execute")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(exportParams, MediaType.APPLICATION_JSON), String.class);
+        String responseData;
+        try {
+            responseData = target("export/execute")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.entity(exportParams, MediaType.APPLICATION_JSON), String.class);
+        } catch (WebApplicationException e) {
+            System.out.println(e.getResponse().readEntity(String.class));
+            throw e;
+        }
 
         assertNotNull(responseData);
 
@@ -122,10 +126,9 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     public void testExportOSMPBFResource() throws Exception {
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("osm.pbf");
-        exportParams.setInput("input");
+        exportParams.setInputFile("input");
         exportParams.setOutputName("output");
         exportParams.setTextStatus(true);
-        exportParams.setInputType("file");
 
         String responseData = target("export/execute")
                 .request(MediaType.APPLICATION_JSON)
@@ -143,19 +146,17 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     @Test
     @Category(UnitTest.class)
     public void testExportOSCResource() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
+        MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
         String aoi = "-104.8192,38.8162,-104.6926,38.9181";
 
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("osc");
-        exportParams.setInput(Long.toString(mapId));
+        exportParams.setInputId(mapId);
         exportParams.setOutputName("output");
         exportParams.setAppend(false);
         exportParams.setTextStatus(false);
-        exportParams.setInputType("file");
         exportParams.setBounds(aoi);
-        exportParams.setUserId(String.valueOf(userId));
 
         String responseData = target("export/execute")
                 .request(MediaType.APPLICATION_JSON)
@@ -173,21 +174,17 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     @Test
     @Category(UnitTest.class)
     public void testExportTilesResource() throws Exception {
-        long userId = MapUtils.insertUser();
-        MapUtils.insertMap(userId);
         String aoi = "-104.8192,38.8162,-104.6926,38.9181";
 
         ExportParams jobParams = new ExportParams();
         jobParams.setOutputName("output");
         jobParams.setAppend(false);
         jobParams.setTextStatus(false);
-        jobParams.setInputType("file");
         jobParams.setOutputType("tiles");
-        jobParams.setInput("input1;input2");
+        jobParams.setInputFile("input1;input2");
         jobParams.setBounds(aoi);
         jobParams.setMaxNodeCountPerTile(1000);
         jobParams.setPixelSize(0.001);
-        jobParams.setUserId(String.valueOf(userId));
 
         String responseData = target("export/execute")
                 .request(MediaType.APPLICATION_JSON)
@@ -205,19 +202,17 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
     @Test
     @Category(UnitTest.class)
     public void testExportOSMAPIDBResource() throws Exception {
-        long userId = MapUtils.insertUser();
-        long mapId = MapUtils.insertMap(userId);
+        MapUtils.insertTestUser();
+        long mapId = MapUtils.insertTestMap();
         String aoi = "-104.8192,38.8162,-104.6926,38.9181";
 
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("osm_api_db");
-        exportParams.setInput(Long.toString(mapId));
+        exportParams.setInputId(mapId);
         exportParams.setOutputName("output");
         exportParams.setAppend(false);
         exportParams.setTextStatus(false);
-        exportParams.setInputType("file");
         exportParams.setBounds(aoi);
-        exportParams.setUserId(String.valueOf(userId));
 
         String conflictTimestamp = "2017-04-18 14:00:01.234";
         Map<String, String> tags = new HashMap<>();
@@ -244,11 +239,10 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("shp");
         exportParams.setTranslation("translations/TDSv40.js");
-        exportParams.setInput("input");
+        exportParams.setInputFile("input");
         exportParams.setOutputName("output");
         exportParams.setAppend(false);
         exportParams.setTextStatus(false);
-        exportParams.setInputType("file");
 
         String responseData = target("export/execute")
                 .request(MediaType.APPLICATION_JSON)
@@ -270,11 +264,10 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         ExportParams exportParams = new ExportParams();
         exportParams.setOutputType("gdb");
         exportParams.setTranslation("translations/TDSv40.js");
-        exportParams.setInput("input");
+        exportParams.setInputFile("input");
         exportParams.setOutputName("output");
         exportParams.setAppend(false);
         exportParams.setTextStatus(false);
-        exportParams.setInputType("file");
 
         String responseData = target("export/execute")
                 .request(MediaType.APPLICATION_JSON)
@@ -298,7 +291,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         String result = resp.getEntity().toString();
 
         String transExtPath = HOME_FOLDER + "/" + "/plugins-local/script/utp";
-        if (!TRANSLATION_EXT_PATH.isEmpty()) {
+        if(!TRANSLATION_EXT_PATH.isEmpty()) {
             transExtPath = TRANSLATION_EXT_PATH;
         }
 
@@ -314,7 +307,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         expectedObject.add(obj);
 
         File file = new File(transExtPath);
-        if (file.exists() && file.isDirectory()) {
+        if(file.exists() && file.isDirectory()) {
             obj = new HashMap<String, Object>();
             obj.put("name", "UTP");
             obj.put("description", "UTP");
@@ -341,14 +334,14 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
         FileUtils.writeStringToFile(changesetFile, changesetText, "UTF-8");
 
         ExportResource spy = Mockito.spy(new ExportResource());
-        Response response = spy.getXmlOutput(jobId,  "osc");
+        Response response = spy.getXmlOutput(jobId, "osc");
         DOMSource test = (DOMSource) response.getEntity();
 
         // parse out the returned xml and verify its what was originally written
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         String changesetXml;
-        try (StringWriter writer = new StringWriter()) {
+        try(StringWriter writer = new StringWriter()) {
             transformer.transform(test, new StreamResult(writer));
             changesetXml = writer.getBuffer().toString();
         }
@@ -364,8 +357,7 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
             // try to retrieve a changeset file with a non-existent changeset
             // id; should fail with a 404
             (new ExportResource()).getXmlOutput("blah", "osc");
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
             assertTrue(e.getResponse().getEntity().toString().contains("Missing output file"));
             throw e;
@@ -400,13 +392,11 @@ public class ExportResourceTest extends HootServicesJerseyTestAbstract {
 
             ExportResource spy = Mockito.spy(new ExportResource());
             /* Response response = */spy.getXmlOutput(jobId, "osc");
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             assertEquals(Response.Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
             assertTrue(e.getResponse().getEntity().toString().contains("Missing output file"));
             throw e;
-        }
-        finally {
+        } finally {
             FileUtils.deleteQuietly(changesetDir);
             assertTrue(!changesetDir.exists());
         }

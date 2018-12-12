@@ -26,8 +26,8 @@
  */
 package hoot.services.command;
 
-import static hoot.services.HootProperties.OSMAPI_DB_URL;
 import static hoot.services.HootProperties.HOOTAPI_DB_URL;
+import static hoot.services.HootProperties.OSMAPI_DB_URL;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -38,6 +38,7 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import hoot.services.models.db.Users;
 
 public class ExternalCommandRunnerImplTest {
 
@@ -53,17 +54,15 @@ public class ExternalCommandRunnerImplTest {
         hootOptions.add("-D");
         hootOptions.add("hootapi.db.writer.overwrite.map=true");
         hootOptions.add("-D");
-        hootOptions.add("hootapi.db.writer.create.user=true");
-        hootOptions.add("-D");
-        hootOptions.add("api.db.email=test@test.com");
+        hootOptions.add("api.db.email=" + Users.TEST_USER.getEmail());
         hootOptions.add("-D");
         hootOptions.add("\"map.cleaner.transforms=hoot::ReprojectToPlanarOp;" +
-                          "hoot::DuplicateWayRemover;hoot::SuperfluousWayRemover;" +
-                          "hoot::IntersectionSplitter;hoot::UnlikelyIntersectionRemover;" +
-                          "hoot::DualWaySplitter;hoot::ImpliedDividedMarker;" +
-                          "hoot::DuplicateNameRemover;hoot::SmallWayMerger;" +
-                          "hoot::RemoveEmptyAreasVisitor;hoot::RemoveDuplicateAreaVisitor;" +
-                          "hoot::NoInformationElementRemover\"");
+                "hoot::DuplicateWayRemover;hoot::SuperfluousWayRemover;" +
+                "hoot::IntersectionSplitter;hoot::UnlikelyIntersectionRemover;" +
+                "hoot::DualWaySplitter;hoot::ImpliedDividedMarker;" +
+                "hoot::DuplicateNameRemover;hoot::SmallWayMerger;" +
+                "hoot::RemoveEmptyAreasVisitor;hoot::RemoveDuplicateAreaVisitor;" +
+                "hoot::NoInformationElementRemover\"");
 
         // String input1 = "osmapidb://hoot:hoottest@localhost:5432/osmapi test";
         String input1 = OSMAPI_DB_URL + " test";
@@ -85,7 +84,7 @@ public class ExternalCommandRunnerImplTest {
         String command = "/tmp/hoot.sh conflate --${DEBUG_LEVEL} -C RemoveReview2Pre.conf ${HOOT_OPTIONS} ${INPUT1} " +
                 "${INPUT2} ${OUTPUT} ${TIMESTAMP}";
 
-        CommandResult result = runner.exec(command, substitutionMap, jobId,
+        runner.exec(command, substitutionMap, jobId,
                 this.getClass().getName(), FileUtils.getTempDirectory(), false);
     }
 }

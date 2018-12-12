@@ -40,23 +40,29 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import hoot.services.command.CommandResult;
 import hoot.services.command.InternalCommand;
+import hoot.services.job.JobStatusManager;
+import hoot.services.models.db.JobStatus;
 import hoot.services.utils.DbUtils;
 import hoot.services.utils.JsonUtils;
-
 
 class UpdateMapTagsCommand implements InternalCommand {
     private static final Logger logger = LoggerFactory.getLogger(UpdateMapTagsCommand.class);
 
+    @Autowired
+    private JobStatusManager jobStatusManager;
+
     private final Map<String, String> tags;
-    private final String mapName;
+    private final Long mapId;
     private final String jobId;
     private final Class<?> caller;
 
     UpdateMapTagsCommand(ConflateParams params, String jobId, Class<?> caller) {
-        this.mapName = params.getOutputName();
+        JobStatus jobStatus = jobStatusManager.getJobStatusObj(jobId);
+        this.mapId = jobStatus.getResourceId();
         this.jobId = jobId;
         this.tags = new HashMap<>();
         this.caller = caller;
@@ -72,14 +78,14 @@ class UpdateMapTagsCommand implements InternalCommand {
         // Hack alert!
         // Write stats file name to tags, if the file exists when this updateMapsTagsCommand job is run, the
         // file will be read and its contents placed in the stats tag.
-        if (params.getCollectStats()) {
+        if(params.getCollectStats()) {
             String statsFile = new File(RPT_STORE_PATH, params.getOutputName() + "-stats.csv").getAbsolutePath();
             tags.put("stats", statsFile);
         }
 
         // osm api db related input params have already been validated by
         // this point, so just check to see if any osm api db input is present
-        if (ConflateUtils.isAtLeastOneLayerOsmApiDb(params) && OSM_API_DB_ENABLED) {
+        if(ConflateUtils.isAtLeastOneLayerOsmApiDb(params) && OSM_API_DB_ENABLED) {
             // write a timestamp representing the time the osm api db data was queried out
             // from the source; to be used conflict detection during export of conflated
             // data back into the osm api db at a later time; timestamp must be 24 hour utc
@@ -96,7 +102,7 @@ class UpdateMapTagsCommand implements InternalCommand {
     public CommandResult execute() {
         CommandResult commandResult = new CommandResult();
         commandResult.setJobId(jobId);
-        commandResult.setCommand("[Update Map Tags] of map with name = " + mapName);
+        commandResult.setCommand("[Update Map Tags] of map with id = " + mapId);
         commandResult.setStart(LocalDateTime.now());
         commandResult.setCaller(caller.getName());
 
@@ -110,39 +116,29 @@ class UpdateMapTagsCommand implements InternalCommand {
 
     private void updateMapTags() {
         try {
-            // Currently we do not have any way to get map id directly from hoot
-            // core command when it runs so for now we need get the all the map ids matching name and pick
-            // first one..
-            // THIS WILL NEED TO CHANGE when we implement handle map by Id instead of name..
+            // Hack alert!
+            // Add special handling of stats tag key
+            // We need to read the file in here, because the file doesn't
+            // exist at the time the updateMapsTagsCommand job is created in ConflationResource.java
+            String statsKey = "stats";
+            if(tags.containsKey(statsKey)) {
+                String statsName = tags.get(statsKey);
+                File statsFile = new File(statsName);
+                if(statsFile.exists()) {
+                    String stats = FileUtils.readFileToString(statsFile, "UTF-8");
+                    tags.put(statsKey, stats);
 
-            Long mapId = DbUtils.getMapIdByName(mapName);
-            if (mapId != null) {
-                // Hack alert!
-                // Add special handling of stats tag key
-                // We need to read the file in here, because the file doesn't
-                // exist at the time the updateMapsTagsCommand job is created in ConflationResource.java
-                String statsKey = "stats";
-                if (tags.containsKey(statsKey)) {
-                    String statsName = tags.get(statsKey);
-                    File statsFile = new File(statsName);
-                    if (statsFile.exists()) {
-                        String stats = FileUtils.readFileToString(statsFile, "UTF-8");
-                        tags.put(statsKey, stats);
-
-                        if (!statsFile.delete()) {
-                            logger.error("Error deleting {} file", statsFile.getAbsolutePath());
-                        }
+                    if(!statsFile.delete()) {
+                        logger.error("Error deleting {} file", statsFile.getAbsolutePath());
                     }
-                    else {
-                        logger.error("Can't find {}", statsName);
-                        tags.remove(statsKey);
-                    }
+                } else {
+                    logger.error("Can't find {}", statsName);
+                    tags.remove(statsKey);
                 }
-
-                DbUtils.updateMapsTableTags(tags, mapId);
             }
-        }
-        catch (Exception ex) {
+
+            DbUtils.updateMapsTableTags(tags, mapId);
+        } catch (Exception ex) {
             String msg = "Failure update map tags resource" + ex.getMessage();
             throw new RuntimeException(msg, ex);
         }
