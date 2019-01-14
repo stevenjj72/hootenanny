@@ -40,7 +40,6 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import hoot.services.command.CommandResult;
 import hoot.services.command.InternalCommand;
@@ -52,25 +51,21 @@ import hoot.services.utils.JsonUtils;
 class UpdateMapTagsCommand implements InternalCommand {
     private static final Logger logger = LoggerFactory.getLogger(UpdateMapTagsCommand.class);
 
-    @Autowired
-    private JobStatusManager jobStatusManager;
-
     private final Map<String, String> tags;
-    private final Long mapId;
     private final String jobId;
     private final Class<?> caller;
+    private final JobStatusManager jobStatusManager;
 
-    UpdateMapTagsCommand(ConflateParams params, String jobId, Class<?> caller) {
-        JobStatus jobStatus = jobStatusManager.getJobStatusObj(jobId);
-        this.mapId = jobStatus.getResourceId();
+    UpdateMapTagsCommand(String jobId, ConflateParams params, JobStatusManager jobStatusManager, Class<?> caller) {
         this.jobId = jobId;
         this.tags = new HashMap<>();
         this.caller = caller;
+        this.jobStatusManager = jobStatusManager;
 
         // add map tags
         // WILL BE DEPRECATED WHEN CORE IMPLEMENTS THIS
-        tags.put("input1", params.getInput1());
-        tags.put("input2", params.getInput2());
+        tags.put("inputId1", params.getInput1().toString());
+        tags.put("inputId2", params.getInput2().toString());
 
         // Need to reformat the list of hoot command options to json properties
         tags.put("params", JsonUtils.escapeJson(JsonUtils.pojoToJSON(params)));
@@ -100,13 +95,15 @@ class UpdateMapTagsCommand implements InternalCommand {
 
     @Override
     public CommandResult execute() {
+        JobStatus jobStatus = jobStatusManager.getJobStatusObj(jobId);
+        Long mapId = jobStatus.getResourceId();
         CommandResult commandResult = new CommandResult();
         commandResult.setJobId(jobId);
         commandResult.setCommand("[Update Map Tags] of map with id = " + mapId);
         commandResult.setStart(LocalDateTime.now());
         commandResult.setCaller(caller.getName());
 
-        updateMapTags();
+        updateMapTags(mapId);
 
         commandResult.setFinish(LocalDateTime.now());
         commandResult.setExitCode(CommandResult.SUCCESS);
@@ -114,7 +111,7 @@ class UpdateMapTagsCommand implements InternalCommand {
         return commandResult;
     }
 
-    private void updateMapTags() {
+    private void updateMapTags(Long mapId) {
         try {
             // Hack alert!
             // Add special handling of stats tag key

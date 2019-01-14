@@ -71,20 +71,19 @@ class ConflateCommand extends ExternalCommand {
         if(conflatingOsmApiDbData && OSM_API_DB_ENABLED) {
             ConflateUtils.validateOsmApiDbConflateParams(params);
 
-            String secondaryParameterKey = ConflateUtils.isFirstLayerOsmApiDb(params) ? params.getInput2() : params.getInput1();
+            Long secondaryParameterKey = ConflateUtils.isFirstLayerOsmApiDb(params) ? params.getInput2() : params.getInput1();
 
             //Record the aoi of the conflation job (equal to that of the secondary layer), as
             //we'll need it to detect conflicts at export time.
-            long secondaryMapId = Long.parseLong(secondaryParameterKey);
-            if(!hoot.services.models.osm.Map.mapExists(secondaryMapId)) {
-                String msg = "No secondary map exists with ID: " + secondaryMapId;
+            if(!hoot.services.models.osm.Map.mapExists(secondaryParameterKey)) {
+                String msg = "No secondary map exists with ID: " + secondaryParameterKey;
                 throw new IllegalArgumentException(msg);
             }
 
             if(params.getBounds() != null) {
                 bounds = new BoundingBox(params.getBounds());
             } else {
-                hoot.services.models.osm.Map secondaryMap = new hoot.services.models.osm.Map(secondaryMapId);
+                hoot.services.models.osm.Map secondaryMap = new hoot.services.models.osm.Map(secondaryParameterKey);
                 bounds = secondaryMap.getBounds();
             }
         } else {
@@ -110,10 +109,10 @@ class ConflateCommand extends ExternalCommand {
         }
 
         String input1Type = params.getInputType1();
-        String input1 = input1Type.equalsIgnoreCase("DB") ? (HOOTAPI_DB_URL + "/" + params.getInput1()) : params.getInput1();
+        String input1 = input1Type.equalsIgnoreCase("DB") ? (HOOTAPI_DB_URL + "/" + params.getInput1()) : params.getInput1().toString();
 
         String input2Type = params.getInputType2();
-        String input2 = input2Type.equalsIgnoreCase("DB") ? (HOOTAPI_DB_URL + "/" + params.getInput2()) : params.getInput2();
+        String input2 = input2Type.equalsIgnoreCase("DB") ? (HOOTAPI_DB_URL + "/" + params.getInput2()) : params.getInput2().toString();
 
         String referenceLayer = params.getReferenceLayer();
         if(referenceLayer.equalsIgnoreCase("1")) {

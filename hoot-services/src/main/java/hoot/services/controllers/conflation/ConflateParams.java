@@ -37,18 +37,10 @@ public class ConflateParams {
     private String inputType2;
 
     @JsonProperty("INPUT1")
-    @Deprecated
-    private String input1;
+    private Long input1;
 
     @JsonProperty("INPUT2")
-    @Deprecated
-    private String input2;
-
-    @JsonProperty("INPUT_ID_1")
-    private Long inputId1;
-
-    @JsonProperty("INPUT_ID_2")
-    private Long inputId2;
+    private Long input2;
 
     @JsonProperty("REFERENCE_LAYER")
     private String referenceLayer;
@@ -113,19 +105,19 @@ public class ConflateParams {
         this.advancedOptions = advancedOptions;
     }
 
-    public String getInput1() {
+    public Long getInput1() {
         return input1;
     }
 
-    public void setInput1(String input1) {
+    public void setInput1(Long input1) {
         this.input1 = input1;
     }
 
-    public String getInput2() {
+    public Long getInput2() {
         return input2;
     }
 
-    public void setInput2(String input2) {
+    public void setInput2(Long input2) {
         this.input2 = input2;
     }
 
@@ -200,8 +192,8 @@ public class ConflateParams {
         return "ConflateParams{" +
                 "inputType1='" + inputType1 + '\'' +
                 ", inputType2='" + inputType2 + '\'' +
-                ", inputId1='" + inputId1 + '\'' +
-                ", inputId2='" + inputId2 + '\'' +
+                ", input1='" + input1.toString() + '\'' +
+                ", input2='" + input2.toString() + '\'' +
                 ", referenceLayer='" + referenceLayer + '\'' +
                 ", advancedOptions='" + advancedOptions + '\'' +
                 ", outputName='" + outputName + '\'' +

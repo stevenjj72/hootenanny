@@ -39,9 +39,6 @@ import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.sql.ColumnMetadata;
 
-
-
-
 /**
  * QJobStatus is a Querydsl query type for JobStatus
  */
@@ -63,6 +60,8 @@ public class QJobStatus extends com.querydsl.sql.RelationalPathBase<JobStatus> {
     public final NumberPath<Integer> status = createNumber("status", Integer.class);
 
     public final StringPath statusDetail = createString("statusDetail");
+
+    public final NumberPath<Long> resourceId = createNumber("resourceId", Long.class);
 
     public final com.querydsl.sql.PrimaryKey<JobStatus> jobStatusPkey = createPrimaryKey(jobId);
 
@@ -93,7 +92,7 @@ public class QJobStatus extends com.querydsl.sql.RelationalPathBase<JobStatus> {
         addMetadata(start, ColumnMetadata.named("start").withIndex(2).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
         addMetadata(status, ColumnMetadata.named("status").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(statusDetail, ColumnMetadata.named("status_detail").withIndex(6).ofType(Types.VARCHAR).withSize(2147483647));
+        addMetadata(statusDetail, ColumnMetadata.named("resource_id").withIndex(7).ofType(Types.BIGINT).withSize(19));
     }
 
 }
-

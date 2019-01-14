@@ -48,7 +48,6 @@ import hoot.services.job.JobStatus;
 import hoot.services.job.JobStatusManager;
 import hoot.services.models.db.CommandStatus;
 
-
 @Controller
 @Path("")
 @Transactional
@@ -58,8 +57,8 @@ public class JobResource {
     @Autowired
     private JobStatusManager jobStatusManager;
 
-
-    public JobResource() {}
+    public JobResource() {
+    }
 
     /**
      * This service allows for tracking the status of Hootenanny jobs launched by other web services.
@@ -86,19 +85,19 @@ public class JobResource {
 
         hoot.services.models.db.JobStatus jobStatus = this.jobStatusManager.getJobStatusObj(jobId);
 
-        if (jobStatus != null) {
+        if(jobStatus != null) {
             response.setJobId(jobId);
             response.setStatus(JobStatus.fromInteger(jobStatus.getStatus()).toString());
             response.setStatusDetail(jobStatus.getStatusDetail());
             response.setPercentComplete(jobStatus.getPercentComplete());
             response.setLastText(jobStatus.getStatusDetail());
+            response.setResourceId(jobStatus.getResourceId());
 
-            if (includeCommandDetail) {
+            if(includeCommandDetail) {
                 List<CommandStatus> commandDetail = this.jobStatusManager.getCommandDetail(jobId);
                 response.setCommandDetail(commandDetail);
             }
-        }
-        else {
+        } else {
             logger.debug(String.format("getJobStatus(): failed to find job with id: %s", jobId));
             response.setJobId(jobId);
             response.setStatus(JobStatus.UNKNOWN.toString());

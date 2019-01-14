@@ -51,12 +51,14 @@ public class ConflateCommandTest {
     @Category(UnitTest.class)
     public void testCreateConflateCommand() {
         String jobId = UUID.randomUUID().toString();
+        //        Maps map1 = MapUtils.getMapByName("DcGisRoads");
+        //        Maps map2 = MapUtils.getMapByName("DcTigerRoads");
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("DB");
-        conflateParams.setInput1("DcGisRoads");
+        conflateParams.setInput1(1L);
         conflateParams.setInputType2("DB");
-        conflateParams.setInput2("DcTigerRoads");
+        conflateParams.setInput2(2L);
         conflateParams.setOutputName("Merged_Roads_e0d");
         conflateParams.setCollectStats(false);
         conflateParams.setReferenceLayer("1");

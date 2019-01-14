@@ -50,8 +50,8 @@ import hoot.services.command.ExternalCommand;
 import hoot.services.command.InternalCommand;
 import hoot.services.job.Job;
 import hoot.services.job.JobProcessor;
+import hoot.services.job.JobStatusManager;
 import hoot.services.models.db.Users;
-
 
 @Controller
 @Path("/conflation")
@@ -66,6 +66,8 @@ public class ConflateResource {
     @Autowired
     private UpdateTagsCommandFactory updateTagsCommandFactory;
 
+    @Autowired
+    private JobStatusManager jobStatusManager;
 
     /**
      * Conflate service operates like a standard ETL service. The conflate
@@ -102,7 +104,7 @@ public class ConflateResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response conflate(ConflateParams params, @Context HttpServletRequest request,
-                             @QueryParam("DEBUG_LEVEL") @DefaultValue("info") String debugLevel) {
+            @QueryParam("DEBUG_LEVEL") @DefaultValue("info") String debugLevel) {
         Users user = null;
         if(request != null) {
             user = (Users) request.getAttribute(hoot.services.HootUserRequestFilter.HOOT_USER_ATTRIBUTE);
@@ -112,16 +114,14 @@ public class ConflateResource {
 
         try {
             ExternalCommand conflateCommand = conflateCommandFactory.build(jobId, params, debugLevel, this.getClass(), user);
-            InternalCommand updateTagsCommand = updateTagsCommandFactory.build(jobId, params, this.getClass());
+            InternalCommand updateTagsCommand = updateTagsCommandFactory.build(jobId, params, jobStatusManager, this.getClass());
 
             Command[] workflow = { conflateCommand, updateTagsCommand };
 
             jobProcessor.submitAsync(new Job(jobId, workflow));
-        }
-        catch (IllegalArgumentException iae) {
+        } catch (IllegalArgumentException iae) {
             throw new WebApplicationException(iae, Response.status(Response.Status.BAD_REQUEST).entity(iae.getMessage()).build());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             String msg = "Error during conflation!  Params: " + params;
             throw new WebApplicationException(e, Response.serverError().entity(msg).build());
         }

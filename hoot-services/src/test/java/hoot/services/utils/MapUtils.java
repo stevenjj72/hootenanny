@@ -39,6 +39,7 @@ import java.util.Calendar;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.sql.SQLQuery;
 
+import hoot.services.models.db.Maps;
 import hoot.services.models.db.QCurrentNodes;
 import hoot.services.models.db.QCurrentRelationMembers;
 import hoot.services.models.db.QCurrentRelations;
@@ -161,7 +162,7 @@ public final class MapUtils {
                 .from()
                 .fetchOne();
 
-        if (newId != null) {
+        if(newId != null) {
             Timestamp now = new Timestamp(Calendar.getInstance().getTimeInMillis());
 
             createQuery().insert(maps)
@@ -173,6 +174,14 @@ public final class MapUtils {
         createMap(newId);
 
         return newId;
+    }
+
+    public static Maps getMapByName(String name) {
+        return createQuery()
+                .select(maps)
+                .from(maps)
+                .where(maps.displayName.eq(name))
+                .fetchOne();
     }
 
     public static Users insertTestUser() {
@@ -196,7 +205,7 @@ public final class MapUtils {
     }
 
     private static void createTable(String createTblSql, Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(createTblSql)) {
+        try(PreparedStatement stmt = conn.prepareStatement(createTblSql)) {
             stmt.executeUpdate();
         }
     }

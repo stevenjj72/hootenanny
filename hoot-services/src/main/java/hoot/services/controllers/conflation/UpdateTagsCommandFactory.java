@@ -28,11 +28,12 @@ package hoot.services.controllers.conflation;
 
 import org.springframework.stereotype.Component;
 
+import hoot.services.job.JobStatusManager;
 
 @Component
 class UpdateTagsCommandFactory {
 
-    UpdateMapTagsCommand build(String jobId, ConflateParams params, Class<?> caller) {
-        return new UpdateMapTagsCommand(params, jobId, caller);
+    UpdateMapTagsCommand build(String jobId, ConflateParams params, JobStatusManager jobStatusManager, Class<?> caller) {
+        return new UpdateMapTagsCommand(jobId, params, jobStatusManager, caller);
     }
 }

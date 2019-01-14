@@ -66,9 +66,9 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("DB");
-        conflateParams.setInput1("1");
+        conflateParams.setInput1(1L);
         conflateParams.setInputType2("OSM_API_DB");
-        conflateParams.setInput2("-1");
+        conflateParams.setInput2(-1L);
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setCollectStats(false);
         conflateParams.setAdvancedOptions("-D convert.bounding.box=0,0,0,0");
@@ -92,9 +92,9 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setReferenceLayer("2");
         conflateParams.setInputType1("OSM_API_DB");
-        conflateParams.setInput1("1");
+        conflateParams.setInput1(1L);
         conflateParams.setInputType2("DB");
-        conflateParams.setInput2("-1");
+        conflateParams.setInput2(-1L);
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
         conflateParams.setCollectStats(false);
@@ -118,9 +118,9 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("OSM_API_DB");
-        conflateParams.setInput1("-1");
+        conflateParams.setInput1(-1L);
         conflateParams.setInputType2("DB");
-        conflateParams.setInput2("-999");
+        conflateParams.setInput2(-999L);
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
         conflateParams.setCollectStats(false);
@@ -145,9 +145,9 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
 
             ConflateParams conflateParams = new ConflateParams();
             conflateParams.setInputType1("OSM_API_DB");
-            conflateParams.setInput1("-1");
+            conflateParams.setInput1(-1L);
             conflateParams.setInputType2("DB");
-            conflateParams.setInput2("2");
+            conflateParams.setInput2(2L);
             conflateParams.setOutputName("OutputLayer");
             conflateParams.setCollectStats(false);
             conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
@@ -173,9 +173,9 @@ public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("OSM_API_DB");
-        conflateParams.setInput1("1");
+        conflateParams.setInput1(1L);
         conflateParams.setInputType2("DB");
-        conflateParams.setInput2(String.valueOf(mapId));
+        conflateParams.setInput2(mapId);
         conflateParams.setOutputName("OutputLayer");
         conflateParams.setConflationType("Reference");
         conflateParams.setCollectStats(false);
