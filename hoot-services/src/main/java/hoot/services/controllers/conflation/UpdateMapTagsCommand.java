@@ -26,14 +26,10 @@
  */
 package hoot.services.controllers.conflation;
 
-import static hoot.services.HootProperties.OSM_API_DB_ENABLED;
 import static hoot.services.HootProperties.RPT_STORE_PATH;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,20 +72,6 @@ class UpdateMapTagsCommand implements InternalCommand {
         if(params.getCollectStats()) {
             String statsFile = new File(RPT_STORE_PATH, params.getOutputName() + "-stats.csv").getAbsolutePath();
             tags.put("stats", statsFile);
-        }
-
-        // osm api db related input params have already been validated by
-        // this point, so just check to see if any osm api db input is present
-        if(ConflateUtils.isAtLeastOneLayerOsmApiDb(params) && OSM_API_DB_ENABLED) {
-            // write a timestamp representing the time the osm api db data was queried out
-            // from the source; to be used conflict detection during export of conflated
-            // data back into the osm api db at a later time; timestamp must be 24 hour utc
-            // to match rails port
-
-            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC);
-            String osmAPIDBExportTime = now.format(formatter);
-            tags.put("osm_api_db_export_time", osmAPIDBExportTime);
         }
     }
 

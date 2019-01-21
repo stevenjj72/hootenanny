@@ -27,152 +27,34 @@
 package hoot.services.controllers.conflation;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
-import hoot.services.UnitTest;
 import hoot.services.jerseyframework.HootServicesJerseyTestAbstract;
 import hoot.services.jerseyframework.HootServicesSpringTestConfig;
 import hoot.services.job.Job;
-import hoot.services.utils.HootCustomPropertiesSetter;
 import hoot.services.utils.MapUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = HootServicesSpringTestConfig.class, loader = AnnotationConfigContextLoader.class)
 @Transactional
 public class ConflationResourceTest extends HootServicesJerseyTestAbstract {
-
-    // An OSM API DB input must always be a reference layer. Default ref layer = 1.
-
-    @Test
-    @Category(UnitTest.class)
-    public void testOsmApiDbInputAsSecondary() {
-        HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.TRUE);
-
-        ConflateParams conflateParams = new ConflateParams();
-        conflateParams.setInputType1("DB");
-        conflateParams.setInput1(1L);
-        conflateParams.setInputType2("OSM_API_DB");
-        conflateParams.setInput2(-1L);
-        conflateParams.setOutputName("OutputLayer");
-        conflateParams.setCollectStats(false);
-        conflateParams.setAdvancedOptions("-D convert.bounding.box=0,0,0,0");
-
-        Response response = target("conflation/execute")
-                .queryParam("DEBUG_LEVEL", "info")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(conflateParams), Response.class);
-
-        String errorMessage = response.readEntity(String.class);
-
-        assertThat(response.getStatus(), is(Status.BAD_REQUEST.getStatusCode()));
-        assertEquals("OSM_API_DB is not allowed as secondary input type.", errorMessage);
-    }
-
-    @Test
-    @Category(UnitTest.class)
-    public void testOsmApiDbInputAsSecondary2() {
-        HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.TRUE);
-
-        ConflateParams conflateParams = new ConflateParams();
-        conflateParams.setReferenceLayer("2");
-        conflateParams.setInputType1("OSM_API_DB");
-        conflateParams.setInput1(1L);
-        conflateParams.setInputType2("DB");
-        conflateParams.setInput2(-1L);
-        conflateParams.setOutputName("OutputLayer");
-        conflateParams.setConflationType("Reference");
-        conflateParams.setCollectStats(false);
-        conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
-
-        Response response = target("conflation/execute")
-                .queryParam("DEBUG_LEVEL", "info")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(conflateParams), Response.class);
-
-        String errorMessage = response.readEntity(String.class);
-
-        assertThat(response.getStatus(), is(Status.BAD_REQUEST.getStatusCode()));
-        assertThat(errorMessage, is("OSM_API_DB is not allowed as secondary input type."));
-    }
-
-    @Test
-    @Category(UnitTest.class)
-    public void testConflateOsmApiDbMissingMap() {
-        HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.TRUE);
-
-        ConflateParams conflateParams = new ConflateParams();
-        conflateParams.setInputType1("OSM_API_DB");
-        conflateParams.setInput1(-1L);
-        conflateParams.setInputType2("DB");
-        conflateParams.setInput2(-999L);
-        conflateParams.setOutputName("OutputLayer");
-        conflateParams.setConflationType("Reference");
-        conflateParams.setCollectStats(false);
-        conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
-
-        Response response = target("conflation/execute")
-                .queryParam("DEBUG_LEVEL", "info")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(conflateParams), Response.class);
-
-        String errorMessage = response.readEntity(String.class);
-
-        assertThat(response.getStatus(), is(Status.BAD_REQUEST.getStatusCode()));
-        assertTrue(errorMessage.contains("No secondary map exists with ID"));
-    }
-
-    @Test
-    @Category(UnitTest.class)
-    public void testConflateOsmApiDbNotEnabled() {
-        try {
-            HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.FALSE);
-
-            ConflateParams conflateParams = new ConflateParams();
-            conflateParams.setInputType1("OSM_API_DB");
-            conflateParams.setInput1(-1L);
-            conflateParams.setInputType2("DB");
-            conflateParams.setInput2(2L);
-            conflateParams.setOutputName("OutputLayer");
-            conflateParams.setCollectStats(false);
-            conflateParams.setAdvancedOptions("-D \"convert.bounding.box=0,0,0,0\"");
-
-            Response response = target("conflation/execute")
-                    .queryParam("DEBUG_LEVEL", "info")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.json(conflateParams), Response.class);
-
-            String errorMessage = response.readEntity(String.class);
-
-            assertThat(response.getStatus(), is(Status.BAD_REQUEST.getStatusCode()));
-            assertThat(errorMessage, is("Attempted to conflate an OSM API database data source but OSM " +
-                    "API database support is disabled."));
-        } finally {
-            HootCustomPropertiesSetter.setProperty("OSM_API_DB_ENABLED", Boolean.TRUE);
-        }
-    }
-
     @Test
     public void testConflate() throws Exception {
         long mapId = MapUtils.insertTestMap();
 
         ConflateParams conflateParams = new ConflateParams();
-        conflateParams.setInputType1("OSM_API_DB");
+        conflateParams.setInputType1("OSM");
         conflateParams.setInput1(1L);
         conflateParams.setInputType2("DB");
         conflateParams.setInput2(mapId);
