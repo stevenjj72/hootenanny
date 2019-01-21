@@ -145,7 +145,7 @@ public class Users {
 
     @Override
     public String toString() {
-        return this.displayName;
+        return this.displayName + "//" + this.id;
     }
 
     public static Users fromRequest(HttpServletRequest request) {

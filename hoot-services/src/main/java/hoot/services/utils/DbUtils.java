@@ -117,7 +117,6 @@ public final class DbUtils {
 
     private static void overrideTable(String mapId, Configuration config) {
         if(config != null) {
-
             PreConfiguredNameMapping tablemapping = new PreConfiguredNameMapping();
             tablemapping.registerTableOverride("current_relation_members", "current_relation_members_" + mapId);
             tablemapping.registerTableOverride("current_relations", "current_relations_" + mapId);
@@ -347,10 +346,10 @@ public final class DbUtils {
      */
     public static long getRecordIdForInputString(String input, RelationalPathBase<?> table,
             NumberPath<Long> idField, StringPath nameField) throws WebApplicationException {
+        logger.debug("getRecordIdForInputString(): looking up {} from {}", input, table);
 
         if(org.apache.commons.lang3.StringUtils.isEmpty(input)) {
-            throw new BadRequestException("No record exists with ID: " + input
-                    + ".  Please specify a valid record.");
+            throw new NotFoundException("No record exists with ID: " + input + ".  Please specify a valid record.");
         }
 
         // Check if we can compare by ID

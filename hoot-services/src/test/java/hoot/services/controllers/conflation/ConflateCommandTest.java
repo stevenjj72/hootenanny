@@ -51,8 +51,6 @@ public class ConflateCommandTest {
     @Category(UnitTest.class)
     public void testCreateConflateCommand() {
         String jobId = UUID.randomUUID().toString();
-        //        Maps map1 = MapUtils.getMapByName("DcGisRoads");
-        //        Maps map2 = MapUtils.getMapByName("DcTigerRoads");
 
         ConflateParams conflateParams = new ConflateParams();
         conflateParams.setInputType1("DB");
@@ -105,7 +103,7 @@ public class ConflateCommandTest {
                 "hoot::RemoveEmptyAreasVisitor;hoot::RemoveDuplicateAreaVisitor;" +
                 "hoot::NoInformationElementRemover\"]"));
         assertTrue(command.contains("-D, hootapi.db.writer.job.id="));
-        assertEquals("hootapidb://${HOOTAPI_DB_USER}:${HOOTAPI_DB_PASSWORD}@${HOOTAPI_DB_HOST}:${HOOTAPI_DB_PORT}/${HOOTAPI_DB_NAME}/DcGisRoads", conflateCommand.getSubstitutionMap().get("INPUT1"));
-        assertEquals("hootapidb://${HOOTAPI_DB_USER}:${HOOTAPI_DB_PASSWORD}@${HOOTAPI_DB_HOST}:${HOOTAPI_DB_PORT}/${HOOTAPI_DB_NAME}/DcTigerRoads", conflateCommand.getSubstitutionMap().get("INPUT2"));
+        assertEquals("hootapidb://${HOOTAPI_DB_USER}:${HOOTAPI_DB_PASSWORD}@${HOOTAPI_DB_HOST}:${HOOTAPI_DB_PORT}/${HOOTAPI_DB_NAME}/1", conflateCommand.getSubstitutionMap().get("INPUT1"));
+        assertEquals("hootapidb://${HOOTAPI_DB_USER}:${HOOTAPI_DB_PASSWORD}@${HOOTAPI_DB_HOST}:${HOOTAPI_DB_PORT}/${HOOTAPI_DB_NAME}/2", conflateCommand.getSubstitutionMap().get("INPUT2"));
     }
 }

@@ -26,7 +26,9 @@
  */
 package hoot.services.controllers.osm.element;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -54,7 +56,6 @@ import hoot.services.utils.RandomNumberGenerator;
 import hoot.services.utils.XmlDocumentBuilder;
 import hoot.services.utils.XmlUtils;
 
-
 public class ElementResourceTest extends OSMResourceTestAbstract {
 
     private static void verifyFirstNodeWasReturned(Document responseData, String id, long changesetId,
@@ -63,7 +64,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
 
         OSMTestUtils.verifyOsmHeader(responseData);
 
-        String data = XmlDocumentBuilder.toString(responseData);
+        XmlDocumentBuilder.toString(responseData);
 
         assertEquals(1, XPathAPI.selectNodeList(responseData, "//osm/node").getLength());
         assertEquals(0, XPathAPI.selectNodeList(responseData, "//osm/way").getLength());
@@ -98,7 +99,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
         assertEquals("key 2", xpath.evaluate("//osm/way[1]/tag[2]/@k", responseData));
         assertEquals("val 2", URLDecoder.decode(xpath.evaluate("//osm/way[1]/tag[2]/@v", responseData), "UTF-8"));
 
-        if (wayNodeIds != null) {
+        if(wayNodeIds != null) {
             assertEquals(3, XPathAPI.selectNodeList(responseData, "//osm/way[1]/nd").getLength());
             Long[] wayNodeIdsArr = wayNodeIds.toArray(new Long[wayNodeIds.size()]);
             assertEquals(String.valueOf(wayNodeIdsArr[0]), xpath.evaluate("//osm/way[1]/nd[1]/@ref", responseData));
@@ -123,7 +124,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
         assertEquals("key 1", xpath.evaluate("//osm/relation[1]/tag[1]/@k", responseData));
         assertEquals("val 1", URLDecoder.decode(xpath.evaluate("//osm/relation[1]/tag[1]/@v", responseData), "UTF-8"));
 
-        if (relationMembers != null) {
+        if(relationMembers != null) {
             assertEquals(4, XPathAPI.selectNodeList(responseData, "//osm/relation[1]/member").getLength());
             assertEquals(String.valueOf(relationMembers.get(0).getId()),
                     xpath.evaluate("//osm/relation[1]/member[1]/@ref", responseData));
@@ -269,8 +270,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf(mapId))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             assertTrue(r.readEntity(String.class).contains("does not exist"));
@@ -294,8 +294,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf(mapId))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             assertTrue(r.readEntity(String.class).contains("does not exist"));
@@ -319,8 +318,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf(mapId))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             assertTrue(r.readEntity(String.class).contains("does not exist"));
@@ -344,8 +342,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf(mapId))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             assertTrue(r.readEntity(String.class).contains("does not exist"));
@@ -369,8 +366,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf(mapId))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             assertTrue(r.readEntity(String.class).contains("does not exist"));
@@ -396,11 +392,10 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf((int) RandomNumberGenerator.nextDouble(mapId + 10 ^ 4, Integer.MAX_VALUE)))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
-            assertTrue(r.readEntity(String.class).contains("No map exists"));
+            assertTrue(r.readEntity(String.class).contains("No map with that id exists"));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
             throw e;
         }
@@ -421,11 +416,10 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
                     .queryParam("mapId", String.valueOf((int) RandomNumberGenerator.nextDouble(mapId + 10 ^ 4, Integer.MAX_VALUE)))
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
-            assertTrue(r.readEntity(String.class).contains("No map exists"));
+            assertTrue(r.readEntity(String.class).contains("No map with that id exists"));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
             throw e;
         }
@@ -444,8 +438,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
         try {
             // invalid element type
             target("api/0.6/blah/" + nodeIdsArr[0]).request(MediaType.TEXT_XML).get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
@@ -466,8 +459,7 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
         try {
             // invalid element type
             target("api/0.6/blah/" + nodeIdsArr[0] + "/full").request(MediaType.TEXT_XML).get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
@@ -491,11 +483,10 @@ public class ElementResourceTest extends OSMResourceTestAbstract {
 
         try {
             target("api/0.6/node/" + nodeIdsArr[0] + "/full")
-                    .queryParam("mapId", String.valueOf(mapId))
+                    .queryParam("mapId", mapId)
                     .request(MediaType.TEXT_XML)
                     .get(Document.class);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             Response r = e.getResponse();
             assertEquals(Response.Status.NOT_FOUND, Response.Status.fromStatusCode(r.getStatus()));
             OSMTestUtils.verifyTestDataUnmodified(originalBounds, changesetId, nodeIds, wayIds, relationIds);
