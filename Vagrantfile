@@ -5,22 +5,22 @@ Vagrant.configure(2) do |config|
   # Hoot port mapping
   tomcatPort = ENV['TOMCAT_PORT']
   if tomcatPort.nil?
-    tomcatPort = '8888'
+    tomcatPort = '8188'
   end
 
   transPort = ENV['NODEJS_PORT']
   if transPort.nil?
-    transPort = '8094'
+    transPort = '8194'
   end
 
   mergePort = ENV['P2P_PORT']
   if mergePort.nil?
-    mergePort = '8096'
+    mergePort = '8196'
   end
 
   mapnikPort = ENV['NODE_MAPNIK_SERVER_PORT']
   if mapnikPort.nil?
-    mapnikPort = '8000'
+    mapnikPort = '8100'
   end
 
   disableForwarding = ENV['DISABLE_VAGRANT_FORWARDING']
@@ -87,15 +87,17 @@ Vagrant.configure(2) do |config|
 
   # Centos7 box - Preprovisioned for compiling hootenanny
   config.vm.define "default", primary: true do |hoot_centos7_prov|
-    hoot_centos7_prov.vm.box = "hoot/centos7-hoot"
-    hoot_centos7_prov.vm.hostname = "centos7-hoot"
+    hoot_centos7_prov.vm.box = "bento/centos-7.3"
+#    hoot_centos7_prov.vm.box = "hoot/centos7-hoot"
+    hoot_centos7_prov.vm.hostname = "centos7"
+#    hoot_centos7_prov.vm.hostname = "centos7-hoot"
     hoot_centos7_prov.vm.synced_folder ".", "/home/vagrant/hoot"
 
-    hoot_centos7_prov.vm.provision "hoot", type: "shell", :privileged => false, :path => "VagrantProvisionCentOS7.sh"
-    hoot_centos7_prov.vm.provision "build", type: "shell", :privileged => false, :path => "VagrantBuild.sh"
-    hoot_centos7_prov.vm.provision "tomcat", type: "shell", :privileged => false, :inline => "sudo systemctl restart tomcat8", run: "always"
+#    hoot_centos7_prov.vm.provision "hoot", type: "shell", :privileged => false, :path => "VagrantProvisionCentOS7.sh"
+#    hoot_centos7_prov.vm.provision "build", type: "shell", :privileged => false, :path => "VagrantBuild.sh"
+#    hoot_centos7_prov.vm.provision "tomcat", type: "shell", :privileged => false, :inline => "sudo systemctl restart tomcat8", run: "always"
 #    hoot_centos7_prov.vm.provision "mapnik", type: "shell", :privileged => false, :inline => "sudo systemctl restart node-mapnik", run: "always"
-    hoot_centos7_prov.vm.provision "export", type: "shell", :privileged => false, :inline => "sudo systemctl restart node-export", run: "always"
+#    hoot_centos7_prov.vm.provision "export", type: "shell", :privileged => false, :inline => "sudo systemctl restart node-export", run: "always"
 
     aws_provider(hoot_centos7_prov, 'CentOS7')
   end
