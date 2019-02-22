@@ -145,14 +145,13 @@ WayLocation::WayLocation(ConstOsmMapPtr map, ConstWayPtr way, int segmentIndex,
 
 Meters WayLocation::calculateDistanceFromEnd() const
 {
-  /// @todo this could be made more efficient by using the nodes directly
-  return ElementConverter(getMap()).convertToLineString(getWay())->getLength() -
-      calculateDistanceOnWay();
+  return
+    ElementConverter(getMap()).convertToLineString(getWay())->getLength() - calculateDistanceOnWay();
 }
 
 Meters WayLocation::calculateDistanceOnWay() const
 {
-  LOG_TRACE("Calculating distance on way...");
+  //LOG_TRACE("Calculating distance on way...");
 
   Meters result = 0.0;
   Coordinate last = _map->getNode(_way->getNodeId(0))->toCoordinate();
@@ -410,7 +409,8 @@ QString WayLocation::toString() const
 {
   if (isValid())
   {
-    return QString("way: %1 index: %2 fraction: %3").arg(_way->getId()).arg(_segmentIndex).
+    return
+      QString("way(%1) index: %2 fraction: %3").arg(_way->getId()).arg(_segmentIndex).
         arg(_segmentFraction, 0, 'g', 15);
   }
   else

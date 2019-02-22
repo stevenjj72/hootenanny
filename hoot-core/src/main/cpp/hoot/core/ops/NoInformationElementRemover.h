@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017, 2018, 2019 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #ifndef NOINFORMATIONELEMENTREMOVER_H
@@ -57,11 +57,11 @@ class NoInformationElementRemover : public OsmMapOperation, public OperationStat
     */
     void apply(boost::shared_ptr<OsmMap>& map);
 
-    virtual QString getInitStatusMessage()
+    virtual QString getInitStatusMessage() const
     { return "Removing elements with no information tags..."; }
 
-    //TODO: finish; wasn't obvious how to count the total affected
-    virtual QString getCompletedStatusMessage()
+    // finish; wasn't obvious how to count the total affected - #2933
+    virtual QString getCompletedStatusMessage() const
     { return ""; }
 
     virtual QString getDescription() const

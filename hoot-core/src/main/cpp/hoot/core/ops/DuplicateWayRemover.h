@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2016, 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2016, 2017, 2018, 2019 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #ifndef DUPLICATEWAYREMOVER_H
@@ -74,10 +74,10 @@ public:
     _strictTagMatching = strictTagMatching;
   }
 
-  virtual QString getInitStatusMessage() { return "Removing duplicate ways..."; }
+  virtual QString getInitStatusMessage() const { return "Removing duplicate ways..."; }
 
-  //TODO: finish; wasn't obvious how to count the total affected
-  virtual QString getCompletedStatusMessage()
+  // finish; wasn't obvious how to count the total affected - #2933
+  virtual QString getCompletedStatusMessage() const
   { return ""; }
 
   virtual QString getDescription() const { return "Removes duplicate ways from a map"; }

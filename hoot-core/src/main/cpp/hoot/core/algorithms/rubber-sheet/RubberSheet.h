@@ -22,7 +22,7 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017, 2018, 2019 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 #ifndef RUBBERSHEET_H
@@ -75,7 +75,7 @@ public:
 
   RubberSheet();
 
-  void apply(boost::shared_ptr<OsmMap>& map);
+  void apply(boost::shared_ptr<OsmMap>& map) override;
 
   /**
    * Applies a perviously calculated or loaded transform to the specified map.
@@ -131,7 +131,7 @@ public:
    void setLogWarningWhenRequirementsNotFound(bool logWarning)
    { _logWarningWhenRequirementsNotFound = logWarning; }
 
-   virtual QString getDescription() const { return "Applies rubber sheeting to a map"; }
+   virtual QString getDescription() const override { return "Applies rubber sheeting to a map"; }
 
 private:
 
@@ -140,6 +140,7 @@ private:
   class Tie
   {
     public:
+
       // Unknown1 coordinate
       geos::geom::Coordinate c1;
       // Unknown2 coordinate
@@ -148,6 +149,8 @@ private:
       double dx() const { return c1.x - c2.x; }
 
       double dy() const { return c1.y - c2.y; }
+
+      QString toString() { return "dx: " + QString::number(dx()) + ", dy: " + QString::number(dy()); }
   };
 
   boost::shared_ptr<OsmMap> _map;

@@ -252,6 +252,16 @@
                 "name":"Minimum Ties Required",
                 "defaultvalue":"4",
                 "hoot_key":"rubber.sheet.minimum.ties"
+            },
+            {
+                "id":"rubber_sheet_max_interpolator_iterations",
+                "minvalue":"1",
+                "elem_type":"int",
+                "description":"The maximum number of interpolation optimization iterations, per optimization loop, an interpolator is allowed to run during rubber sheeting.  Use -1 for no iteration limit.  Not supported by all interpolators.  Can prevent runaway optimizations with some interpolators.  Lower values may result in the selection of a suboptimal interpolator.",
+                "maxvalue":"",
+                "name":"Max Interpolator Iterations",
+                "defaultvalue":"200",
+                "hoot_key":"rubber.sheet.max.interpolator.iterations"
             }
         ]
     },
@@ -663,6 +673,30 @@
                 "hoot_key":"merger.creators",
                 "required":"true"
             }
+        ]
+    },
+    {
+        "id":"hoot_attribute_options",
+        "elem_type":"group",
+        "description":"Hootenanny Attribute Conflation options",
+        "name":"Attribute Conflation Options",
+        "members":[
+            {
+                "id":"hoot_enable_attribute_options",
+                "elem_type":"checkbox",
+                "description":"Enable area options",
+                "name":"Enabled",
+                "defaultvalue":"true",
+                "onchange":"true"
+            },
+            {
+        	"id":"attribute_allow_bridge_ref_geometry_change",
+        	"elem_type":"bool",
+        	"defaultvalue":"true",
+        	"description":"If true, allows Attribute Conflation to modify the geometry of a reference road layer to accomodate bridge features.  If false, any bridge features represented in the secondary dataset, but not in the reference dataset will be lost.",
+        	"name":"Allow Reference Layer Geometry Changes For Bridges",
+        	"hoot_key":"attribute.conflation.allow.ref.geometry.changes.for.bridges"
+    	    }
         ]
     },
     {

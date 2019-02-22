@@ -22,12 +22,11 @@
  * This will properly maintain the copyright information. DigitalGlobe
  * copyrights will be updated automatically.
  *
- * @copyright Copyright (C) 2015, 2017, 2018 DigitalGlobe (http://www.digitalglobe.com/)
+ * @copyright Copyright (C) 2015, 2017, 2018, 2019 DigitalGlobe (http://www.digitalglobe.com/)
  */
 
 // Hoot
 #include <hoot/core/cmd/BaseCommand.h>
-#include <hoot/core/conflate/Conflator.h>
 #include <hoot/core/util/Factory.h>
 #include <hoot/core/util/MapProjector.h>
 #include <hoot/core/conflate/matching/MatchFactory.h>
@@ -74,7 +73,7 @@ public:
 
   virtual QString getType() const { return "rnd"; }
 
-  int runSimple(QStringList args)
+  int runSimple(QStringList args) override
   {
     Timer totalTime;
 
