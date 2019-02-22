@@ -6,9 +6,11 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lodash": ">=4.17.11"
+  },
   "devDependencies": {
-    "artillery": "^1.6.0-22",
+    "artillery": "^1.6.0-27",
     "istanbul": "~0.4.5",
     "node-mocks-http": "^1.7.0",
     "osmtogeojson": "~3.0.0-beta.2",
