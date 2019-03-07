@@ -1,0 +1,42 @@
+// Load shared libraries
+@Library('radiant-pipeline-library')_
+
+pipeline {
+    agent { label 'master' }
+
+    triggers {
+        cron((BRANCH_NAME == "3043") ? "H H(4-5) * * 1-5" : "")
+    }
+
+    parameters {
+        string(name: 'Box', defaultValue: 'default', description: 'Vagrant Box')
+    }    
+
+    stages {
+        stage("Destroy VM") {
+            steps {
+                // Existing VM may or may not exist depending on previous runs
+                sh "vagrant destroy -f ${params.Box} || true"
+            }
+        }
+        stage("Setup") {
+            steps {    
+                sh "vagrant up default --provision-with hoot"
+            }
+        }
+        stage ("Install Hoot") {
+            steps {
+                sh "vagrant ssh ${params.Box} -c 'sudo yum install -y hootenanny-services-ui'"
+            }
+        }
+        stage("Core Tests") {
+            steps {
+                sh "vagrant ssh ${params.Box -c 'cd hoot; hoot version --debug; HootTest --diff --glacial --parallel"
+            }
+        }
+    }
+    post {
+        sh "vagrant destroy -f ${param.Box}"
+        cleanWs()
+    }
+}
