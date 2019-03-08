@@ -34,7 +34,7 @@ pipeline {
         }
         stage("Core Tests") {
             steps {
-                sh "vagrant ssh ${params.Box} -c 'cd hoot; hoot version --debug; HootTest --diff --glacial --parallel'"
+                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; hoot version --debug; HootTest --diff --glacial --parallel'"
             }
         }
     }
