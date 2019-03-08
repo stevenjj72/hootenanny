@@ -27,8 +27,8 @@ cd ~
 source ~/.bash_profile
 
 # add EPEL repo for extra packages
-echo "### Add epel repo ###" > CentOS_upgrade.txt
-sudo yum -y install epel-release >> CentOS_upgrade.txt 2>&1
+echo "### Add epel and yu-utils repo ###" > CentOS_upgrade.txt
+sudo yum -y install epel-release yum-utils >> CentOS_upgrade.txt 2>&1
 
 # add Hoot repo for our pre-built dependencies.
 echo "### Add Hoot repo ###" >> CentOS_upgrade.txt
