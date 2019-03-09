@@ -41,7 +41,7 @@ pipeline {
     post {
         always {
             script {
-                sh "vagrant destroy -f ${param.Box}"
+                sh "vagrant destroy -f ${params.Box}"
                 cleanWs()
             }
         }
