@@ -26,17 +26,30 @@ pipeline {
         }
         stage ("Install Hoot") {
             steps {
-                sh "vagrant ssh ${params.Box} -c 'sudo yum-config-manager --add-repo https://s3.amazonaws.com/hoot-repo/el7/pgdg95.repo'"
                 sh "vagrant ssh ${params.Box} -c 'sudo yum-config-manager --add-repo https://s3.amazonaws.com/hoot-repo/el7/release/hoot.repo'"
                 sh "vagrant ssh ${params.Box} -c 'sudo yum makecache -y'"
-                sh "vagrant ssh ${params.Box} -c 'sudo yum install -y hootenanny-autostart'"
+                sh "vagrant ssh ${params.Box} -c 'sudo yum install -y hootenanny-autostart-0.2.43-1.el7'"
+                sh "vagrant ssh ${params.Box} -c 'hoot version'"
             }
         }
-        stage("Core Tests") {
+        stage("Core Test - Original Install") {
             steps {
-                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; hoot version --debug; HootTest --diff --glacial --parallel'"
+                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; HootTest --diff --glacial --parallel'"
             }
         }
+        stage("Update Hoot") {
+            steps {
+                sh "vagrant ssh ${params.Box} -c 'sudo yum -y update hootenanny-autostart'"
+                sh "vagrant ssh ${params.Box} -c 'hoot version'"
+            }
+        }
+
+        stage("Core Test - Hoot Updated") {
+            steps {
+                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; HootTest --diff --glacial --parallel'"
+            }
+        }
+
     }
     post {
         always {
