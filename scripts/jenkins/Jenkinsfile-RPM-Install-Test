@@ -32,7 +32,7 @@ pipeline {
                 sh "vagrant ssh ${params.Box} -c 'hoot version'"
             }
         }
-        stage("Core Test - Original Install") {
+        stage("Core Test Original Install") {
             steps {
                 sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; HootTest --diff --glacial --parallel'"
             }
@@ -44,7 +44,7 @@ pipeline {
             }
         }
 
-        stage("Core Test - Hoot Updated") {
+        stage("Core Test Hoot Updated") {
             steps {
                 sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; HootTest --diff --glacial --parallel'"
             }
