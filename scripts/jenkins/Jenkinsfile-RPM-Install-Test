@@ -20,8 +20,10 @@ pipeline {
             }
         }
         stage("Discover Previous Version") {
-            sh "export PREV_HOOT_VERSION=`aws s3 ls s3://hoot-repo/el7/release/ | grep hootenanny-autostart | awk '{ print \$4 }' | tail -n 2 | head -n 1 | sed 's/hootenanny-autostart-//g' | sed 's/-[0-9]*.el7.noarch.rpm//g'`"
-            sh 'echo "Previous Hootenanny Version: \${PREV_HOOT_VERSION}"'
+            steps {
+                sh "export PREV_HOOT_VERSION=`aws s3 ls s3://hoot-repo/el7/release/ | grep hootenanny-autostart | awk '{ print \$4 }' | tail -n 2 | head -n 1 | sed 's/hootenanny-autostart-//g' | sed 's/-[0-9]*.el7.noarch.rpm//g'`"
+                sh 'echo "Previous Hootenanny Version: \${PREV_HOOT_VERSION}"'
+            }
         }
         stage("Setup") {
             steps {    
