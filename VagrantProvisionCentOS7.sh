@@ -27,8 +27,8 @@ cd ~
 source ~/.bash_profile
 
 # add EPEL repo for extra packages
-echo "### Add epel and yu-utils repo ###" > CentOS_upgrade.txt
-sudo yum -y install epel-release yum-utils >> CentOS_upgrade.txt 2>&1
+echo "### Add epel repo ###" > CentOS_upgrade.txt
+sudo yum -y install epel-release >> CentOS_upgrade.txt 2>&1
 
 # add Hoot repo for our pre-built dependencies.
 echo "### Add Hoot repo ###" >> CentOS_upgrade.txt
@@ -146,8 +146,12 @@ sudo yum -y install \
     java-1.8.0-openjdk \
     perl-XML-LibXML \
     hoot-postgis24_95 \
+    hoot-words \
+    liquibase \
     libpostal-data \
     libpostal-devel \
+    log4cxx \
+    log4cxx-devel \
     postgresql95 \
     postgresql95-contrib \
     postgresql95-devel \
@@ -174,12 +178,15 @@ sudo yum -y install \
     texlive-collection-fontsrecommended \
     texlive-collection-langcyrillic \
     unzip \
+    v8 \
+    v8-devel \
     vim \
     wamerican-insane \
     w3m \
     wget \
     words \
     xorg-x11-server-Xvfb \
+    yum-utils \
     zip \
 
 # Fix missing qmake
