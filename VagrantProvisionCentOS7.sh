@@ -28,7 +28,7 @@ source ~/.bash_profile
 
 # add EPEL repo for extra packages
 echo "### Add epel repo ###" > CentOS_upgrade.txt
-sudo yum -y install epel-release >> CentOS_upgrade.txt 2>&1
+sudo yum -y install epel-release yum-utils >> CentOS_upgrade.txt 2>&1
 
 # add Hoot repo for our pre-built dependencies.
 echo "### Add Hoot repo ###" >> CentOS_upgrade.txt
@@ -187,8 +187,7 @@ sudo yum -y install \
     wget \
     words \
     xorg-x11-server-Xvfb \
-    yum-utils \
-    zip \
+    zip 
 
 # Fix missing qmake
 if ! hash qmake >/dev/null 2>&1 ; then
