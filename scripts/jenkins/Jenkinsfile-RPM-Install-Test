@@ -6,9 +6,6 @@ pipeline {
     environment {
         PREV_HOOT_VERSION = 'UNKNOWN'
     }
-    triggers {
-        cron((BRANCH_NAME == "3043") ? "H H(4-5) * * 1-5" : "")
-    }
 
     parameters {
         string(name: 'Box', defaultValue: 'default', description: 'Vagrant Box')
