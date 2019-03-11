@@ -58,7 +58,7 @@ pipeline {
         stage("Core Test Hoot Updated") {
             steps {
                 sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny/conf/dictionary/; sudo wget https://s3.amazonaws.com/hoot-rpms/support-files/words1.sqlite.bz2'"
-                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny/conf/dictionary/; sudo bzip2 -d words1.sqlite.bz2"
+                sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny/conf/dictionary/; sudo bzip2 -d words1.sqlite.bz2'"
                 sh "vagrant ssh ${params.Box} -c 'sudo mv /var/lib/hootenanny/conf/dictionary/words1.sqlite /var/lib/hootenanny/conf/dictionary/words.sqlite'"
                 sh "vagrant ssh ${params.Box} -c 'cd /var/lib/hootenanny; HootTest --diff --glacial --parallel \$(nproc)'"
             }
