@@ -3,9 +3,6 @@
 
 pipeline {
     agent { label 'master' }
-    environment {
-        PREV_HOOT_VERSION = 'UNKNOWN'
-    }
 
     parameters {
         string(name: 'Box', defaultValue: 'default', description: 'Vagrant Box')
@@ -18,14 +15,6 @@ pipeline {
                 sh "vagrant destroy -f ${params.Box} || true"
             }
         }
-        stage("Discover Previous Version") {
-            steps {
-                script {
-                    PREV_HOOT_VERSION = sh(returnStdout: true, script: "aws s3 ls s3://hoot-repo/el7/release/ | grep hootenanny-autostart | awk '{ print \$4 }' | tail -n 2 | head -n 1 | sed 's/hootenanny-autostart-//g' | sed 's/-[0-9]*.el7.noarch.rpm//g'")
-                    echo "Previous Hootenanny Version: ${PREV_HOOT_VERSION}"
-                }
-            }
-        }
         stage("Setup") {
             steps {    
                 sh "vagrant up ${params.Box} --provision-with hoot"
@@ -35,7 +24,7 @@ pipeline {
             steps {
                 sh "vagrant ssh ${params.Box} -c 'sudo yum-config-manager --add-repo https://s3.amazonaws.com/hoot-repo/el7/release/hoot.repo'"
                 sh "vagrant ssh ${params.Box} -c 'sudo yum makecache -y'"
-                sh "vagrant ssh ${params.Box} -c 'sudo yum -y install hootenanny-autostart-${PREV_HOOT_VERSION}'"
+                sh "vagrant ssh ${params.Box} -c 'sudo yum -y install hootenanny-autostart-`sudo yum --showduplicates list hootenanny-autostart | tail -n 2 | head -n 1 | awk '{ print $2 }' | sed 's/-[0-9]*.el7//g'`'i"
                 sh "vagrant ssh ${params.Box} -c 'hoot version'"
             }
         }
